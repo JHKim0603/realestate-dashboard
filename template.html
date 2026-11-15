@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>부동산 시장 Dashboard</title>
+<style>
+  /* 색: 빨강은 가격 상승, 파랑은 하락(국내 시세 화면 관례, stockdashboard 와 같다). 서울은 보라, 부산은 청록, 전국은 회색 선. */
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #f1efe9; --border: #e3e0d7; --grid: #ece9e1;
+    --ink: #1d1c19; --ink-2: #4a4843; --ink-3: #78756d;
+    --up: #c8372d; --down: #2459d6; --flat: #8a877f;
+    --up-1: rgba(200, 55, 45, .10); --up-2: rgba(200, 55, 45, .22); --up-3: rgba(200, 55, 45, .36);
+    --down-1: rgba(36, 89, 214, .10); --down-2: rgba(36, 89, 214, .22); --down-3: rgba(36, 89, 214, .36);
+    --c-seoul: #7c4ddb; --c-busan: #0b8a7e; --c-nat: #8a877f; --c-4: #c9790b;
+    --chip: #ece9e1; --shadow: 0 1px 2px rgba(0, 0, 0, .04);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131312; --surface: #1c1b19; --surface-2: #24231f; --border: #34322d; --grid: #2b2a26;
+      --ink: #f0eee8; --ink-2: #c8c5bc; --ink-3: #8e8b83;
+      --up: #ff7d73; --down: #73a7ff; --flat: #8e8b83;
+      --up-1: rgba(255, 125, 115, .12); --up-2: rgba(255, 125, 115, .24); --up-3: rgba(255, 125, 115, .38);
+      --down-1: rgba(115, 167, 255, .12); --down-2: rgba(115, 167, 255, .24); --down-3: rgba(115, 167, 255, .38);
+      --c-seoul: #b59cff; --c-busan: #35d0be; --c-nat: #9d9a92; --c-4: #f2b34c;
+      --chip: #2b2a26; --shadow: none; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131312; --surface: #1c1b19; --surface-2: #24231f; --border: #34322d; --grid: #2b2a26;
+    --ink: #f0eee8; --ink-2: #c8c5bc; --ink-3: #8e8b83;
+    --up: #ff7d73; --down: #73a7ff; --flat: #8e8b83;
+    --up-1: rgba(255, 125, 115, .12); --up-2: rgba(255, 125, 115, .24); --up-3: rgba(255, 125, 115, .38);
+    --down-1: rgba(115, 167, 255, .12); --down-2: rgba(115, 167, 255, .24); --down-3: rgba(115, 167, 255, .38);
+    --c-seoul: #b59cff; --c-busan: #35d0be; --c-nat: #9d9a92; --c-4: #f2b34c;
+    --chip: #2b2a26; --shadow: none; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", sans-serif; -webkit-text-size-adjust: 100%; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 22px 16px 40px; }
+  .num, td, .tile-big, .val { font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+  .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--flat); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  h1 .sub { font-size: 14px; font-weight: 600; color: var(--ink-3); margin-left: 6px; }
+  .asof { color: var(--ink-3); font-size: 13px; margin-top: 2px; }
+  .icon-btn { font: inherit; font-size: 13px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .jump { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; margin: 14px 0 16px; padding-bottom: 2px; scrollbar-width: none; }
+  .jump a { white-space: nowrap; text-decoration: none; font-size: 13px; color: var(--ink-2); border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 4px 12px; }
+  section { margin-top: 22px; scroll-margin-top: 10px; }
+  .sec-title { font-size: 15px; font-weight: 700; margin: 0 0 8px; color: var(--ink-2); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+  .note { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { font: inherit; font-size: 12.5px; border: 0; background: var(--surface); color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button.on { background: var(--ink); color: var(--surface); font-weight: 600; }
+
+  /* 핵심 요약 */
+  .headline { border-left: 4px solid var(--ink); background: var(--surface-2); border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; }
+  .headline .h { font-size: 17px; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
+  .headline p { margin: 0; color: var(--ink-2); }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .tile { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--surface); border-top: 4px solid var(--flat); min-width: 0; }
+  .tile.up { border-top-color: var(--up); } .tile.down { border-top-color: var(--down); }
+  .tile-name { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .tile-name .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .tile-big { font-size: 26px; font-weight: 750; line-height: 1.15; margin: 6px 0 0; }
+  .tile-big small { font-size: 13px; font-weight: 600; color: var(--ink-3); margin-left: 4px; }
+  .tile-streak { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .tile-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+  .tile-row div { background: var(--surface-2); border-radius: 8px; padding: 5px 8px; font-size: 12px; color: var(--ink-3); }
+  .tile-row b { display: block; font-size: 14px; }
+  .tile-sub { font-size: 13px; color: var(--ink-2); margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .tile-sub b { font-weight: 700; }
+  .bars { display: block; width: 100%; height: 42px; margin-top: 10px; }
+  .bars .b-up { fill: var(--up); } .bars .b-down { fill: var(--down); } .bars .b-flat { fill: var(--flat); }
+  .bars .b-zero { stroke: var(--grid); }
+  .bars-cap { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); }
+  .count-row { margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+
+  /* 차트 */
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; }
+  .ax { font-size: 11.5px; fill: var(--ink-3); }
+  .gl { stroke: var(--grid); }
+  .gl.base { stroke: var(--ink-3); stroke-dasharray: 3 3; }
+  .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ln.dash { stroke-dasharray: 5 4; stroke-width: 1.8; }
+  .end-lb { font-size: 12px; font-weight: 600; }
+  .hair { stroke: var(--ink-3); stroke-width: 1; }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12px; border-radius: 8px; padding: 6px 9px; white-space: nowrap; transform: translate(-50%, -100%); z-index: 3; }
+  .tip .k { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); margin: 6px 0 4px; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 0; border-top: 3px solid var(--c); margin-right: 5px; vertical-align: middle; }
+  .legend span.dash::before { border-top-style: dashed; border-top-width: 2px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chart-head h3 { margin: 0; font-size: 15px; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+  /* 구별 표 */
+  .tbl-wrap { overflow-x: auto; margin-top: 8px; }
+  table.dist { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  table.dist th { font-size: 12px; color: var(--ink-3); font-weight: 600; text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  table.dist th:first-child, table.dist td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+  table.dist th.sorted { color: var(--ink); }
+  table.dist td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  table.dist tr.grp td { font-weight: 700; background: var(--surface-2); }
+  table.dist tr.grp td:first-child { background: var(--surface-2); }
+  table.dist tr.city td { font-weight: 750; border-bottom: 2px solid var(--border); }
+  td.t-up1 { background: var(--up-1); } td.t-up2 { background: var(--up-2); } td.t-up3 { background: var(--up-3); }
+  td.t-dn1 { background: var(--down-1); } td.t-dn2 { background: var(--down-2); } td.t-dn3 { background: var(--down-3); }
+  td.spark { width: 120px; }
+  .mini { display: block; width: 110px; height: 22px; margin-left: auto; }
+  .mini .b-up { fill: var(--up); } .mini .b-down { fill: var(--down); } .mini .b-flat { fill: var(--flat); }
+
+  /* 월간 카드 */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+  .mcard h3 { margin: 0; font-size: 15px; }
+  .mcard .when { font-size: 12px; color: var(--ink-3); }
+  .vals { display: flex; gap: 18px; flex-wrap: wrap; margin: 8px 0 2px; }
+  .vals div { min-width: 0; }
+  .vals .lb { font-size: 12px; color: var(--ink-3); display: flex; align-items: center; gap: 5px; }
+  .vals .lb i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .vals .val { font-size: 19px; font-weight: 750; }
+  .vals .chg { font-size: 12px; font-weight: 600; }
+  .src { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+  .status { font-size: 12.5px; color: var(--ink-3); }
+  .status b.bad { color: var(--up); }
+  details.read summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+  details.read dl { margin: 10px 0 0; }
+  details.read dt { font-weight: 700; margin-top: 8px; }
+  details.read dd { margin: 2px 0 0; color: var(--ink-2); }
+  footer { margin-top: 26px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--border); padding-top: 12px; }
+
+  @media (max-width: 860px) { .tiles { grid-template-columns: 1fr 1fr; } .tiles .tile.ref { grid-column: 1 / -1; } }
+  @media (max-width: 640px) {
+    .wrap { padding: 16px 16px 32px; }
+    h1 { font-size: 19px; }
+    .tiles, .two { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .tile-big { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div>
+      <h1 id="title">부동산 시장 Dashboard<span class="sub">서울·부산 아파트</span></h1>
+      <div class="asof" id="asof"></div>
+    </div>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="밝게·어둡게 바꾸기">화면 밝기</button>
+  </header>
+  <nav class="jump" aria-label="구역 바로가기">
+    <a href="#secSummary">핵심 요약</a><a href="#secTrend">주간 흐름</a><a href="#secDistrict">구별 동향</a>
+    <a href="#secMonthly">가격·거래</a><a href="#secMacro">금리·공급·심리</a><a href="#secRead">읽는 법</a>
+  </nav>
+
+  <section id="secSummary"><div class="card" id="summary"></div></section>
+  <section id="secTrend">
+    <div class="sec-title">주간 흐름 (한국부동산원 주간 아파트 가격동향)</div>
+    <div class="card" id="trend"></div>
+    <div class="two" style="margin-top:12px">
+      <div class="card" id="demandBuy"></div>
+      <div class="card" id="demandRent"></div>
+    </div>
+  </section>
+  <section id="secDistrict">
+    <div class="sec-title">구별 동향</div>
+    <div class="card" id="district"></div>
+  </section>
+  <section id="secMonthly">
+    <div class="sec-title">가격·거래 (월간)</div>
+    <div class="grid" id="monthlyGrid"></div>
+  </section>
+  <section id="secMacro">
+    <div class="sec-title">금리·공급·심리 (월간)</div>
+    <div class="grid" id="macroGrid"></div>
+  </section>
+  <section id="secRead">
+    <div class="card">
+      <details class="read">
+        <summary>지표 읽는 법과 출처</summary>
+        <dl>
+          <dt>주간 매매·전세 변동률</dt>
+          <dd>한국부동산원이 매주 월요일 기준으로 조사해 목요일에 발표하는 아파트 가격지수의 전주 대비 변동률입니다. 표본 아파트의 시세를 조사한 값이라 실제 거래가격과는 다를 수 있습니다. 0.00%는 보합입니다.</dd>
+          <dt>누적 변동(4주·12주·52주)</dt>
+          <dd>그 기간 전 지수와 지금 지수를 비교한 변동률입니다. 주간 변동률을 단순히 더한 값과 조금 다릅니다.</dd>
+          <dt>매수우위지수·전세수급지수</dt>
+          <dd>중개업소에 매수자와 매도자(전세는 수요와 공급) 중 어느 쪽이 많은지 물어 0~200으로 만든 지수입니다. 100보다 크면 매수자(전세 수요)가 많다는 응답이 많은 것입니다.</dd>
+          <dt>중위 매매가격·전세가율·매매거래</dt>
+          <dd>한국부동산원 월간 통계입니다. 전세가율은 매매가격 대비 전세가격 비율로, 높을수록 매매가와 전세가의 차이가 작습니다. 매매거래는 신고 기준이라 최근 달은 1~2개월 늦게 나옵니다.</dd>
+          <dt>금리·미분양·인허가·주택가격전망 CSI</dt>
+          <dd>한국은행 ECOS 통계입니다. 미분양과 인허가는 국토교통부 집계를 옮긴 값이고, 주택가격전망 CSI는 1년 뒤 집값이 오를 것이라는 응답이 많을수록 100보다 큽니다(서울과 6대광역시 응답 분류, 부산은 6대광역시에 들어 있습니다).</dd>
+        </dl>
+        <p class="note">출처: 한국부동산원 부동산통계정보시스템(R-ONE) 공개 API, 한국은행 경제통계시스템(ECOS) 공개 API. 투자 판단의 참고용이며 값은 발표 기관의 수정에 따라 바뀔 수 있습니다.</p>
+        <div class="status" id="status"></div>
+      </details>
+    </div>
+  </section>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = __DATA_JSON__;
+
+// ---- 공통 ------------------------------------------------------------------------------------
+const esc = v => String(v === null || v === undefined ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const has = v => v !== null && v !== undefined && !Number.isNaN(v);
+const sgn = v => v > 0 ? "+" : v < 0 ? "−" : "";
+const pct = (v, d = 2) => has(v) ? sgn(Math.round(v * 10 ** d) / 10 ** d) + Math.abs(v).toFixed(d) + "%" : "–";
+const cls = v => !has(v) ? "" : Math.round(v * 100) > 0 ? "up" : Math.round(v * 100) < 0 ? "down" : "flat";
+const fmt = (v, d = 0) => has(v) ? Number(v).toLocaleString("ko-KR", { maximumFractionDigits: d, minimumFractionDigits: d }) : "–";
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const W = D.weekly, WEEKS = W.weeks || [], DATES = W.dates || [];
+const S = key => (W.series && W.series[key]) || [];
+const lastIdx = a => { for (let k = a.length - 1; k >= 0; k--) if (has(a[k])) return k; return -1; };
+// k 번째 주와 n 주 전의 변동률
+const chgAt = (a, k, n = 1) => (k - n >= 0 && has(a[k]) && has(a[k - n]) && a[k - n]) ? (a[k] / a[k - n] - 1) * 100 : null;
+const weekly = a => a.map((v, k) => chgAt(a, k, 1));
+// 연속 주: 소수 둘째 자리로 반올림한 변동률의 부호가 같은 주 수(0.00%는 보합)
+function streak(a) {
+  const k0 = lastIdx(a); if (k0 < 1) return { n: 0, dir: 0 };
+  const s = k => { const c = chgAt(a, k); return has(c) ? Math.sign(Math.round(c * 100)) : null; };
+  const dir = s(k0); let n = 0;
+  for (let k = k0; k >= 1 && s(k) === dir; k--) n++;
+  return { n, dir };
+}
+const dirWord = d => d > 0 ? "상승" : d < 0 ? "하락" : "보합";
+const md = iso => iso ? `${+iso.slice(5, 7)}/${+iso.slice(8, 10)}` : "";
+const REG = D.meta.regions;
+const CITY = { national: REG.find(r => r.key === "national"), seoul: REG.find(r => r.key === "seoul"), busan: REG.find(r => r.key === "busan") };
+const COLOR = { seoul: "--c-seoul", busan: "--c-busan", national: "--c-nat" };
+
+// ---- 선 그래프(반응형). 그릴 때 칸 폭을 재고, 화면 폭이 바뀌면 다시 그린다 ------------------------------
+const CHARTS = [];
+function lineChart(el, opt) {
+  const c = { el, opt }; CHARTS.push(c); drawLine(c); return c;
+}
+function drawLine(c) {
+  const { el, opt } = c;
+  const lines = opt.series.filter(s => s.pts.length >= 2);
+  el.innerHTML = "";
+  if (!lines.length) { el.innerHTML = `<div class="note">자료가 아직 없습니다.</div>`; return; }
+  const Wd = Math.max(280, Math.round(el.clientWidth || 600)), wide = Wd >= 560;
+  const H = opt.height || 220, PL = opt.padL || 46, PR = wide && opt.endLabels !== false ? (opt.padR || 110) : 12, PT = 10, PB = 24;
+  let t0 = Infinity, t1 = -Infinity, lo = Infinity, hi = -Infinity;
+  lines.forEach(l => l.pts.forEach(([t, v]) => { t0 = Math.min(t0, t); t1 = Math.max(t1, t); lo = Math.min(lo, v); hi = Math.max(hi, v); }));
+  if (has(opt.baseline)) { lo = Math.min(lo, opt.baseline); hi = Math.max(hi, opt.baseline); }
+  if (opt.zeroFloor) lo = Math.min(lo, 0);
+  const raw = (hi - lo) || Math.abs(hi) || 1, pw = Math.pow(10, Math.floor(Math.log10(raw / 4))), n = raw / 4 / pw;
+  const step = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pw;
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step; if (hi === lo) hi = lo + step;
+  const X = t => PL + (t - t0) / ((t1 - t0) || 1) * (Wd - PL - PR);
+  const Y = v => PT + (hi - v) / (hi - lo) * (H - PT - PB);
+  let g = "";
+  for (let v = lo; v <= hi + step / 1e6; v += step) {
+    const vv = Math.abs(v) < step / 1e6 ? 0 : v;
+    g += `<line x1="${PL}" x2="${Wd - PR}" y1="${Y(vv).toFixed(1)}" y2="${Y(vv).toFixed(1)}" class="gl${has(opt.baseline) && Math.abs(vv - opt.baseline) < step / 1e6 ? " base" : ""}"/>` +
+      `<text x="${PL - 6}" y="${(Y(vv) + 4).toFixed(1)}" text-anchor="end" class="ax">${esc(opt.yFmt ? opt.yFmt(vv) : fmt(vv))}</text>`;
+  }
+  if (has(opt.baseline) && !((opt.baseline - lo) % step === 0)) g += `<line x1="${PL}" x2="${Wd - PR}" y1="${Y(opt.baseline).toFixed(1)}" y2="${Y(opt.baseline).toFixed(1)}" class="gl base"/>`;
+  // 아래 날짜: 기간에 맞춰 달·분기·해 단위로
+  const days = (t1 - t0) / 864e5, stepM = days > 1500 ? 12 : days > 700 ? 6 : days > 300 ? 3 : 1;
+  const d = new Date(t0); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + 1);
+  while (d.getUTCMonth() % stepM) d.setUTCMonth(d.getUTCMonth() + 1);
+  let lastX = -1e9;
+  for (; d.getTime() <= t1; d.setUTCMonth(d.getUTCMonth() + stepM)) {
+    const x = X(d.getTime()); if (x - lastX < 54 || x > Wd - PR - 14) continue; lastX = x;
+    g += `<text x="${x.toFixed(1)}" y="${H - 6}" text-anchor="middle" class="ax">${d.getUTCMonth() === 0 || stepM === 12 ? `${String(d.getUTCFullYear()).slice(2)}.${d.getUTCMonth() + 1}` : `${d.getUTCMonth() + 1}월`}</text>`;
+  }
+  lines.forEach(l => {
+    const p = l.pts.map(([t, v], i) => `${i ? "L" : "M"}${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+    g += `<path d="${p}" class="ln${l.dash ? " dash" : ""}" style="stroke:var(${l.color})"/>`;
+  });
+  if (wide && opt.endLabels !== false) {
+    const labs = lines.map(l => ({ l, y: Y(l.pts[l.pts.length - 1][1]) })).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 15) labs[i].y = labs[i - 1].y + 15;
+    labs.forEach(o => { const v = o.l.pts[o.l.pts.length - 1][1];
+      g += `<text x="${Wd - PR + 8}" y="${(o.y + 4).toFixed(1)}" class="end-lb" style="fill:var(${o.l.color})">${esc(o.l.name)} ${esc(opt.yFmt ? opt.yFmt(v) : fmt(v))}</text>`; });
+  }
+  g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
+  el.insertAdjacentHTML("beforeend", `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="${esc(opt.label || "")}">${g}</svg><div class="tip" hidden></div>`);
+  // 손가락·마우스: 가장 가까운 시점의 값들
+  const svg = el.querySelector("svg"), tip = el.querySelector(".tip"), hair = svg.querySelector(".hair");
+  const allT = [...new Set([].concat(...lines.map(l => l.pts.map(p => p[0]))))].sort((a, b) => a - b);
+  const valAt = (pts, t) => { let r = null; for (const p of pts) { if (p[0] <= t) r = p; else break; } return r && t - r[0] < 40 * 864e5 ? r[1] : null; };
+  const show = ev => {
+    const rect = svg.getBoundingClientRect(), x = (ev.clientX - rect.left) / rect.width * Wd;
+    if (x < PL || x > Wd - PR) { hide(); return; }
+    let best = allT[0]; for (const t of allT) if (Math.abs(X(t) - x) < Math.abs(X(best) - x)) best = t;
+    hair.setAttribute("x1", X(best)); hair.setAttribute("x2", X(best)); hair.setAttribute("visibility", "visible");
+    const dt = new Date(best), lab = opt.monthly ? `${dt.getUTCFullYear()}.${dt.getUTCMonth() + 1}` : `${dt.getUTCFullYear()}.${dt.getUTCMonth() + 1}.${dt.getUTCDate()}`;
+    tip.innerHTML = `<div>${lab}</div>` + lines.map(l => { const v = valAt(l.pts, best); return has(v) ? `<div><span class="k" style="background:var(${l.color})"></span>${esc(l.name)} <b>${esc(opt.yFmt ? opt.yFmt(v) : fmt(v))}</b></div>` : ""; }).join("");
+    tip.hidden = false; tip.style.left = Math.min(Math.max(X(best) / Wd * rect.width, 70), rect.width - 70) + "px"; tip.style.top = "8px";
+  };
+  const hide = () => { tip.hidden = true; hair.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show); svg.addEventListener("pointerleave", hide);
+}
+let rsz = null;
+addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(() => CHARTS.forEach(c => { if (c.el.isConnected) drawLine(c); }), 150); });
+const tOf = iso => Date.parse(iso.length === 7 ? iso + "-15T00:00:00Z" : iso + "T00:00:00Z");
+
+// 주간 변동률 막대(최근 n주). 위는 상승 빨강, 아래는 하락 파랑.
+function barsSvg(a, n, cl, h = 42) {
+  const ch = weekly(a).slice(-n), Wd = 260, mx = Math.max(0.05, ...ch.filter(has).map(Math.abs)), bw = Wd / n;
+  let g = `<line x1="0" x2="${Wd}" y1="${h / 2}" y2="${h / 2}" class="b-zero"/>`;
+  ch.forEach((v, i) => { if (!has(v)) return; const r = Math.round(v * 100);
+    const hh = Math.max(1, Math.abs(v) / mx * (h / 2 - 2)); const y = v >= 0 ? h / 2 - hh : h / 2;
+    g += `<rect x="${(i * bw + bw * 0.15).toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${(r === 0 ? 1 : hh).toFixed(1)}" class="${r > 0 ? "b-up" : r < 0 ? "b-down" : "b-flat"}"/>`; });
+  return `<svg class="${cl}" viewBox="0 0 ${Wd} ${h}" preserveAspectRatio="none" aria-hidden="true">${g}</svg>`;
+}
+
+// ---- 머리 ------------------------------------------------------------------------------------
+document.getElementById("asof").textContent = `주간 ${W.latestDate} 조사 기준 · ${D.generated} 갱신`;
+document.getElementById("foot").innerHTML = `자료: 한국부동산원 R-ONE, 한국은행 ECOS (공개 API). 매일 자동 갱신 · <a href="https://github.com/JHKim0603/realestate-dashboard">저장소</a>`;
+(function theme() {
+  const KEY = "re-theme", btn = document.getElementById("themeBtn");
+  const apply = t => { if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme"); };
+  try { apply(localStorage.getItem(KEY)); } catch (e) { /* 저장 못 해도 시스템 설정을 따른다 */ }
+  btn.addEventListener("click", () => {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    const next = dark ? "light" : "dark"; apply(next);
+    try { localStorage.setItem(KEY, next); } catch (e) { /* 다음에는 시스템 설정 */ }
+    CHARTS.forEach(c => drawLine(c));
+  });
+})();
+
+// ---- 핵심 요약 -------------------------------------------------------------------------------
+(function summary() {
+  const st = key => { const r = CITY[key], a = S(`sale:${r.cls}`), j = S(`jeonse:${r.cls}`), k = lastIdx(a);
+    return { r, a, j, k, w: chgAt(a, k), w4: chgAt(a, k, 4), w12: chgAt(a, k, 12), w52: chgAt(a, k, 52), jw: chgAt(j, lastIdx(j)), j12: chgAt(j, lastIdx(j), 12),
+      s: streak(a), js: streak(j), buy: S(`buy:${r.cls}`)[lastIdx(S(`buy:${r.cls}`))], rent: S(`rent:${r.cls}`)[lastIdx(S(`rent:${r.cls}`))] }; };
+  const se = st("seoul"), bu = st("busan"), na = st("national");
+  const sw = x => x.s.dir === 0 ? `보합(${pct(x.w)})` : `${x.s.n}주 연속 ${dirWord(x.s.dir)}(이번 주 ${pct(x.w)})`;
+  const title = `서울 아파트값 ${se.s.dir === 0 ? "보합" : `${se.s.n}주 연속 ${dirWord(se.s.dir)}`}, 부산 ${bu.s.dir === 0 ? "보합" : `${bu.s.n}주 연속 ${dirWord(bu.s.dir)}`}`;
+  const jt = x => x.js.dir === 0 ? "보합" : `${x.js.n}주 연속 ${dirWord(x.js.dir)}(${pct(x.jw)})`;
+  const demand = v => !has(v) ? "" : v > 100 ? "매수자가 더 많음" : v < 100 ? "매도자가 더 많음" : "균형";
+  const text = `서울 매매가격은 ${sw(se)}, 부산은 ${sw(bu)}입니다. 전세가격은 서울 ${jt(se)}, 부산 ${jt(bu)}입니다. ` +
+    (has(se.buy) && has(bu.buy) ? `매수우위지수는 서울 ${fmt(se.buy, 1)}(${demand(se.buy)}), 부산 ${fmt(bu.buy, 1)}(${demand(bu.buy)})입니다.` : "");
+  // 이번 주 구별 상승·하락 수
+  const cnt = key => { let u = 0, f = 0, dn = 0;
+    (CITY[key].groups || []).forEach(g => (g.districts || []).forEach(([, c]) => { const a = S(`sale:${c}`), v = chgAt(a, lastIdx(a)); if (!has(v)) return; const r = Math.round(v * 100); r > 0 ? u++ : r < 0 ? dn++ : f++; }));
+    return `<b class="up">상승 ${u}</b> · <b class="flat">보합 ${f}</b> · <b class="down">하락 ${dn}</b>`; };
+  const tile = (x, ref) => `<div class="tile ${cls(x.w)}${ref ? " ref" : ""}">
+      <div class="tile-name"><span class="dot" style="background:var(${COLOR[x.r.key]})"></span>${esc(x.r.name)} 아파트 매매 (주간)</div>
+      <div class="tile-big ${cls(x.w)}">${pct(x.w)}<small>전주 대비</small></div>
+      <div class="tile-streak ${cls(x.w)}">${x.s.dir === 0 ? "보합" : `${x.s.n}주 연속 ${dirWord(x.s.dir)}`}</div>
+      <div class="tile-row"><div>4주<b class="${cls(x.w4)}">${pct(x.w4)}</b></div><div>12주<b class="${cls(x.w12)}">${pct(x.w12)}</b></div><div>52주<b class="${cls(x.w52)}">${pct(x.w52)}</b></div></div>
+      ${barsSvg(x.a, 26, "bars")}<div class="bars-cap"><span>26주 전</span><span>주간 변동률</span><span>이번 주</span></div>
+      <div class="tile-sub"><span>전세 <b class="${cls(x.jw)}">${pct(x.jw)}</b> · 12주 <b class="${cls(x.j12)}">${pct(x.j12)}</b></span>
+        ${has(x.buy) ? `<span title="100보다 크면 매수자가 많다는 중개업소 응답이 많음">매수우위 <b>${fmt(x.buy, 1)}</b></span>` : ""}</div>
+    </div>`;
+  document.getElementById("summary").innerHTML = `<div class="headline"><div class="h">${esc(title)}</div><p>${esc(text)}</p></div>
+    <div class="tiles">${tile(se)}${tile(bu)}${tile(na, true)}</div>
+    <div class="count-row">이번 주 구별: 서울 25개 구 ${cnt("seoul")} &nbsp;|&nbsp; 부산 16개 구·군 ${cnt("busan")}</div>`;
+})();
+
+// ---- 주간 흐름 -------------------------------------------------------------------------------
+(function trend() {
+  const box = document.getElementById("trend");
+  const RANGES = [["13", "13주"], ["26", "26주"], ["52", "1년"], ["156", "3년"]];
+  let rng = "52";
+  try { rng = localStorage.getItem("re-trend") || rng; } catch (e) { /* 기본 1년 */ }
+  if (!RANGES.some(r => r[0] === rng)) rng = "52";
+  box.innerHTML = `<div class="chart-head"><h3>같은 출발점에서 본 누적 변동률</h3>
+      <div class="seg" role="group" aria-label="기간">${RANGES.map(([k, l]) => `<button type="button" data-r="${k}">${l}</button>`).join("")}</div></div>
+    <div class="legend"><span style="--c:var(--c-seoul)">서울 매매</span><span class="dash" style="--c:var(--c-seoul)">서울 전세</span>
+      <span style="--c:var(--c-busan)">부산 매매</span><span class="dash" style="--c:var(--c-busan)">부산 전세</span><span style="--c:var(--c-nat)">전국 매매</span></div>
+    <div class="chart" id="trendChart"></div>
+    <div class="note">기간 첫 주를 0%로 맞춘 지수 변동률입니다. 실선은 매매, 점선은 전세입니다. 그래프를 누르거나 마우스를 올리면 주별 값이 나옵니다.</div>`;
+  const el = box.querySelector("#trendChart");
+  const mk = () => {
+    const n = +rng, k1 = WEEKS.length - 1, k0 = Math.max(0, k1 - n);
+    const cum = (key, name, color, dash) => { const a = S(key), b = a[k0];
+      return { name, color, dash, pts: has(b) ? a.slice(k0).map((v, i) => has(v) ? [tOf(DATES[k0 + i]), (v / b - 1) * 100] : null).filter(Boolean) : [] }; };
+    return [cum("sale:50008", "서울 매매", "--c-seoul"), cum("jeonse:50008", "서울 전세", "--c-seoul", true),
+      cum("sale:50025", "부산 매매", "--c-busan"), cum("jeonse:50025", "부산 전세", "--c-busan", true), cum("sale:50001", "전국 매매", "--c-nat")];
+  };
+  const chart = lineChart(el, { series: mk(), yFmt: v => pct(v, Math.abs(v) < 10 ? 1 : 0).replace(".0%", "%"), baseline: 0, height: 260, label: "누적 변동률" });
+  const sync = () => box.querySelectorAll("[data-r]").forEach(b => b.classList.toggle("on", b.dataset.r === rng));
+  sync();
+  box.addEventListener("click", e => { const b = e.target.closest("[data-r]"); if (!b) return; rng = b.dataset.r;
+    try { localStorage.setItem("re-trend", rng); } catch (er) { /* 기억 못 해도 된다 */ } sync(); chart.opt.series = mk(); drawLine(chart); });
+
+  const demand = (id, t, title, what) => {
+    const el2 = document.getElementById(id);
+    el2.innerHTML = `<div class="chart-head"><h3>${title}</h3></div>
+      <div class="legend"><span style="--c:var(--c-seoul)">서울</span><span style="--c:var(--c-busan)">부산</span><span style="--c:var(--c-nat)">전국</span></div>
+      <div class="chart"></div><div class="note">${what} 100보다 크면 ${t === "buy" ? "매수자" : "전세 수요"}가 많다는 중개업소 응답이 많습니다. 최근 1년.</div>`;
+    const k1 = WEEKS.length - 1, k0 = Math.max(0, k1 - 52);
+    const pts = key => S(key).slice(k0).map((v, i) => has(v) ? [tOf(DATES[k0 + i]), v] : null).filter(Boolean);
+    lineChart(el2.querySelector(".chart"), { series: [
+      { name: "서울", color: "--c-seoul", pts: pts(`${t}:50008`) }, { name: "부산", color: "--c-busan", pts: pts(`${t}:50025`) },
+      { name: "전국", color: "--c-nat", pts: pts(`${t}:50001`) }], baseline: 100, height: 190, yFmt: v => fmt(v), padR: 84, label: title });
+  };
+  demand("demandBuy", "buy", "매수우위지수", "매매시장에서 매수자와 매도자 중 어느 쪽이 많은지입니다.");
+  demand("demandRent", "rent", "전세수급지수", "전세시장에서 수요와 공급 중 어느 쪽이 많은지입니다.");
+})();
+
+// ---- 구별 동향 -------------------------------------------------------------------------------
+(function district() {
+  const box = document.getElementById("district");
+  let city = "seoul", sortKey = null, sortDir = -1;
+  try { city = localStorage.getItem("re-city") || city; } catch (e) { /* 기본 서울 */ }
+  if (!CITY[city] || city === "national") city = "seoul";
+  const COLS = [["w", "이번 주 매매"], ["w4", "4주"], ["w12", "12주"], ["w52", "52주"], ["jw", "이번 주 전세"], ["j12", "12주 전세"]];
+  const row = (name, c, kind) => { const a = S(`sale:${c}`), j = S(`jeonse:${c}`), k = lastIdx(a), kj = lastIdx(j);
+    return { name, c, kind, a, w: chgAt(a, k), w4: chgAt(a, k, 4), w12: chgAt(a, k, 12), w52: chgAt(a, k, 52), jw: chgAt(j, kj), j12: chgAt(j, kj, 12) }; };
+  // 칸 색: 열마다 그 도시 구들의 최대 절댓값에 견준 세 단계
+  const tint = (v, mx) => { if (!has(v) || !mx || Math.round(v * 100) === 0) return ""; const r = Math.abs(v) / mx, lv = r > 0.66 ? 3 : r > 0.33 ? 2 : 1; return `t-${v > 0 ? "up" : "dn"}${lv}`; };
+  function render() {
+    const C = CITY[city];
+    const cityRow = row(C.name + " 전체", C.cls, "city");
+    let rows = [];
+    (C.groups || []).forEach(g => { if (g.major) rows.push(row(g.name, g.cls, "grp")); });
+    const blocks = (C.groups || []).filter(g => g.districts).map(g => ({ g: row(g.name, g.cls, "grp"), ds: g.districts.map(([n, c]) => row(n, c, "d")) }));
+    const all = [].concat(...blocks.map(b => b.ds));
+    const mx = {}; COLS.forEach(([k]) => { mx[k] = Math.max(0, ...all.map(r => has(r[k]) ? Math.abs(r[k]) : 0)); });
+    const tr = r => `<tr class="${r.kind === "city" ? "city" : r.kind === "grp" ? "grp" : ""}"><td>${esc(r.name)}</td>` +
+      COLS.map(([k]) => `<td class="${cls(r[k])} ${r.kind === "d" ? tint(r[k], mx[k]) : ""}">${pct(r[k])}</td>`).join("") +
+      `<td class="spark">${barsSvg(r.a, 26, "mini", 22)}</td></tr>`;
+    let body = tr(cityRow) + rows.map(tr).join("");
+    if (sortKey) {
+      const sorted = all.slice().sort((x, y) => ((has(y[sortKey]) ? y[sortKey] : -1e9) - (has(x[sortKey]) ? x[sortKey] : -1e9)) * (sortDir === -1 ? 1 : -1));
+      body += sorted.map(tr).join("");
+    } else {
+      blocks.forEach(b => { body += tr(b.g) + b.ds.map(tr).join(""); });
+    }
+    box.innerHTML = `<div class="chart-head"><div class="seg" role="group" aria-label="도시">
+        <button type="button" data-city="seoul" class="${city === "seoul" ? "on" : ""}">서울 25개 구</button><button type="button" data-city="busan" class="${city === "busan" ? "on" : ""}">부산 16개 구·군</button></div>
+        <span class="note">머리글을 누르면 정렬, 다시 누르면 반대로, 세 번째에는 권역 순서로 돌아갑니다.</span></div>
+      <div class="tbl-wrap"><table class="dist"><thead><tr><th data-k="">지역</th>${COLS.map(([k, l]) => `<th data-k="${k}" class="${sortKey === k ? "sorted" : ""}">${l}${sortKey === k ? (sortDir === -1 ? " ▼" : " ▲") : ""}</th>`).join("")}<th>최근 26주 매매</th></tr></thead>
+        <tbody>${body}</tbody></table></div>
+      <div class="note">매매·전세가격지수의 변동률입니다. 구 칸의 배경은 그 도시 구들 가운데 크게 움직인 정도입니다(빨강 상승, 파랑 하락). 막대는 주간 변동률입니다.</div>`;
+  }
+  render();
+  box.addEventListener("click", e => {
+    const cb = e.target.closest("[data-city]");
+    if (cb) { city = cb.dataset.city; try { localStorage.setItem("re-city", city); } catch (er) { /* 기본 서울 */ } render(); return; }
+    const th = e.target.closest("th[data-k]");
+    if (th && th.dataset.k) { const k = th.dataset.k;
+      if (sortKey !== k) { sortKey = k; sortDir = -1; } else if (sortDir === -1) sortDir = 1; else sortKey = null;
+      render(); }
+  });
+})();
+
+// ---- 월간 카드 -------------------------------------------------------------------------------
+const pairs = arr => (arr || []).filter(p => has(p[1]));
+const lastOf = arr => { const a = pairs(arr); return a.length ? a[a.length - 1] : null; };
+const ago = (arr, m) => { const a = pairs(arr); if (!a.length) return null; const t = a[a.length - 1][0]; const y = +t.slice(0, 4), mo = +t.slice(5, 7) - m;
+  const want = new Date(Date.UTC(y, mo - 1, 1)).toISOString().slice(0, 7); const f = a.find(p => p[0] === want); return f ? f[1] : null; };
+function mcard(host, o) {
+  const div = document.createElement("div"); div.className = "card mcard";
+  const lasts = o.series.map(s => ({ s, l: lastOf(s.data) })).filter(x => x.l);
+  const when = lasts.length ? lasts.map(x => x.l[0]).sort().pop() : "";
+  const vals = lasts.map(({ s, l }) => { const p = ago(s.data, 12); const ch = has(p) ? (o.chg === "pt" ? l[1] - p : (l[1] / p - 1) * 100) : null;
+    return `<div><div class="lb"><i style="background:var(${s.color})"></i>${esc(s.name)} (${+l[0].slice(5, 7)}월)</div><div class="val">${esc(o.vFmt(l[1]))}</div>` +
+      (has(ch) ? `<div class="chg ${o.goodDown ? "" : cls(ch)}">1년 전보다 ${o.chg === "pt" ? sgn(ch) + Math.abs(ch).toFixed(o.chgDigits || 1) + (o.chgUnit || "%p") : pct(ch, 1)}</div>` : "") + `</div>`; }).join("");
+  div.innerHTML = `<div class="chart-head"><h3>${esc(o.title)}</h3><span class="when">${when ? `${when.replace("-", ".")} 기준` : ""}</span></div>
+    <div class="vals">${vals}</div><div class="chart"></div><div class="src">${esc(o.src)}</div>`;
+  host.appendChild(div);
+  const months = o.months || 60;
+  lineChart(div.querySelector(".chart"), { series: o.series.map(s => ({ name: s.name, color: s.color, dash: s.dash, pts: pairs(s.data).slice(-months).map(p => [tOf(p[0]), o.tf ? o.tf(p[1]) : p[1]]) })),
+    yFmt: o.yFmt, baseline: o.baseline, height: 170, padR: 86, monthly: true, zeroFloor: o.zeroFloor, label: o.title });
+}
+const M = D.monthly || {}, E = D.ecos || {};
+// 12개월 합계(인허가처럼 달마다 크게 출렁이는 값)
+const roll12 = arr => { const a = pairs(arr); return a.map((p, i) => i >= 11 ? [p[0], a.slice(i - 11, i + 1).reduce((s, q) => s + q[1], 0)] : null).filter(Boolean); };
+(function monthly() {
+  const g = document.getElementById("monthlyGrid");
+  mcard(g, { title: "아파트 중위 매매가격", src: "한국부동산원 월간 주택가격동향(중위가격, 억원)", vFmt: v => (v / 1e5).toFixed(2) + "억", yFmt: v => (v / 1e5).toFixed(v >= 1e6 ? 0 : 1) + "억",
+    series: [{ name: "서울", color: "--c-seoul", data: M["median:seoul"] }, { name: "부산", color: "--c-busan", data: M["median:busan"] }, { name: "전국", color: "--c-nat", data: M["median:national"] }] });
+  mcard(g, { title: "아파트 전세가율 (매매가격 대비 전세가격)", src: "한국부동산원 월간 주택가격동향(%)", vFmt: v => v.toFixed(1) + "%", yFmt: v => v.toFixed(0) + "%", chg: "pt",
+    series: [{ name: "서울", color: "--c-seoul", data: M["jeonseRatio:seoul"] }, { name: "부산", color: "--c-busan", data: M["jeonseRatio:busan"] }, { name: "전국", color: "--c-nat", data: M["jeonseRatio:national"] }] });
+  mcard(g, { title: "아파트 매매거래 건수", src: "한국부동산원 아파트 매매거래현황(신고 기준, 최근 달은 1~2개월 늦게 나옵니다)", vFmt: v => fmt(v) + "건", yFmt: v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + "천" : fmt(v), zeroFloor: true,
+    series: [{ name: "서울", color: "--c-seoul", data: M["trade:seoul"] }, { name: "부산", color: "--c-busan", data: M["trade:busan"] }] });
+})();
+(function macro() {
+  const g = document.getElementById("macroGrid");
+  mcard(g, { title: "주택담보대출 금리와 기준금리", src: "한국은행 ECOS(예금은행 신규취급액 기준, %)", vFmt: v => v.toFixed(2) + "%", yFmt: v => v.toFixed(1) + "%", chg: "pt", chgDigits: 2, goodDown: true,
+    series: [{ name: "주담대 금리", color: "--c-4", data: E["mortgage"] }, { name: "기준금리", color: "--c-nat", data: E["baseRate"] }] });
+  mcard(g, { title: "미분양 주택", src: "한국은행 ECOS(국토교통부 집계, 호)", vFmt: v => fmt(v) + "호", yFmt: v => fmt(v), zeroFloor: true, goodDown: true,
+    series: [{ name: "서울", color: "--c-seoul", data: E["unsold.seoul"] }, { name: "부산", color: "--c-busan", data: E["unsold.busan"] }] });
+  mcard(g, { title: "주택 건설 인허가 (최근 12개월 합계)", src: "한국은행 ECOS(국토교통부 집계, 호). 달마다 크게 출렁여 12개월 합계로 봅니다.", vFmt: v => fmt(v) + "호", yFmt: v => v >= 1000 ? (v / 1000).toFixed(0) + "천" : fmt(v), zeroFloor: true,
+    series: [{ name: "서울", color: "--c-seoul", data: roll12(E["permits.seoul"]) }, { name: "부산", color: "--c-busan", data: roll12(E["permits.busan"]) }] });
+  mcard(g, { title: "주택가격전망 CSI", src: "한국은행 소비자동향조사. 100보다 크면 1년 뒤 집값이 오를 것이라는 응답이 많습니다(부산은 6대광역시에 포함).", vFmt: v => fmt(v), yFmt: v => fmt(v), chg: "pt", chgUnit: "p", chgDigits: 0, baseline: 100,
+    series: [{ name: "서울", color: "--c-seoul", data: E["csi.seoul"] }, { name: "6대광역시", color: "--c-busan", data: E["csi.metro"] }, { name: "전체", color: "--c-nat", data: E["csi.all"] }] });
+})();
+
+// ---- 자료 상태 -------------------------------------------------------------------------------
+(function status() {
+  const name = { "rone.weekly": "한국부동산원 주간", "rone.monthly": "한국부동산원 월간", "ecos": "한국은행 ECOS" };
+  document.getElementById("status").innerHTML = "자료 상태: " + Object.keys(D.status || {}).map(k => { const s = D.status[k];
+    return `${esc(name[k] || k)} ${s.ok ? "정상" : `<b class="bad">일부 실패</b>(${esc(s.note)})`}`; }).join(" · ");
+})();
+</script>
+</body>
+</html>

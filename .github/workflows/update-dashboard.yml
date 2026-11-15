@@ -1,0 +1,76 @@
+name: Update Real Estate Dashboard
+
+on:
+  schedule:
+    # 한국부동산원 주간 아파트 가격동향은 매주 목요일 14시(KST)에 나오고, 월간 통계와 한국은행 자료는 달 중순에 나온다.
+    # 메일을 보내지 않는 페이지라 정확한 시각이 필요 없어 하루 두 번만 둔다. GitHub 예약 실행은 몇 시간씩 늦게 시작하므로
+    # (work-dashboard 실측 3~8시간) 늦어도 그날 안에 목요일 발표가 반영되도록 오후 슬롯을 이른 시각에 둔다.
+    # 정시·30분은 GitHub 큐가 가장 붐비는 때라 피했다.
+    - cron: '17 5 * * *'    # KST 14:17
+    - cron: '43 21 * * *'   # KST 06:43
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # R-ONE 서버(www.reb.or.kr)는 중간 인증서를 보내지 않아 그대로는 인증서 검증이 실패한다. 발급처(WISeKey)가 공개한
+      # 중간 인증서를 러너의 신뢰 목록에 더해 체인을 완성한다. 검증을 끄지 않는다. 인증서는 2029-02-24 까지 유효하다.
+      - name: Add the R-ONE intermediate certificate
+        run: |
+          sudo cp certs/turingsign-rsa-secure-ca3.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          curl -fsS -o /dev/null "https://www.reb.or.kr/r-one/openapi/SttsApiTbl.do?Type=json&pSize=1" && echo "R-ONE TLS ok"
+
+      - name: Generate dashboard.html
+        shell: pwsh
+        run: ./Update-RealEstateDashboard.ps1
+
+      - name: Commit history
+        continue-on-error: true
+        run: |
+          if [[ -n "$(git status --porcelain data-history.json)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data-history.json
+            git commit -m "chore: accumulate history $(TZ=Asia/Seoul date +%Y-%m-%d)"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+            git push
+          else
+            echo "nothing to commit"
+          fi
+
+      - name: Prepare Pages content
+        run: |
+          mkdir -p _site
+          cp dashboard.html _site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: '_site'
+
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
