@@ -56,25 +56,52 @@ function Write-History($h) {
 }
 
 # ---- R-ONE -----------------------------------------------------------------------------------
+# GitHub 러너에서 R-ONE 은 보통 0.5~0.8초에 답하지만, 10번에 1번꼴로 연결만 받고 답을 주지 않는다(2026-11-15 측정).
+# 처음 만든 판은 30초 제한 시간을 다 기다리며 한 번에 하나씩 1,500번을 불러 40분이 넘게 걸렸다.
+# 그래서 (1) 연결을 다시 쓰고 (2) 제한 시간을 8초로 줄이고 (3) 요청을 미리 기간 구간으로 나눠 12개씩 동시에 보내고
+# (4) 실패한 요청만 모아 다시 보낸다.
 $roneBase = "https://www.reb.or.kr/r-one/openapi/SttsApiTblData.do"
 $script:roneCalls = 0
-function Invoke-Rone([System.Collections.IDictionary]$q) {
+$script:http = [System.Net.Http.HttpClient]::new()
+$script:http.Timeout = [TimeSpan]::FromSeconds(8)
+$script:http.DefaultRequestHeaders.UserAgent.ParseAdd($ua["User-Agent"])
+
+function Get-RoneUri([System.Collections.IDictionary]$q) {
     $parts = @("Type=json", "pSize=5") + @($q.GetEnumerator() | ForEach-Object { "$($_.Key)=$([uri]::EscapeDataString([string]$_.Value))" })
-    $uri = "${roneBase}?" + ($parts -join "&")
-    for ($try = 1; $try -le 3; $try++) {
-        try {
-            $script:roneCalls++
-            $r = Invoke-RestMethod -Uri $uri -Headers $ua -TimeoutSec 30
-            if ($r.RESULT) {
-                if ($r.RESULT.CODE -eq "INFO-200") { return @() }   # 해당 기간 자료 없음
-                throw "R-ONE $($r.RESULT.CODE) $($r.RESULT.MESSAGE)"
+    "${roneBase}?" + ($parts -join "&")
+}
+function ConvertFrom-RoneBody([string]$s) {
+    $r = $s | ConvertFrom-Json
+    if ($r.RESULT) {
+        if ($r.RESULT.CODE -eq "INFO-200") { return , @() }   # 해당 기간 자료 없음
+        throw "R-ONE $($r.RESULT.CODE) $($r.RESULT.MESSAGE)"
+    }
+    if (-not $r.SttsApiTblData) { throw "R-ONE 응답 형식이 예상과 다릅니다" }
+    , @($r.SttsApiTblData[1].row)
+}
+# 한 번 부르기(최신 주 찾기 같은 몇 번 안 되는 호출). 답이 없으면 짧게 쉬고 다시.
+function Invoke-Rone([System.Collections.IDictionary]$q) {
+    $uri = Get-RoneUri $q
+    for ($try = 1; $try -le 5; $try++) {
+        try { $script:roneCalls++; return ConvertFrom-RoneBody ($script:http.GetStringAsync($uri).GetAwaiter().GetResult()) }
+        catch { if ($try -eq 5) { throw }; Start-Sleep -Milliseconds (500 * $try) }
+    }
+}
+# 여러 요청을 12개씩 동시에 보낸다. 실패한 것만 모아 다시 보낸다(최대 5바퀴). 각 요청에 rows 또는 err 가 채워진다.
+function Invoke-RoneMany([object[]]$reqs, [int]$parallel = 12) {
+    $pending = @($reqs)
+    for ($round = 1; $round -le 5 -and $pending.Count; $round++) {
+        $failed = [System.Collections.Generic.List[object]]::new()
+        for ($i = 0; $i -lt $pending.Count; $i += $parallel) {
+            $batch = @($pending[$i..([math]::Min($i + $parallel, $pending.Count) - 1)])
+            $tasks = @(foreach ($r in $batch) { $script:roneCalls++; $script:http.GetStringAsync($r.uri) })
+            for ($k = 0; $k -lt $batch.Count; $k++) {
+                try { $batch[$k].rows = ConvertFrom-RoneBody ($tasks[$k].GetAwaiter().GetResult()); $batch[$k].err = $null }
+                catch { $ex = $_.Exception; $batch[$k].err = if ($ex.InnerException) { $ex.InnerException.Message } else { $ex.Message }; $failed.Add($batch[$k]) }
             }
-            if (-not $r.SttsApiTblData) { throw "R-ONE 응답 형식이 예상과 다릅니다" }
-            return @($r.SttsApiTblData[1].row)
-        } catch {
-            if ($try -eq 3) { throw }
-            Start-Sleep -Seconds (2 * $try)
         }
+        $pending = @($failed)
+        if ($pending.Count) { Write-Host "    다시 보낼 요청 $($pending.Count)개($round 바퀴째)"; Start-Sleep -Milliseconds 800 }
     }
 }
 
@@ -85,7 +112,7 @@ function Get-NextPeriod([string]$id, [string]$cycle) {
     "{0}{1:D2}" -f $y, ($n + 1)
 }
 
-# 기간 범위를 5행씩 이어 받는다. 행은 기간 순으로 온다. 없는 기간 번호(2025년 53주처럼)는 범위 비교라 상관없다.
+# 기간 범위를 5행씩 이어 받는다(최신 주 찾기와, 구간 요청이 5행으로 꽉 차 잘렸을 때 나머지를 받을 때만 쓴다).
 function Get-RoneRange([string]$table, [string]$cycle, $cls, [string]$from, [string]$to, $itm = $null) {
     $rows = [System.Collections.Generic.List[object]]::new()
     $start = $from
@@ -104,6 +131,41 @@ function Get-RoneRange([string]$table, [string]$cycle, $cls, [string]$from, [str
 
 # ISO 주(R-ONE 주간 통계의 기간 번호가 조사일 월요일의 ISO 연도·주차와 같다: 2026-11-09 → 202646).
 function Get-WeekId([DateTime]$d) { "{0}{1:D2}" -f [System.Globalization.ISOWeek]::GetYear($d), [System.Globalization.ISOWeek]::GetWeekOfYear($d) }
+
+# 기간 번호 목록을 구간으로 나눈다. 구간 끝은 다음 구간 시작 번호 바로 앞이라 사이에 빠지는 번호가 없다
+# (연말 주 번호가 ISO 와 달라도 범위 비교라 어느 한 구간에는 들어간다). 한 구간은 많아야 5행이 되도록 크기를 잡는다.
+function Split-Periods([string[]]$ids, [int]$size, [string]$last) {
+    @(for ($i = 0; $i -lt $ids.Count; $i += $size) {
+        $end = if ($i + $size -lt $ids.Count) { ([int64]$ids[$i + $size] - 1).ToString() } else { $last }
+        , @($ids[$i], $end)
+    })
+}
+# 구간 요청들을 만든다. key 는 data-history 의 계열 이름.
+function New-RoneRequests([string]$key, [string]$table, [string]$cycle, $cls, $itm, [object[]]$windows) {
+    @(foreach ($w in $windows) {
+        $q = [ordered]@{ STATBL_ID = $table; DTACYCLE_CD = $cycle; CLS_ID = $cls; START_WRTTIME = $w[0]; END_WRTTIME = $w[1] }
+        if ($itm) { $q.ITM_ID = $itm }
+        [PSCustomObject]@{ key = $key; table = $table; cycle = $cycle; cls = $cls; itm = $itm; end = $w[1]; uri = (Get-RoneUri $q); rows = $null; err = $null }
+    })
+}
+# 구간 요청을 보내고, 5행으로 꽉 찬 구간은 마지막 행 다음부터 나머지를 받는다. 계열마다 행 목록과 실패 여부를 돌려준다.
+function Get-RoneSeriesRows([object[]]$reqs) {
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    Invoke-RoneMany $reqs
+    $out = @{}
+    foreach ($r in $reqs) {
+        if (-not $out.ContainsKey($r.key)) { $out[$r.key] = @{ rows = [System.Collections.Generic.List[object]]::new(); failed = 0 } }
+        if ($r.err) { $out[$r.key].failed++; continue }
+        foreach ($row in @($r.rows)) { $out[$r.key].rows.Add($row) }
+        $rows = @($r.rows)
+        if ($rows.Count -ge 5 -and [string]$rows[-1].WRTTIME_IDTFR_ID -lt $r.end) {
+            try { foreach ($row in (Get-RoneRange $r.table $r.cycle $r.cls (Get-NextPeriod ([string]$rows[-1].WRTTIME_IDTFR_ID) $r.cycle) $r.end $r.itm)) { $out[$r.key].rows.Add($row) } }
+            catch { $out[$r.key].failed++ }
+        }
+    }
+    Write-Host "  요청 $($reqs.Count)개, $([math]::Round($sw.Elapsed.TotalSeconds))초"
+    $out
+}
 
 $status = [ordered]@{}   # 자료별 상태(화면 아래 '자료 상태'에 보인다)
 $hist = Read-History
@@ -131,49 +193,56 @@ foreach ($r in $config.regions) {
     }
 }
 
-$weeklyFailed = 0
+# 계열마다 받을 주를 정한다. 이미 받은 값이 필요한 처음 주까지 닿으면 마지막으로 받은 주의 한 주 전부터만(발표 뒤 고쳐지는 일에 대비).
+$reqs = [System.Collections.Generic.List[object]]::new()
 foreach ($j in $weeklyJobs) {
     $key = "$($j.t):$($j.cls)"
     if (-not $hist.weekly.ContainsKey($key)) { $hist.weekly[$key] = @{} }
-    $store = $hist.weekly[$key]
-    $want = Get-WeekId $latestDate.AddDays(-7 * ($j.weeks - 1))
-    $have = @($store.Keys | Sort-Object)
-    # 이미 받은 값이 필요한 처음 주까지 닿으면, 마지막으로 받은 주의 한 주 전부터만 다시 받는다(발표 뒤 고쳐지는 일에 대비).
-    $from = if ($have.Count -and $have[0] -le $want) { $have[[math]::Max(0, $have.Count - 2)] } else { $want }
-    try {
-        foreach ($row in (Get-RoneRange $wk.($j.t).id "WK" $j.cls $from $latestWeek)) {
-            $id = [string]$row.WRTTIME_IDTFR_ID
-            $store[$id] = [math]::Round([double]$row.DTA_VAL, 4)
-            if ($row.WRTTIME_DESC) { $hist.weekDates[$id] = [string]$row.WRTTIME_DESC }
-        }
-    } catch {
-        $weeklyFailed++
-        Write-Warning "R-ONE 주간 $key 실패: $($_.Exception.Message)"
+    $wantFrom = $latestDate.AddDays(-7 * ($j.weeks - 1))
+    $have = @($hist.weekly[$key].Keys | Sort-Object)
+    $from = $wantFrom
+    if ($have.Count -and $have[0] -le (Get-WeekId $wantFrom)) {
+        $prev = $hist.weekDates[$have[[math]::Max(0, $have.Count - 2)]]
+        $from = if ($prev) { [DateTime]::ParseExact($prev, "yyyy-MM-dd", $null) } else { $latestDate.AddDays(-14) }
+    }
+    $ids = @(for ($d = $from; $d -le $latestDate; $d = $d.AddDays(7)) { Get-WeekId $d })
+    if (-not $ids.Count) { continue }
+    foreach ($q in (New-RoneRequests $key $wk.($j.t).id "WK" $j.cls $null (Split-Periods $ids 4 $latestWeek))) { $reqs.Add($q) }
+}
+$got = Get-RoneSeriesRows $reqs.ToArray()
+$weeklyFailed = @($got.Keys | Where-Object { $got[$_].failed })
+foreach ($key in $got.Keys) {
+    foreach ($row in $got[$key].rows) {
+        $id = [string]$row.WRTTIME_IDTFR_ID
+        $hist.weekly[$key][$id] = [math]::Round([double]$row.DTA_VAL, 4)
+        if ($row.WRTTIME_DESC) { $hist.weekDates[$id] = [string]$row.WRTTIME_DESC }
     }
 }
-$status["rone.weekly"] = [ordered]@{ ok = ($weeklyFailed -eq 0); note = if ($weeklyFailed) { "$weeklyFailed 개 계열은 이번에 받지 못해 저장해 둔 값을 씁니다" } else { "" }; asOf = $latestDate.ToString("yyyy-MM-dd") }
-Write-Host "  주간 계열 $($weeklyJobs.Count)개, R-ONE 호출 $script:roneCalls 번, 실패 $weeklyFailed"
+foreach ($k in $weeklyFailed) { Write-Warning "R-ONE 주간 $k 일부 구간을 받지 못했습니다(저장해 둔 값을 씁니다)" }
+$status["rone.weekly"] = [ordered]@{ ok = ($weeklyFailed.Count -eq 0); note = if ($weeklyFailed.Count) { "$($weeklyFailed.Count)개 계열은 일부 주를 받지 못해 저장해 둔 값을 씁니다" } else { "" }; asOf = $latestDate.ToString("yyyy-MM-dd") }
+Write-Host "  주간 계열 $($weeklyJobs.Count)개, R-ONE 호출 누적 $script:roneCalls 번, 일부 실패 $($weeklyFailed.Count)"
 
 Write-Host "R-ONE 월간..."
 $monthFrom = $nowKst.AddMonths(-[int]$config.rone.monthsBack).ToString("yyyyMM")
 $monthTo = $nowKst.ToString("yyyyMM")
-$monthlyFailed = @()
+$reqs = [System.Collections.Generic.List[object]]::new()
 foreach ($m in $config.rone.monthly) {
     foreach ($p in $m.cls.PSObject.Properties) {
         $key = "$($m.key):$($p.Name)"
         if (-not $hist.monthly.ContainsKey($key)) { $hist.monthly[$key] = @{} }
-        $store = $hist.monthly[$key]
-        $have = @($store.Keys | Sort-Object)
+        $have = @($hist.monthly[$key].Keys | Sort-Object)
         $from = if ($have.Count -and ($have[0] -replace '-', '') -le $monthFrom) { ($have[[math]::Max(0, $have.Count - 3)] -replace '-', '') } else { $monthFrom }
-        try {
-            foreach ($row in (Get-RoneRange $m.id "MM" $p.Value $from $monthTo $m.itm)) {
-                $id = [string]$row.WRTTIME_IDTFR_ID
-                $store["$($id.Substring(0, 4))-$($id.Substring(4, 2))"] = [math]::Round([double]$row.DTA_VAL, 4)
-            }
-        } catch {
-            $monthlyFailed += $key
-            Write-Warning "R-ONE 월간 $key 실패: $($_.Exception.Message)"
-        }
+        $ids = [System.Collections.Generic.List[string]]::new()
+        for ($id = $from; $id -le $monthTo; $id = Get-NextPeriod $id "MM") { $ids.Add($id) }
+        foreach ($q in (New-RoneRequests $key $m.id "MM" $p.Value $m.itm (Split-Periods $ids.ToArray() 5 $monthTo))) { $reqs.Add($q) }
+    }
+}
+$got = Get-RoneSeriesRows $reqs.ToArray()
+$monthlyFailed = @($got.Keys | Where-Object { $got[$_].failed })
+foreach ($key in $got.Keys) {
+    foreach ($row in $got[$key].rows) {
+        $id = [string]$row.WRTTIME_IDTFR_ID
+        $hist.monthly[$key]["$($id.Substring(0, 4))-$($id.Substring(4, 2))"] = [math]::Round([double]$row.DTA_VAL, 4)
     }
 }
 $status["rone.monthly"] = [ordered]@{ ok = ($monthlyFailed.Count -eq 0); note = if ($monthlyFailed.Count) { "$($monthlyFailed -join ', ') 은 저장해 둔 값입니다" } else { "" } }

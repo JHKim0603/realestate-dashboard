@@ -22,6 +22,8 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    # 평소에는 1~2분, 처음 채우는 실행도 몇 분이면 끝난다. 서버가 답을 주지 않아 길어지면 여기서 끊는다.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
