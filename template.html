@@ -493,7 +493,7 @@ const roll12Ytd = arr => { const m = new Map(pairs(arr)); return pairs(arr).map(
     series: [{ name: "주담대 금리", color: "--c-4", data: E["mortgage"] }, { name: "기준금리", color: "--c-nat", data: E["baseRate"] }] });
   mcard(g, { title: "미분양 주택", src: "한국은행 ECOS(국토교통부 집계, 호)", vFmt: v => fmt(v) + "호", yFmt: v => fmt(v), zeroFloor: true, goodDown: true,
     series: [{ name: "서울", color: "--c-seoul", data: E["unsold.seoul"] }, { name: "부산", color: "--c-busan", data: E["unsold.busan"] }] });
-  mcard(g, { title: "주택 건설 인허가 (최근 12개월 합계)", src: "한국은행 ECOS(국토교통부 집계, 호). 표의 월별 값이 연초부터의 누계라 최근 12개월 합계로 바꿔 봅니다.", vFmt: v => fmt(v) + "호", yFmt: v => v >= 1000 ? (v / 1000).toFixed(0) + "천" : fmt(v), zeroFloor: true,
+  mcard(g, { title: "주택 건설 인허가 (최근 12개월 합계)", src: "한국은행 ECOS(국토교통부 집계, 호). 표의 월별 값이 연초부터의 누계라 최근 12개월 합계로 바꿔 봅니다.", months: 48, vFmt: v => fmt(v) + "호", yFmt: v => v >= 1000 ? (v / 1000).toFixed(0) + "천" : fmt(v), zeroFloor: true,
     series: [{ name: "서울", color: "--c-seoul", data: roll12Ytd(E["permits.seoul"]) }, { name: "부산", color: "--c-busan", data: roll12Ytd(E["permits.busan"]) }] });
   mcard(g, { title: "주택가격전망 CSI", src: "한국은행 소비자동향조사. 100보다 크면 1년 뒤 집값이 오를 것이라는 응답이 많습니다(부산은 6대광역시에 포함).", vFmt: v => fmt(v), yFmt: v => fmt(v), chg: "pt", chgUnit: "p", chgDigits: 0, baseline: 100,
     series: [{ name: "서울", color: "--c-seoul", data: E["csi.seoul"] }, { name: "6대광역시", color: "--c-busan", data: E["csi.metro"] }, { name: "전체", color: "--c-nat", data: E["csi.all"] }] });
