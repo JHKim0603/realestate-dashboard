@@ -1521,7 +1521,7 @@ $("terms").innerHTML = [
   if (add === 0 && now.getUTCHours() >= 14) add = 7; d.setUTCDate(d.getUTCDate() + add);
   const today = now.toISOString().slice(0, 10);
   const L = [["발표", "주간 아파트 가격동향(한국부동산원, 14시)", day(d)]];
-  (D.meta.events || []).filter(e => e.date >= today).sort((a, b) => a.date < b.date ? -1 : 1).forEach(e => L.push([e.kind, e.name, day(new Date(e.date + "T00:00:00Z"))]));
+  (D.meta.events || []).filter(e => e.date >= today).sort((a, b) => a.date < b.date ? -1 : 1).slice(0, 2).forEach(e => L.push([e.kind, e.name, day(new Date(e.date + "T00:00:00Z"))]));
   L.push(["발표", "월간 주택가격동향·매매거래·월세(한국부동산원)", "매월 중순"], ["발표", "미분양·인허가(국토교통부 → 한국은행)", "매월 말"]);
   $("sched").innerHTML = L.map(([k, n, w]) => `<div><span><em>${esc(k)}</em>${esc(n)}</span><b>${esc(w)}</b></div>`).join("");
 })();

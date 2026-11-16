@@ -3,3 +3,5 @@ dashboard.html
 email-summary.html
 email-subject.txt
 mail-charts/
+# 미리보기(tools/preview.py)
+preview.html

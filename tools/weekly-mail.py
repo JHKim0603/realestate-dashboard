@@ -560,10 +560,10 @@ def schedule_block():
     dn = "월화수목금토일"
     d = now.date() + dt.timedelta(days=(3 - now.weekday()) % 7 or 7)
     items = [("주간 가격동향 발표(한국부동산원)", f"{d.month}/{d.day}({dn[d.weekday()]}) 14시")]
-    for e in sorted(D["meta"].get("events") or [], key=lambda e: e["date"]):
-        if e["date"] >= now.date().isoformat():
-            ed = dt.date.fromisoformat(e["date"])
-            items.append((e["name"], f"{ed.month}/{ed.day}({dn[ed.weekday()]})"))
+    ahead = [e for e in sorted(D["meta"].get("events") or [], key=lambda e: e["date"]) if e["date"] >= now.date().isoformat()]
+    for e in ahead[:2]:   # 화면과 같이 다가오는 2개만
+        ed = dt.date.fromisoformat(e["date"])
+        items.append((e["name"], f"{ed.month}/{ed.day}({dn[ed.weekday()]})"))
     return " · ".join(f"{esc(n)} <b>{w}</b>" for n, w in items)
 
 
