@@ -15,7 +15,7 @@ on:
         type: boolean
         default: true
       force_email:
-        description: "이번 주에 이미 보냈어도 지금 다시 보내기"
+        description: "지금 한 통 보내기(시험 발송: 이번 주 보냄 표시를 남기지 않아 정기 메일은 그대로 나감)"
         type: boolean
         default: false
       mail_preview:
@@ -121,16 +121,17 @@ jobs:
           attachments: mail-charts/*.png
 
       - name: Mark this week as mailed
-        if: steps.mail.outcome == 'success'
+        if: steps.mail.outcome == 'success' && inputs.force_email != true
         run: echo "${{ steps.mailgate.outputs.week }}" > .last-weekly-mail
 
       - name: Commit history and mail marker
         continue-on-error: true
         run: |
-          if [[ -n "$(git status --porcelain data-history.json .last-weekly-mail)" ]]; then
+          if [[ -n "$(git status --porcelain data-history.json news-history.json .last-weekly-mail)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data-history.json
+            [[ -f news-history.json ]] && git add news-history.json
             [[ -f .last-weekly-mail ]] && git add .last-weekly-mail
             git commit -m "chore: accumulate history $(TZ=Asia/Seoul date +%Y-%m-%d)"
             git pull --rebase --autostash origin "${GITHUB_REF_NAME}"

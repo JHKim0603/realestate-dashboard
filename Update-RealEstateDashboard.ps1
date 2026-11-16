@@ -2,7 +2,7 @@
 # 부동산 시장 Dashboard(서울·부산 아파트) 생성 스크립트.
 #
 # 하는 일: 한국부동산원 R-ONE(주간·월간 아파트 통계, 월세, 매입자 거주지·연령)과 한국은행 ECOS(금리·미분양·인허가·
-# 주택가격전망·주택 수)를 받아 data-history.json 에 쌓는다. 구글 뉴스 RSS(최근 7일)도 받는다(쌓지 않음).
+# 주택가격전망·주택 수)를 받아 data-history.json 에 쌓는다. 구글 뉴스 RSS 는 주별 주제 수를 news-history.json 에 쌓는다.
 # template.html 의 __DATA_JSON__ 자리에 자료를, __GEO_JSON__ 자리에 지도 경계(geo/maps.json)를 넣어 dashboard.html 을 만든다.
 # 화면의 계산(변동률, 연속 주, 시장 온도, 지도 색, 월 상환액 등)은 template.html 의 스크립트가 한다.
 #
@@ -301,40 +301,106 @@ $status["ecos"] = [ordered]@{ ok = ($ecosFailed.Count -eq 0); note = if ($ecosFa
 
 Write-History $hist
 
-# ---- 뉴스(구글 뉴스 RSS, 최근 7일) -------------------------------------------------------------
-# 쌓지 않고 그날 받은 것만 화면에 넣는다. 시장 낱말(keep)이 있는 제목만, 사건·사고(drop)는 빼고, 앞 14글자가 같은 제목은 하나만.
+# ---- 뉴스: 주별 이슈 흐름(구글 뉴스 RSS) ---------------------------------------------------------
+# 묶음(서울·부산·전국·정책)마다 검색어 몇 개로 최근 7일 기사(when:7d)를 받아, 기사가 나온 주(월~일, KST)에 더한다.
+# 같은 제목(앞 14글자)은 한 번만 센다(주마다 제목 지문을 이번 주·지난주만 남겨 둔다). 시장 낱말(keep)이 있는 제목만, 사건·사고(drop)는 뺀다.
+# 제목의 주제 낱말로 주제별 기사 수를 세어 news-history.json 에 쌓는다(묶음별 기사 수·주제별 수·대표 기사 3개).
+# 지난 주를 묻는 검색(after:/before:)은 GitHub 실행 환경에서 구글이 503 으로 막아(2026-11-16 확인), 처음 12주는 내 PC 에서
+# tools/news-backfill.py 로 채웠다. 실행 중 구글이 막으면(503·429) 그 실행의 뉴스 검색은 멈추고 지난 값(기사 목록 포함)을 쓴다.
 Write-Host "뉴스..."
-$news = [ordered]@{}; $newsFailed = @()
-$keep = [regex]::new($config.news.keep); $drop = [regex]::new($config.news.drop)
-foreach ($p in $config.news.queries.PSObject.Properties) {
-    $list = [System.Collections.Generic.List[object]]::new()
-    try {
-        $q = [uri]::EscapeDataString("$($p.Value) when:7d")
-        $items = @(Invoke-RestMethod -Uri "https://news.google.com/rss/search?q=$q&hl=ko&gl=KR&ceid=KR:ko" -Headers $ua -TimeoutSec 30)
-        $rows = @(foreach ($it in $items) {
-            $src = if ($it.source -is [string]) { $it.source } else { [string]$it.source.'#text' }
-            $t = [string]$it.title
-            if ($src -and $t.EndsWith(" - $src")) { $t = $t.Substring(0, $t.Length - $src.Length - 3) }
-            $when = try { [DateTimeOffset]::Parse([string]$it.pubDate, [Globalization.CultureInfo]::InvariantCulture) } catch { $null }
-            if ($when) { [PSCustomObject]@{ t = $t.Trim(); s = $src; when = $when; u = [string]$it.link } }
-        }) | Sort-Object when -Descending
-        $seen = @{}
-        foreach ($r in $rows) {
-            if (-not $keep.IsMatch($r.t) -or $drop.IsMatch($r.t)) { continue }
-            $k = $r.t -replace '\W', ''; $k = $k.Substring(0, [math]::Min(14, $k.Length))
-            if ($seen.ContainsKey($k)) { continue }
-            $seen[$k] = 1
-            $kst = [TimeZoneInfo]::ConvertTime($r.when, $tz)
-            $list.Add([ordered]@{ t = $r.t; s = $r.s; d = $kst.ToString("M/d"); u = $r.u })
-            if ($list.Count -ge [int]$config.news.perTopic) { break }
-        }
-    } catch {
-        $newsFailed += $p.Name
-        Write-Warning "뉴스 $($p.Name) 실패: $($_.Exception.Message)"
-    }
-    $news[$p.Name] = $list
+$nc = $config.news
+$newsPath = Join-Path $root "news-history.json"
+$nh = if (Test-Path $newsPath) { Get-Content -Raw -Encoding utf8 $newsPath | ConvertFrom-Json -AsHashtable } else { @{} }
+foreach ($k in "weeks", "items") { if (-not $nh.ContainsKey($k) -or $null -eq $nh[$k]) { $nh[$k] = @{} } }
+$keep = [regex]::new($nc.keep); $drop = [regex]::new($nc.drop)
+$topicRx = [ordered]@{}; foreach ($t in $nc.topics) { $topicRx[$t.key] = [regex]::new($t.kw) }
+$issueKeys = @($nc.topics | Where-Object { -not $_.mood } | ForEach-Object { $_.key })
+$groupNames = @($nc.groups.PSObject.Properties | ForEach-Object { $_.Name })
+$sha = [System.Security.Cryptography.SHA1]::Create()
+function Get-TitleId([string]$t) {
+    $k = $t -replace '\W', ''; $k = $k.Substring(0, [math]::Min(14, $k.Length))
+    -join ($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($k))[0..3] | ForEach-Object { $_.ToString("x2") })
 }
-$status["news"] = [ordered]@{ ok = ($newsFailed.Count -eq 0); note = if ($newsFailed.Count) { "$($newsFailed -join ', ') 뉴스를 받지 못했습니다" } else { "" } }
+function Get-GNews([string]$q) {
+    $u = "https://news.google.com/rss/search?q=$([uri]::EscapeDataString($q))&hl=ko&gl=KR&ceid=KR:ko"
+    for ($try = 1; $try -le 2; $try++) {
+        try { return @(Invoke-RestMethod -Uri $u -Headers $ua -TimeoutSec 20) }
+        catch { if ($try -eq 2 -or $_.Exception.Message -match '503|429') { throw }; Start-Sleep -Seconds 2 }
+    }
+}
+function ConvertTo-NewsItem($it) {
+    $src = if ($it.source -is [string]) { $it.source } else { [string]$it.source.'#text' }
+    $t = [string]$it.title
+    if ($src -and $t.EndsWith(" - $src")) { $t = $t.Substring(0, $t.Length - $src.Length - 3) }
+    $t = $t.Trim()
+    if (-not $t -or -not $keep.IsMatch($t) -or $drop.IsMatch($t)) { return }
+    $when = try { [DateTimeOffset]::Parse([string]$it.pubDate, [Globalization.CultureInfo]::InvariantCulture) } catch { $null }
+    if (-not $when) { return }
+    [PSCustomObject]@{ t = $t; s = $src; when = [TimeZoneInfo]::ConvertTime($when, $tz); u = [string]$it.link; id = (Get-TitleId $t)
+                       tp = @(foreach ($k in $topicRx.Keys) { if ($topicRx[$k].IsMatch($t)) { $k } }) }
+}
+$monday = $nowKst.Date.AddDays(-(([int]$nowKst.DayOfWeek + 6) % 7))
+$curW = $monday.ToString("yyyy-MM-dd"); $prevW = $monday.AddDays(-7).ToString("yyyy-MM-dd")
+$blocked = $false; $newsFailed = 0; $newsCalls = 0; $added = 0
+foreach ($g in $groupNames) {
+    $list = [System.Collections.Generic.List[object]]::new(); $seen = @{}
+    foreach ($q in $nc.groups.$g.queries) {
+        if ($blocked) { break }
+        try { $raw = Get-GNews "$q when:7d"; $newsCalls++ }
+        catch { $newsFailed++; if ($_.Exception.Message -match '503|429') { $blocked = $true }; Write-Warning "뉴스 $g '$q' 실패: $($_.Exception.Message)"; continue }
+        foreach ($it in $raw) { $x = ConvertTo-NewsItem $it; if (-not $x -or $seen.ContainsKey($x.id)) { continue }; $seen[$x.id] = 1; $list.Add($x) }
+        Start-Sleep -Milliseconds 300
+    }
+    # 주별 집계에 더하기(이번 주·지난주만)
+    foreach ($x in $list) {
+        $d = $x.when.DateTime.Date; $w = $d.AddDays(-(([int]$d.DayOfWeek + 6) % 7)).ToString("yyyy-MM-dd")
+        if ($w -ne $curW -and $w -ne $prevW) { continue }
+        if (-not $nh.weeks.ContainsKey($w)) { $nh.weeks[$w] = @{} }
+        $r = $nh.weeks[$w][$g]
+        if (-not $r) { $r = @{ n = 0; tp = @{}; top = @(); ids = @() }; $nh.weeks[$w][$g] = $r }
+        if ($null -eq $r.ids) { $r.ids = @() }
+        if ($null -eq $r.tp) { $r.tp = @{} }
+        if (@($r.ids) -contains $x.id) { continue }
+        $r.ids = @($r.ids) + $x.id; $r.n = [int]$r.n + 1; $added++
+        foreach ($k in $x.tp) { $r.tp[$k] = [int]$r.tp[$k] + 1 }
+        if (@($r.top).Count -lt 3 -and @($x.tp | Where-Object { $issueKeys -contains $_ }).Count) {
+            $r.top = @($r.top) + [ordered]@{ t = $x.t; s = $x.s; u = $x.u; d = $x.when.ToString("M'/'d") }
+        }
+    }
+    # 화면 목록(최근 7일). 이번 실행에서 못 받았으면 지난번 목록을 그대로 둔다.
+    if ($list.Count) {
+        $cut = $nowKst.AddDays(-7)
+        $nh.items[$g] = @($list | Where-Object { $_.when -ge $cut } | Sort-Object when -Descending | Select-Object -First ([int]$nc.perGroup) |
+            ForEach-Object { [ordered]@{ t = $_.t; s = $_.s; d = $_.when.ToString("M'/'d"); u = $_.u; tp = @($_.tp) } })
+    }
+}
+# 쌓은 값: 주마다 한 줄(최근 26주만). 제목 지문(ids)은 이번 주·지난주만 남긴다. 묶음·주제 순서를 고정해 바뀐 줄만 차이로 보이게 한다.
+$wkKeys = @($nh.weeks.Keys | Sort-Object -Descending | Select-Object -First 26 | Sort-Object)
+$lines = foreach ($k in $wkKeys) {
+    $o = [ordered]@{}
+    foreach ($g in $groupNames) {
+        $r = $nh.weeks[$k][$g]; if (-not $r) { continue }
+        $tp = [ordered]@{}; foreach ($t in $topicRx.Keys) { $tp[$t] = if ($r.tp -and $null -ne $r.tp[$t]) { [int]$r.tp[$t] } else { 0 } }
+        $o[$g] = [ordered]@{ n = [int]$r.n; tp = $tp; top = @($r.top | ForEach-Object { [ordered]@{ t = $_.t; s = $_.s; u = $_.u; d = $_.d } }) }
+        if ($k -eq $curW -or $k -eq $prevW) { $o[$g].ids = @($r.ids) }
+    }
+    "    " + (ConvertTo-Json $k) + ": " + (ConvertTo-Json $o -Depth 6 -Compress)
+}
+$itemLines = foreach ($g in $groupNames) { "    " + (ConvertTo-Json $g) + ": " + (ConvertTo-Json @($nh.items[$g]) -Depth 6 -Compress) }
+[IO.File]::WriteAllText($newsPath, "{`n  `"items`": {`n" + ($itemLines -join ",`n") + "`n  },`n  `"weeks`": {`n" + ($lines -join ",`n") + "`n  }`n}`n", [Text.UTF8Encoding]::new($false))
+$weekOut = @(foreach ($k in ($wkKeys | Select-Object -Last ([int]$nc.weeks))) {
+    $o = [ordered]@{}; foreach ($g in $groupNames) { $r = $nh.weeks[$k][$g]; if ($r) { $o[$g] = [ordered]@{ n = [int]$r.n; tp = $r.tp; top = @($r.top) } } }
+    [ordered]@{ w = $k; g = $o }
+})
+$items = [ordered]@{}; foreach ($g in $groupNames) { $items[$g] = @($nh.items[$g]) }
+$news = [ordered]@{
+    topics = @($nc.topics | ForEach-Object { [ordered]@{ key = $_.key; name = $_.name; mood = $(if ($_.mood) { [int]$_.mood } else { 0 }) } })
+    groups = [ordered]@{}; weeks = $weekOut; items = $items
+}
+$news.queries = [ordered]@{}
+foreach ($g in $groupNames) { $news.groups[$g] = $nc.groups.$g.name; $news.queries[$g] = @($nc.groups.$g.queries) }
+Write-Host "  뉴스 검색 $newsCalls 번, 실패 $newsFailed, 새 기사 $added, 주 $($weekOut.Count)개$(if ($blocked) { ' (구글이 막아 멈춤)' })"
+$status["news"] = [ordered]@{ ok = ($newsFailed -eq 0); note = if ($blocked) { "구글 뉴스가 응답을 막아(503) 지난 값을 씁니다" } elseif ($newsFailed) { "뉴스 검색 $newsFailed 번 실패" } else { "" } }
 
 # ---- 화면에 넣을 자료 ------------------------------------------------------------------------
 # 주간: 도시 계열이 가진 주들을 한 줄 축으로 삼고, 모든 계열을 그 축에 맞춰 값 배열로 둔다(없으면 null).

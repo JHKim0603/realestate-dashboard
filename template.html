@@ -91,7 +91,7 @@
   .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
   .row-w { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; }
   @media (max-width: 980px) { .row3 { grid-template-columns: 1fr; } }
-  @media (max-width: 860px) { .row2, .row-w { grid-template-columns: 1fr; } }
+  @media (max-width: 860px) { .row2, .row-w { grid-template-columns: minmax(0, 1fr); } }
   .legend { display: flex; gap: 6px 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; gap: 5px; }
   .legend i { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid; }
@@ -327,6 +327,89 @@
   .ybar .avg { stroke: var(--ink-3); stroke-dasharray: 4 3; }
   .ybar .dem { stroke: var(--warn); stroke-width: 1.6; stroke-dasharray: 7 3; }
 
+  /* 흐름 정리 */
+  .briefs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 900px) { .briefs { grid-template-columns: minmax(0, 1fr); } }
+  .brief { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--cc, var(--ink-3)); border-radius: 16px; padding: 16px 20px; box-shadow: var(--shadow); min-width: 0; }
+  .brief.common { margin-top: 14px; --cc: var(--ink-3); }
+  .b-city { font-size: 13px; font-weight: 800; color: var(--cc); }
+  .b-verdict { font-size: 22px; font-weight: 850; letter-spacing: -0.03em; line-height: 1.25; margin: 2px 0 2px; text-wrap: balance; }
+  .b-verdict.up { color: var(--rise); } .b-verdict.down { color: var(--fall); }
+  .b-sub { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+  .brief ul { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .brief li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+  .brief li > span:first-child { font-size: 11.5px; font-weight: 800; color: var(--ink-3); background: var(--raised); border-radius: 6px; text-align: center; padding: 2px 0; height: fit-content; margin-top: 1px; }
+  .brief li b { color: var(--ink); }
+  .brief.common ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 24px; }
+  @media (max-width: 900px) { .brief.common ul { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 방향과 속도 */
+  .tr-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .tr-h b { font-size: 15px; font-weight: 800; color: var(--cc); }
+  .tr-h span { font-size: 12px; color: var(--ink-3); }
+  .spd, .brd { position: relative; }
+  .spd svg, .brd svg { display: block; width: 100%; overflow: visible; }
+  .spd .bar-u { fill: var(--rise); opacity: .42; } .spd .bar-d { fill: var(--fall); opacity: .42; }
+  .spd .ma { fill: none; stroke: var(--cc); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+  .spd .gl { stroke: var(--grid); } .spd .zero { stroke: var(--ink-3); stroke-width: 1; }
+  .spd .ax, .brd .ax { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+  .spd .lb { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .spd .ago { fill: var(--surface); stroke: var(--cc); stroke-width: 2; }
+  .spd .hair, .brd .hair { stroke: var(--ink-3); stroke-width: 1; }
+  .brd .u { fill: var(--rise-3); } .brd .f { fill: var(--zero); } .brd .d { fill: var(--fall-3); }
+  .brd .lb { font-size: 11.5px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .turns { display: flex; flex-direction: column; max-height: 430px; overflow-y: auto; }
+  .tn { display: grid; grid-template-columns: 58px 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; padding: 6px 4px; border-top: 1px solid var(--grid); }
+  .tn:first-child { border-top: 0; }
+  .tn em { font-style: normal; color: var(--ink-3); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .tn .w { font-size: 11px; font-weight: 800; border-radius: 5px; text-align: center; padding: 1px 0; }
+  .tn .w.seoul { color: var(--c-seoul); background: color-mix(in srgb, var(--c-seoul) 12%, transparent); }
+  .tn .w.busan { color: var(--c-busan); background: color-mix(in srgb, var(--c-busan) 12%, transparent); }
+  .tn .w.nation { color: var(--ink-2); background: var(--raised); }
+  .tn .nm { min-width: 0; color: var(--ink); font-weight: 650; }
+  .st { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+  .st i { font-style: normal; border-radius: 5px; padding: 1px 7px; }
+  .st i.s1 { color: var(--rise); background: color-mix(in srgb, var(--rise) 12%, transparent); }
+  .st i.s0 { color: var(--ink-2); background: var(--raised); }
+  .st i.s-1 { color: var(--fall); background: color-mix(in srgb, var(--fall) 12%, transparent); }
+  .st .new { font-size: 10.5px; color: var(--warn); font-weight: 800; }
+  @media (max-width: 520px) { .tn { grid-template-columns: 50px 40px minmax(0, 1fr); } .tn .st { grid-column: 2 / -1; } }
+
+  /* 요즘 이슈 */
+  .is-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr); gap: 24px; align-items: start; }
+  @media (max-width: 960px) { .is-grid { grid-template-columns: minmax(0, 1fr); } }
+  .topics { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .tp { display: grid; grid-template-columns: 96px minmax(0, 1fr) 40px 64px; gap: 8px; align-items: center; font-size: 13px; }
+  .tp span { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp .bar { height: 12px; background: var(--raised); border-radius: 4px; overflow: hidden; }
+  .tp .bar i { display: block; height: 100%; background: var(--accent); opacity: .8; border-radius: 4px; }
+  .tp b { text-align: right; font-variant-numeric: tabular-nums; }
+  .tp em { font-style: normal; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-3); }
+  .tp em.more { color: var(--warn); font-weight: 800; }
+  .tp-ex { font-size: 12.5px; color: var(--ink-2); margin: -2px 0 4px 104px; line-height: 1.5; }
+  .tp-ex a { color: var(--ink-2); text-decoration: none; } .tp-ex a:hover { text-decoration: underline; color: var(--accent); }
+  @media (max-width: 520px) { .tp { grid-template-columns: 84px minmax(0, 1fr) 36px 56px; } .tp-ex { margin-left: 0; } }
+  .mood { margin-top: 12px; font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+  .mood b.up { color: var(--rise); } .mood b.down { color: var(--fall); }
+  .ihm-wrap { overflow-x: auto; margin-top: 6px; }
+  .ihm { border-collapse: separate; border-spacing: 2px; font-size: 11.5px; width: 100%; min-width: 540px; }
+  .ihm th { font-weight: 600; color: var(--ink-3); white-space: nowrap; padding: 0 2px; font-size: 11px; }
+  .ihm th.r { text-align: left; color: var(--ink); font-weight: 700; padding-right: 6px; font-size: 12px; }
+  .ihm td { text-align: center; border-radius: 3px; height: 22px; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .ihm td.cur { outline: 1.5px dashed var(--ink-3); outline-offset: -1.5px; }
+  .ihm tr.n td { color: var(--ink-3); font-size: 10.5px; height: 16px; }
+  .ihm tr.md td { font-weight: 700; font-size: 11px; }
+  .weeks { display: flex; flex-direction: column; gap: 10px; max-height: 560px; overflow-y: auto; }
+  .wk { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; border-top: 1px solid var(--grid); padding-top: 8px; }
+  .wk:first-child { border-top: 0; padding-top: 0; }
+  .wk > em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; margin: 2px 0 3px; }
+  .chip { font-size: 11px; font-weight: 750; border-radius: 999px; padding: 1px 8px; background: var(--raised); color: var(--ink-2); white-space: nowrap; }
+  .chip.hot { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+  .wk a { display: block; font-size: 13px; line-height: 1.5; color: var(--ink); text-decoration: none; margin-top: 2px; }
+  .wk a:hover { text-decoration: underline; color: var(--accent); }
+  .wk a small { color: var(--ink-3); font-size: 11.5px; }
+
   /* 맨 아래 */
   .foldy > details { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 18px; }
   .foldy > details > summary { font-size: 14px; font-weight: 750; cursor: pointer; }
@@ -355,13 +438,48 @@
     <div class="top-r"><span class="pill"><span class="dot"></span><span id="asof"></span></span><button type="button" class="icon-btn" id="themeBtn" aria-label="밝은 화면과 어두운 화면 바꾸기">◐ 화면</button></div>
   </header>
   <nav class="jump" aria-label="바로 가기">
-    <a href="#now">지금 집값</a><a href="#score">숫자 비교</a><a href="#korea">전국 지도</a><a href="#maps">서울·부산 지도</a><a href="#phase">시장 국면</a>
-    <a href="#heat">주간 흐름</a><a href="#flow">집값 흐름·이슈</a><a href="#supply">공급·미분양</a><a href="#buyers">누가 사나</a><a href="#money">돈 사정</a><a href="#more">용어·일정</a>
+    <a href="#now">지금 집값</a><a href="#brief">흐름 정리</a><a href="#trend">방향·속도</a><a href="#issues">요즘 이슈</a><a href="#score">숫자 비교</a><a href="#korea">전국 지도</a><a href="#maps">서울·부산 지도</a>
+    <a href="#phase">시장 국면</a><a href="#heat">주간 흐름</a><a href="#flow">집값 3년</a><a href="#supply">공급·미분양</a><a href="#buyers">누가 사나</a><a href="#money">돈 사정</a><a href="#more">용어·일정</a>
   </nav>
 
   <section id="now">
     <div class="heroes"><article class="hero" id="hero-seoul"></article><article class="hero" id="hero-busan"></article></div>
     <div class="fresh" id="fresh"></div>
+  </section>
+
+  <section id="brief">
+    <div class="sec-h"><h2>요즘 시장, 흐름 정리</h2><p>숫자(한국부동산원·한국은행)와 뉴스 제목에서 자동으로 뽑은 요약</p></div>
+    <div class="briefs"><article class="brief" id="brief-seoul"></article><article class="brief" id="brief-busan"></article></div>
+    <article class="brief common" id="brief-common"></article>
+  </section>
+
+  <section id="trend">
+    <div class="sec-h"><h2>방향과 속도</h2><p>오르는 힘이 세지는지 약해지는지, 몇 개 구가 같이 움직이는지</p></div>
+    <div class="row2">
+      <div class="card" id="trend-seoul"></div>
+      <div class="card" id="trend-busan"></div>
+    </div>
+    <div class="row-w" style="margin-top:14px">
+      <div class="card"><div class="card-h"><div><h3>최근 추세 전환</h3><div class="q">4주 평균 주간 변동이 오름·보합·내림 사이를 바꿔 3주 이상 이어진 곳(최근 6개월)</div></div><div class="tools"><span class="asof" id="tAsof"></span><div class="seg" role="group" aria-label="범위" id="tSeg"><button type="button" data-k="all" class="on">전체</button><button type="button" data-k="seoul">서울</button><button type="button" data-k="busan">부산</button><button type="button" data-k="nation">시·도</button></div></div></div>
+        <div class="turns" id="turns"></div><div class="cap">보합 = 4주 평균 주간 변동 ±0.01% 안쪽. 같은 주에 같은 쪽으로 바뀐 구는 한 줄로 묶었습니다.</div></div>
+      <div class="card"><div class="card-h"><div><h3>시장 온도 추이</h3><div class="q">월별 시장 온도(0~100) · 띠 색은 누구에게 유리한 시장인지</div></div><div class="tools"><span class="asof" id="tmAsof"></span></div></div>
+        <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div>
+        <div class="ch" id="tempCh"></div><div class="cap">띠: 파랑 = 매수자 우위(40 아래), 회색 = 중립, 옅은 빨강 = 매도자 우위(55~70), 빨강 = 강한 매도자 우위(70 이상). 시장 온도는 살 사람·전세 사정·집값 3개월·거래·미분양을 0~100으로 바꿔 평균한 값('시장 온도계' 설명 참고).</div></div>
+    </div>
+  </section>
+
+  <section id="issues">
+    <div class="sec-h"><h2>요즘 이슈</h2><p>뉴스 제목을 주제별로 세어 본 주별 흐름(구글 뉴스, 주 = 월~일)</p></div>
+    <div class="card">
+      <div class="card-h"><div class="k-head" id="isHead"></div>
+        <div class="tools"><span class="asof" id="isAsof"></span><div class="seg" role="group" aria-label="뉴스 묶음" id="isSeg"><button type="button" data-g="seoul" class="on">서울</button><button type="button" data-g="busan">부산</button><button type="button" data-g="nation">전국·정책</button></div></div></div>
+      <div class="is-grid"><div><div class="map-t">많이 나온 주제<span id="isWk"></span></div><div class="topics" id="isTopics"></div><div class="mood" id="isMood"></div></div>
+        <div><div class="map-t">주제별 흐름(최근 12주)<span>칸 숫자 = 그 주 기사 중 비율(%)</span></div><div class="ihm-wrap" id="isHeat"></div></div></div>
+    </div>
+    <div class="row-w" style="margin-top:14px">
+      <div class="card"><div class="card-h"><div><h3>주별 대표 기사</h3><div class="q">그 주에 무슨 이야기가 있었나 · 주제가 붙은 기사 중 앞쪽 3건</div></div></div><div class="weeks" id="isWeeks"></div></div>
+      <div class="card"><div class="card-h"><div><h3>최근 7일 기사</h3><div class="q">제목 아래 꼬리표는 붙은 주제</div></div></div><div id="newsBox"></div><div class="note" id="newsNote"></div></div>
+    </div>
   </section>
 
   <section id="score">
@@ -415,14 +533,12 @@
   </section>
 
   <section id="flow">
-    <div class="sec-h"><h2>집값 흐름과 이번 주 이슈</h2><p>정책·금리가 바뀐 때를 그래프에 표시</p></div>
-    <div class="row-w">
+    <div class="sec-h"><h2>집값 흐름(최근 3년)</h2><p>정책·금리가 바뀐 때를 그래프에 표시</p></div>
+    <div>
       <div class="card"><div class="card-h"><div><h3>집값 흐름</h3><div class="q">같은 출발점(0%)에서 본 주간 지수 · 회색 점선 = 정책 발표, 주황 점선 = 기준금리 변경</div></div>
         <div class="tools"><span class="asof" id="pAsof"></span><div class="seg" role="group" aria-label="기간" id="priceSeg"><button type="button" data-n="52">1년</button><button type="button" data-n="156" class="on">3년</button></div></div></div>
         <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span><span><i style="border-color:var(--c-nat)"></i>전국</span><span><i class="dash" style="border-color:var(--ink-2)"></i>정책</span><span><i class="dash" style="border-color:var(--warn)"></i>기준금리</span></div>
         <div class="ch" id="priceCh"></div><div class="cap" id="polCap"></div></div>
-      <div class="card"><div class="card-h"><h3>이번 주 주요 이슈</h3><div class="seg" role="group" aria-label="이슈" id="newsSeg"><button type="button" data-k="data" class="on">숫자</button><button type="button" data-k="seoul">서울 뉴스</button><button type="button" data-k="busan">부산 뉴스</button><button type="button" data-k="policy">정책</button></div></div>
-        <div id="newsBox"></div><div class="note" id="newsNote"></div></div>
     </div>
   </section>
 
@@ -569,10 +685,11 @@ function draw(c) {
   el.innerHTML = ""; if (!S.length) { el.innerHTML = `<div class="note">자료가 아직 없습니다.</div>`; return; }
   const Wd = Math.max(240, Math.round(el.clientWidth || 600)), narrow = Wd < 480;
   const H = (narrow && opt.hN) || opt.h || 200, endOn = opt.end !== false && !narrow;
-  const PL = opt.padL || 44, PR = endOn ? (opt.padR || 104) : 10, PT = opt.padT || 12, PB = 24;
+  const PL = opt.padL || 44, PR = endOn ? (opt.padR || 104) : (opt.zones && !narrow ? 104 : 10), PT = opt.padT || 12, PB = 24;
   let t0 = Infinity, t1 = -Infinity, lo = Infinity, hi = -Infinity;
   S.forEach(s => s.pts.forEach(([t, v]) => { if (!has(v)) return; t0 = Math.min(t0, t); t1 = Math.max(t1, t); lo = Math.min(lo, v); hi = Math.max(hi, v); }));
   if (has(opt.base)) { lo = Math.min(lo, opt.base); hi = Math.max(hi, opt.base); }
+  if (opt.yr) { lo = Math.min(lo, opt.yr[0]); hi = Math.max(hi, opt.yr[1]); }
   if (opt.zero) lo = Math.min(lo, 0);
   const step = opt.step || niceStep((hi - lo) || Math.abs(hi) || 1, narrow ? 3 : 4);
   lo = Math.floor(lo / step + 1e-9) * step; hi = Math.ceil(hi / step - 1e-9) * step; if (hi === lo) hi = lo + step;
@@ -580,6 +697,9 @@ function draw(c) {
   const X = t => PL + (t - t0) / ((t1 - t0) || 1) * (Wd - PL - PR);
   const Y = v => PT + (hi - v) / (hi - lo) * (H - PT - PB);
   let g = "";
+  (opt.zones || []).forEach(z => { const y1 = Y(Math.min(z.hi, hi)), y0 = Y(Math.max(z.lo, lo)); if (y0 - y1 < 1) return;
+    g += `<rect x="${PL}" y="${y1.toFixed(1)}" width="${Wd - PL - PR}" height="${(y0 - y1).toFixed(1)}" style="fill:var(${z.color});opacity:.55"/>`;
+    if (z.label && PR > 60 && y0 - y1 > 14) g += `<text x="${Wd - PR + 8}" y="${((y0 + y1) / 2 + 4).toFixed(1)}" class="ax" style="font-weight:700">${esc(z.label)}</text>`; });
   const lastMk = {};
   (opt.marks || []).forEach(m => { const x = X(m.t); if (x < PL + 4 || x > Wd - PR) return; const row = m.row || 0;
     g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PT}" y2="${H - PB}" class="mk ${m.cls || ""}"/>`;
@@ -976,34 +1096,235 @@ document.querySelectorAll("#priceSeg button").forEach(b => b.addEventListener("c
 price(Math.min(156, W(`sale:${CITY.seoul.code}`).length - 1));
 $("pAsof").textContent = wkAsof;
 
-(function issues() {
-  const sc = CITY.seoul.code, bc = CITY.busan.code, s = W(`sale:${sc}`), b = W(`sale:${bc}`), sw = wkChg(s), bw = wkChg(b);
-  const kb12 = chg(W(`sale:${grpCls("seoul", "강북지역")}`), 12), gn12 = chg(W(`sale:${grpCls("seoul", "강남지역")}`), 12);
-  const ranked = c => DIST[c].map(d => ({ n: d.n, v: chg(W(`sale:${d.c}`), 12) })).filter(r => has(r.v)).sort((a, b) => b.v - a.v);
-  const sDn = ranked("seoul").filter(r => +r.v.toFixed(2) < 0), bUp = ranked("busan").filter(r => +r.v.toFixed(2) > 0);
-  const gang = DIST.seoul.find(d => d.n === "강남구"), gw = gang ? wkChg(W(`sale:${gang.c}`)) : [], gnDn = streak(gw, false), gnUp = streak(gw, true);
-  const rs = RENT.seoul, rsY = yoyOf(last(rs), atAgo(rs)), rmS = last(M("rentMed:seoul"));
-  const us = last(E("unsold.seoul")), ub = last(E("unsold.busan")), rS = has(HOUSES.seoul) ? us / HOUSES.seoul * 100 : null, rB = has(HOUSES.busan) ? ub / HOUSES.busan * 100 : null;
-  const mt = E("mortgage"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null, af = AFF.seoul;
-  const sUp = streak(sw, true), sDnN = streak(sw, false), bDn = streak(bw, false), bUpN = streak(bw, true);
+// ---- 흐름: 속도(4주 평균), 넓이(같이 움직이는 구 수), 추세 전환 -----------------------------------
+const ST = 0.01;   // 4주 평균 주간 변동 ±0.01% 안쪽은 보합
+const stOf = v => !has(v) ? null : v >= ST ? 1 : v <= -ST ? -1 : 0;
+const STN = { 1: "오름", 0: "보합", "-1": "내림" };
+const SPC = {};
+function speedOf(code) {
+  if (SPC[code]) return SPC[code];
+  const s = W(`sale:${code}`), wk = wkChg(s), m4 = wk.map((_, i) => i >= 3 ? (wk[i] + wk[i - 1] + wk[i - 2] + wk[i - 3]) / 4 : null);
+  return (SPC[code] = { dates: s.slice(1).map(p => p[0]), wk, m4 });
+}
+function breadthOf(city) {
+  const per = DIST[city].map(d => { const sp = speedOf(d.c), o = {}; sp.dates.forEach((dt, i) => { const v = stOf(sp.m4[i]); if (v !== null) o[dt] = v; }); return o; });
+  return speedOf(CITY[city].code).dates.slice(-52).map(dt => { let u = 0, f = 0, d = 0;
+    per.forEach(o => { if (dt in o) { if (o[dt] > 0) u++; else if (o[dt] < 0) d++; else f++; } }); return { dt, u, f, d, n: u + f + d }; })
+    .filter(r => r.n >= DIST[city].length * 0.8);
+}
+const BR = { seoul: breadthOf("seoul"), busan: breadthOf("busan") };
+// 상태(오름·보합·내림)가 바뀌어 3주 이상 이어지면 전환으로 본다. 최근 2주째 이어지는 중이면 '새로'로 표시.
+function turnsOf(code) {
+  const sp = speedOf(code), st = sp.m4.map(stOf), n = st.length, out = [];
+  let cur = null;
+  for (let t = 0; t < n; t++) {
+    if (st[t] === null) continue;
+    if (cur === null) { if (t + 2 < n && st[t + 1] === st[t] && st[t + 2] === st[t]) cur = st[t]; continue; }
+    if (st[t] === cur) continue;
+    let run = 1; while (t + run < n && st[t + run] === st[t]) run++;
+    if (run >= 3 || (t + run === n && run >= 2)) { out.push({ date: sp.dates[t], from: cur, to: st[t], fresh: t + run === n && run < 3 }); cur = st[t]; t += run - 1; }
+  }
+  return out;
+}
+const REGS = [{ code: NAT, name: "전국", sc: "nation", lv: 0 }];
+Object.keys(CITY).forEach(k => { REGS.push({ code: CITY[k].code, name: `${CITY[k].nm} 전체`, sc: k, lv: 0 });
+  (REG[k].groups || []).forEach(g => REGS.push({ code: g.cls, name: g.name, sc: k, lv: 1 }));
+  DIST[k].forEach(d => REGS.push({ code: d.c, name: short(d.n), sc: k, lv: 2 })); });
+PROV.forEach(p => { if (p.cls !== CITY.seoul.code && p.cls !== CITY.busan.code) REGS.push({ code: p.cls, name: p.name, sc: "nation", lv: 1 }); });
+const NATD = speedOf(NAT).dates, T0 = NATD[Math.max(0, NATD.length - 26)], T13 = NATD[Math.max(0, NATD.length - 13)];
+const TG = {};
+REGS.forEach(r => turnsOf(r.code).filter(e => e.date >= T0).forEach(e => {
+  const k = `${e.date}|${r.sc}|${r.lv}|${e.from}|${e.to}`; (TG[k] = TG[k] || { ...e, sc: r.sc, lv: r.lv, names: [] }).names.push(r.name); }));
+const TROWS = Object.values(TG).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : a.lv - b.lv);
+const wkL = d => `${+d.slice(5, 7)}/${+d.slice(8, 10)}`;
+function momentum(now, ago) {
+  const a = stOf(now), b = stOf(ago);
+  if (a === null || b === null) return { short: "", long: "" };
+  if (a !== b) return { short: a === 0 ? (b > 0 ? "오르던 힘이 멈춤" : "내리던 힘이 멈춤") : a > 0 ? (b < 0 ? "내림에서 오름으로 돌아섬" : "다시 오르기 시작") : (b > 0 ? "오름에서 내림으로 돌아섬" : "내리기 시작"),
+    long: `4주 평균 주간 변동 <b>${pct(now)}</b>. 3개월 전엔 ${STN[b]}(${pct(ago)})이었는데 지금은 ${STN[a]}입니다.` };
+  if (a === 0) return { short: "방향 없이 제자리", long: `4주 평균 주간 변동 <b>${pct(now)}</b>, 3개월 전(${pct(ago)})과 마찬가지로 보합 수준입니다.` };
+  const r = now / ago, w = a > 0 ? "오름" : "내림";
+  return { short: r < 0.5 ? `${w} 속도가 크게 줄어드는 중` : r < 0.85 ? `${w} 속도가 줄어드는 중` : r > 1.5 ? `${w} 속도가 크게 빨라지는 중` : r > 1.15 ? `${w} 속도가 빨라지는 중` : `비슷한 속도로 ${a > 0 ? "오르는" : "내리는"} 중`,
+    long: `4주 평균 주간 변동 <b>${pct(now)}</b>, 3개월 전 ${pct(ago)}${r < 0.5 ? "의 절반도 안 됩니다" : r < 0.85 ? "보다 느려졌습니다" : r > 1.5 ? "보다 크게 빨라졌습니다" : r > 1.15 ? "보다 빨라졌습니다" : "와 비슷합니다"}.` };
+}
+function tipOn(el, Wd, n, X, xl, xr, html) {
+  const svg = el.querySelector("svg"), tip = el.querySelector(".tip"), hair = svg.querySelector(".hair");
+  const show = ev => { const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * Wd; if (x < xl || x > xr) { hide(); return; }
+    let i = 0; for (let j = 0; j < n; j++) if (Math.abs(X(j) - x) < Math.abs(X(i) - x)) i = j;
+    hair.setAttribute("x1", X(i)); hair.setAttribute("x2", X(i)); hair.setAttribute("visibility", "visible");
+    tip.innerHTML = html(i); tip.hidden = false; tip.style.left = Math.min(Math.max(X(i) / Wd * r.width, 95), r.width - 95) + "px"; tip.style.top = "2px"; };
+  const hide = () => { tip.hidden = true; hair.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show); svg.addEventListener("pointerleave", hide);
+}
+const geomOf = (el, n, H) => { const Wd = Math.max(260, Math.round(el.clientWidth || 540)), PL = 46, PR = 96; return { Wd, H, PL, PR, X: i => PL + (i + 0.5) / n * (Wd - PL - PR), slot: (Wd - PL - PR) / n }; };
+function drawSpeed(el, dates, wk, m4) {
+  const n = wk.length, { Wd, H, PL, PR, X, slot } = geomOf(el, n, 156), PT = 16, PB = 20;
+  const all = wk.concat(m4.filter(has)); let lo = Math.min(0, ...all), hi = Math.max(0, ...all);
+  const step = niceStep((hi - lo) || 0.05, 4); lo = Math.floor(lo / step + 1e-9) * step; hi = Math.ceil(hi / step - 1e-9) * step; if (hi === lo) hi = lo + step;
+  const Y = v => PT + (hi - v) / (hi - lo) * (H - PT - PB), bw = Math.max(1.4, slot * 0.66), dp = step >= 0.1 ? 1 : 2;
+  let g = "";
+  for (let v = lo; v <= hi + step / 1e6; v += step) { const vv = Math.abs(v) < step / 1e6 ? 0 : v, y = Y(vv).toFixed(1);
+    g += `<line x1="${PL}" x2="${Wd - PR}" y1="${y}" y2="${y}" class="gl"/><text x="${PL - 6}" y="${(+y + 4).toFixed(1)}" text-anchor="end" class="ax">${(vv > 0 ? "+" : "") + vv.toFixed(dp)}%</text>`; }
+  const y0 = Y(0);
+  wk.forEach((v, i) => { const y = Y(v); g += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Math.min(y, y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.8, Math.abs(y - y0)).toFixed(1)}" class="${v >= 0 ? "bar-u" : "bar-d"}"/>`; });
+  g += `<line x1="${PL}" x2="${Wd - PR}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" class="zero"/>`;
+  let p = "", pen = false; m4.forEach((v, i) => { if (!has(v)) { pen = false; return; } p += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
+  g += `<path d="${p}" class="ma"/>`;
+  let lastX = -1e9; dates.forEach((d, i) => { if (i && d.slice(5, 7) === dates[i - 1].slice(5, 7)) return; const x = X(i); if (x - lastX < 42 || x < PL + 8) return; lastX = x;
+    const m = +d.slice(5, 7); g += `<text x="${x.toFixed(1)}" y="${H - 5}" text-anchor="middle" class="ax">${m === 1 ? d.slice(2, 4) + ".1" : m + "월"}</text>`; });
+  const ia = n - 14, iz = n - 1;
+  if (has(m4[ia])) g += `<circle cx="${X(ia).toFixed(1)}" cy="${Y(m4[ia]).toFixed(1)}" r="4" class="ago"/><text x="${X(ia).toFixed(1)}" y="${Math.max(10, Y(m4[ia]) - 9).toFixed(1)}" text-anchor="middle" class="ax">3개월 전 ${pct(m4[ia])}</text>`;
+  const zc = cls(m4[iz]) === "up" ? "--rise" : cls(m4[iz]) === "down" ? "--fall" : "--ink-3";
+  g += `<circle cx="${X(iz).toFixed(1)}" cy="${Y(m4[iz]).toFixed(1)}" r="4.5" style="fill:var(--cc)"/><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 1).toFixed(1)}" class="lb" style="fill:var(${zc})">${pct(m4[iz])}</text><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 15).toFixed(1)}" class="ax">4주 평균</text>`;
+  g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="주간 변동과 4주 평균">${g}</svg><div class="tip" hidden></div>`;
+  tipOn(el, Wd, n, X, PL, Wd - PR, i => `<div>${dates[i]} 주</div><div>주간 <b>${pct(wk[i])}</b> · 4주 평균 <b>${pct(m4[i])}</b></div>`);
+}
+function drawBreadth(el, br, dates) {
+  const n = dates.length, { Wd, H, PL, PR, X, slot } = geomOf(el, n, 62), PT = 2, PB = 2, bm = obj(br.map(r => [r.dt, r])), bw = Math.max(1.4, slot * 0.86), h = H - PT - PB;
+  let g = `<text x="${PL - 6}" y="${PT + 10}" text-anchor="end" class="ax">오름</text><text x="${PL - 6}" y="${H - PB - 2}" text-anchor="end" class="ax">내림</text>`;
+  dates.forEach((d, i) => { const r = bm[d]; if (!r) return; const x = (X(i) - bw / 2).toFixed(1), hu = r.u / r.n * h, hf = r.f / r.n * h, hd = r.d / r.n * h;
+    g += `<rect x="${x}" y="${PT.toFixed(1)}" width="${bw.toFixed(1)}" height="${hu.toFixed(1)}" class="u"/><rect x="${x}" y="${(PT + hu).toFixed(1)}" width="${bw.toFixed(1)}" height="${hf.toFixed(1)}" class="f"/><rect x="${x}" y="${(PT + hu + hf).toFixed(1)}" width="${bw.toFixed(1)}" height="${hd.toFixed(1)}" class="d"/>`; });
+  const L = br[br.length - 1];
+  if (L) g += `<text x="${Wd - PR + 10}" y="${PT + 12}" class="lb" style="fill:var(--rise)">오름 ${L.u}</text><text x="${Wd - PR + 10}" y="${PT + 32}" class="lb">보합 ${L.f}</text><text x="${Wd - PR + 10}" y="${PT + 52}" class="lb" style="fill:var(--fall)">내림 ${L.d}</text>`;
+  g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="오르는 구와 내리는 구 수">${g}</svg><div class="tip" hidden></div>`;
+  tipOn(el, Wd, n, X, PL, Wd - PR, i => { const r = bm[dates[i]]; return r ? `<div>${dates[i]} 주</div><div>오름 <b>${r.u}</b> · 보합 <b>${r.f}</b> · 내림 <b>${r.d}</b></div>` : ""; });
+}
+function trendCard(city, el) {
+  el = el || $(`trend-${city}`); if (!el) return;
+  const c = CITY[city], sp = speedOf(c.code), n = 52, dates = sp.dates.slice(-n), m4 = sp.m4.slice(-n);
+  const br = BR[city], bl = br[br.length - 1], b0 = br.length > 13 ? br[br.length - 14] : null, mo = momentum(m4[n - 1], m4[n - 14]);
+  el.style.setProperty("--cc", `var(${c.col})`);
+  el.innerHTML = `<div class="tr-h"><b>${c.nm} · 오르내리는 속도</b><span>막대 = 주간 변동 · 선 = 4주 평균</span></div><div class="spd"></div>` +
+    `<div class="tr-h" style="margin-top:6px"><b style="font-size:13px">같이 움직이는 구 수</b><span>${DIST[city].length}개 구 · 빨강 오름 / 회색 보합 / 파랑 내림</span></div><div class="brd"></div>` +
+    `<div class="cap">${mo.long}${bl ? ` ${DIST[city].length}개 구 중 지금 오름 <b>${bl.u}</b> · 보합 ${bl.f} · 내림 <b>${bl.d}</b>${b0 ? `(3개월 전 오름 ${b0.u} · 내림 ${b0.d})` : ""}.` : ""}</div>`;
+  drawSpeed(el.querySelector(".spd"), dates, sp.wk.slice(-n), m4);
+  drawBreadth(el.querySelector(".brd"), br, dates);
+}
+const TRC = () => { trendCard("seoul"); trendCard("busan"); };
+TRC(); VIS.push(TRC);
+let TK = "all";
+function turnsList() {
+  const SCN = { seoul: "서울", busan: "부산", nation: "시·도" }, rows = TROWS.filter(r => TK === "all" || r.sc === TK);
+  $("turns").innerHTML = rows.length ? rows.slice(0, 50).map(r => `<div class="tn"><em>${wkL(r.date)} 주</em><span class="w ${r.sc}">${SCN[r.sc]}</span><span class="nm">${esc(r.names.join("·"))}</span>` +
+    `<span class="st"><i class="s${r.from}">${STN[r.from]}</i>→<i class="s${r.to}">${STN[r.to]}</i>${r.fresh ? `<span class="new">새로</span>` : ""}</span></div>`).join("")
+    : `<div class="note">최근 6개월 동안 방향이 바뀐 곳이 없습니다.</div>`;
+}
+document.querySelectorAll("#tSeg button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#tSeg button").forEach(x => x.classList.toggle("on", x === b)); TK = b.dataset.k; turnsList(); }));
+turnsList();
+$("tAsof").textContent = wkAsof;
+chart("tempCh", { h: 230, monthly: true, end: false, padL: 34, yr: [25, 80], tf: v => v.toFixed(0), label: "시장 온도 추이",
+  zones: [{ lo: 0, hi: 40, color: "--fall-1", label: "매수자 우위" }, { lo: 40, hi: 55, color: "--zero", label: "중립" }, { lo: 55, hi: 70, color: "--rise-1", label: "매도자 우위" }, { lo: 70, hi: 100, color: "--rise-2", label: "강한 매도자 우위" }],
+  series: [{ name: "서울", pts: ts(HEAT.seoul.ser), color: "--c-seoul" }, { name: "부산", pts: ts(HEAT.busan.ser), color: "--c-busan" }] });
+$("tmAsof").textContent = mAsof(lastKey(HEAT.seoul.ser));
+
+// ---- 요즘 이슈: 뉴스 제목 주제별 비율의 주별 흐름 --------------------------------------------------
+const NW = D.news && D.news.weeks ? D.news : null;
+const TOPICS = NW ? NW.topics : [], ISSUE = TOPICS.filter(t => !t.mood), TNAME = obj(TOPICS.map(t => [t.key, t.name]));
+const thisMon = (() => { const now = new Date(Date.now() + 9 * 3600e3), d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7); return d.toISOString().slice(0, 10); })();
+function issueStats(g) {
+  const ws = (NW ? NW.weeks : []).filter(w => w.g && w.g[g] && w.g[g].n);
+  if (!ws.length) return null;
+  const share = (w, k) => w.g[g].n ? (w.g[g].tp[k] || 0) / w.g[g].n * 100 : null;
+  let ci = ws.length - 1; if (ci > 0 && ws[ci].g[g].n < ws[ci - 1].g[g].n * 0.35) ci--;   // 이번 주 기사가 아직 적으면 지난주를 기준으로
+  const cur = ws[ci], prev = ws.slice(Math.max(0, ci - 4), ci);
+  const rows = ISSUE.map(t => { const v = share(cur, t.key), b = avg(prev.map(w => share(w, t.key))); return { k: t.key, name: t.name, v, b, dv: has(v) && has(b) ? v - b : null }; }).sort((a, b) => b.v - a.v);
+  return { ws, ci, cur, rows, up: share(cur, "up"), dn: share(cur, "down"), n: cur.g[g].n, share, partial: ci === ws.length - 1 && cur.w === thisMon };
+}
+const IS = {}; ["seoul", "busan", "nation"].forEach(g => { IS[g] = issueStats(g); });
+const GN = (NW && NW.groups) || { seoul: "서울", busan: "부산", nation: "전국·정책" };
+function issueLine(g) {
+  const st = IS[g]; if (!st) return "";
+  const [a, b] = st.rows, rise = st.rows.filter(r => has(r.dv) && r.dv >= 5).sort((x, y) => y.dv - x.dv)[0];
+  return `${wkL(st.cur.w)} 주 뉴스는 '${a.name}'(${a.v.toFixed(0)}%)·'${b.name}'(${b.v.toFixed(0)}%) 이야기가 많았고` +
+    (rise ? `, '${rise.name}' 언급이 늘었습니다(4주 평균보다 +${rise.dv.toFixed(0)}%p).` : `, 4주 평균보다 크게 늘어난 주제는 없습니다.`) +
+    (has(st.up) && has(st.dn) ? ` 기사 분위기는 ${st.up > st.dn + 3 ? "오름 쪽" : st.dn > st.up + 3 ? "내림 쪽" : "엇비슷"}(오름 ${st.up.toFixed(0)}% · 내림 ${st.dn.toFixed(0)}%).` : "");
+}
+let IG = "seoul";
+function issueHeat(g, box) {
+  const st = IS[g]; if (!st) { box.innerHTML = `<div class="note">뉴스 자료가 아직 없습니다.</div>`; return; }
+  const ws = st.ws.slice(-12), mx = Math.max(10, ...ws.flatMap(w => ISSUE.map(t => st.share(w, t.key))));
+  const cell = (v, cur) => { const a = has(v) ? 6 + v / mx * 64 : 0; return `<td class="${cur ? "cur" : ""}" style="background:color-mix(in srgb, var(--accent) ${a.toFixed(0)}%, var(--surface));${a > 45 ? "color:#fff" : ""}">${has(v) && v >= 1 ? v.toFixed(0) : ""}</td>`; };
+  const isCur = w => w.w === thisMon, thin = w => w.g[g].n < 30 ? ' style="opacity:.45"' : "";
+  let h = `<table class="ihm"><tr><th></th>${ws.map(w => `<th>${isCur(w) ? "이번 주" : wkL(w.w)}</th>`).join("")}</tr>`;
+  ISSUE.forEach(t => { h += `<tr><th class="r">${esc(t.name)}</th>${ws.map(w => cell(st.share(w, t.key), isCur(w)).replace("<td ", `<td${thin(w)} `)).join("")}</tr>`; });
+  h += `<tr class="md"><th class="r">분위기(오름−내림)</th>${ws.map(w => { const d = st.share(w, "up") - st.share(w, "down");
+    return `<td class="${isCur(w) ? "cur" : ""}" style="color:var(${d > 3 ? "--rise" : d < -3 ? "--fall" : "--ink-3"})">${has(d) ? (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(0) : ""}</td>`; }).join("")}</tr>`;
+  h += `<tr class="n"><th class="r" style="font-weight:600;color:var(--ink-3)">기사 수</th>${ws.map(w => `<td>${w.g[g].n}</td>`).join("")}</tr></table>` +
+    `<div class="note" style="margin-top:4px">기사 30건 미만인 주는 옅게(표본이 적어 비율이 크게 흔들림). 점선 칸은 아직 진행 중인 이번 주.</div>`;
+  box.innerHTML = h;
+}
+function issues() {
+  const g = IG, st = IS[g];
+  $("isAsof").textContent = st ? `${wkL(st.ws[st.ws.length - 1].w)} 주까지` : "";
+  if (!st) { ["isTopics", "isMood", "isWeeks", "newsBox"].forEach(id => { $(id).innerHTML = ""; }); $("isHead").textContent = "뉴스 자료가 아직 없습니다."; return; }
+  $("isHead").innerHTML = `<b>${esc(GN[g])}</b> · ${issueLine(g)}`;
+  $("isWk").textContent = `${wkL(st.cur.w)} 주${st.partial ? "(진행 중)" : ""} · 기사 ${st.n}건 · 오른쪽 = 4주 평균 대비`;
+  const mx = Math.max(...st.rows.map(r => r.v)) || 1, items = ((D.news.items || {})[g] || []), used = new Set();
+  $("isTopics").innerHTML = st.rows.map((r, i) => {
+    const ex = i < 3 ? items.filter(it => (it.tp || []).includes(r.k) && !used.has(it.t)).slice(0, 2) : []; ex.forEach(it => used.add(it.t));
+    return `<div class="tp"><span title="${esc(r.name)}">${esc(r.name)}</span><span class="bar"><i style="width:${(r.v / mx * 100).toFixed(1)}%"></i></span><b>${r.v.toFixed(0)}%</b><em class="${has(r.dv) && r.dv >= 5 ? "more" : ""}">${has(r.dv) ? (r.dv >= 0 ? "+" : "−") + Math.abs(r.dv).toFixed(0) + "%p" : ""}</em></div>` +
+      (ex.length ? `<div class="tp-ex">${ex.map(it => `· <a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(it.t)}</a>`).join("<br>")}</div>` : "");
+  }).join("");
+  $("isMood").innerHTML = has(st.up) ? `기사 분위기: 제목에 오름 낱말이 든 기사 <b class="up">${st.up.toFixed(0)}%</b> · 내림 낱말 <b class="down">${st.dn.toFixed(0)}%</b>. 낱말로 센 대략값이라 '상승 폭 둔화'처럼 섞인 제목도 있습니다.` : "";
+  issueHeat(g, $("isHeat"));
+  $("isWeeks").innerHTML = st.ws.slice(-8).reverse().map(w => { const r = w.g[g], tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v).slice(0, 3);
+    return `<div class="wk"><em>${wkL(w.w)} 주${w.w === thisMon ? "<br><small style='font-weight:600;color:var(--ink-3)'>진행 중</small>" : ""}</em><div><div class="chips">${tops.map(o => `<span class="chip${o.v >= 25 ? " hot" : ""}">${esc(o.t.name)} ${o.v.toFixed(0)}%</span>`).join("")}</div>` +
+      (r.top || []).map(a => `<a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)} <small>${esc(a.s || "")}${a.d ? " · " + esc(a.d) : ""}</small></a>`).join("") + `</div></div>`; }).join("");
+  $("newsBox").innerHTML = items.length ? `<ul class="news">` + items.map(i => `<li><a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.t)}</a><span class="src">${esc(i.s || "")} · ${esc(i.d || "")}</span>` +
+    `<div class="chips">${(i.tp || []).filter(k => ISSUE.some(t => t.key === k)).map(k => `<span class="chip">${esc(TNAME[k])}</span>`).join("")}</div></li>`).join("") + `</ul>` : `<div class="note">최근 7일 기사가 없습니다.</div>`;
+  $("newsNote").textContent = `구글 뉴스 검색(${((D.news.queries || {})[g] || [GN[g]]).join(" · ")}), 최근 7일(${D.generated.slice(5, 10).replace("-", "/")} 수집). 사건·사고 기사는 거름.`;
+}
+document.querySelectorAll("#isSeg button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#isSeg button").forEach(x => x.classList.toggle("on", x === b)); IG = b.dataset.g; issues(); }));
+issues();
+
+// ---- 흐름 정리(도시별 판정과 근거 문장) -------------------------------------------------------------
+const SUMMARY = { week: wkAsof, generated: D.generated, cities: {}, common: [], turns: [], issues: {} };
+function brief(city) {
+  const c = CITY[city], code = c.code, s = W(`sale:${code}`), wk = wkChg(s), sp = speedOf(code), n = sp.m4.length;
+  const s12 = chg(s, 12), s52 = chg(s, 52), up = streak(wk, true), dn = streak(wk, false), tw0 = trendWord(s12), mo = momentum(sp.m4[n - 1], sp.m4[n - 14]);
+  const br = BR[city], bl = br[br.length - 1], b0 = br.length > 13 ? br[br.length - 14] : null;
   const L = [];
-  L.push(["s", `서울 집값 <b>${sUp >= 2 ? `${sUp}주 연속 상승` : sDnN >= 2 ? `${sDnN}주 연속 하락` : `이번 주 ${pct(chg(s, 1))}`}</b>, 1년 ${pct(chg(s, 52), 1)}`, `최근 3개월 강북 ${pct(kb12, 1)} · 강남 ${pct(gn12, 1)}. 시장 온도 ${HEAT.seoul.now}(${heatLabel(HEAT.seoul.now)}).`]);
-  L.push(["s", `서울 25개 구 중 3개월 하락 <b>${sDn.length}곳</b>${sDn.length ? `(${sDn.slice(-4).reverse().map(r => r.n).join(", ")})` : ""}`, gang ? `강남구는 ${gnDn >= 2 ? `${gnDn}주 연속 하락` : gnUp >= 2 ? `${gnUp}주 연속 상승` : `이번 주 ${pct(gw[gw.length - 1])}`}. 주간 흐름 표에서 색이 바뀐 시점을 볼 수 있습니다.` : ""]);
-  if (has(rsY)) L.push(["s", `서울 월세 1년 <b>${pct(rsY, 1)}</b>${has(rmS) ? `, 중위 월세 ${num(rmS / 10)}만 원` : ""}`, `전세도 1년 ${pct(chg(W(`jeonse:${sc}`), 52), 1)}, 전세 사정 지수 ${num(last(W(`rent:${sc}`)))}(100 넘으면 물건 부족).`]);
-  L.push(["b", `부산 집값 <b>${bDn >= 2 ? `${bDn}주 연속 하락` : bUpN >= 2 ? `${bUpN}주 연속 상승` : `이번 주 ${pct(chg(b, 1))}`}</b>, 1년 ${pct(chg(b, 52), 1)}`, `16개 구·군 중 3개월 상승 ${bUp.length}곳${bUp.length ? `(${bUp.slice(0, 3).map(r => r.n).join(", ")} 순)` : ""}. 시장 온도 ${HEAT.busan.now}(${heatLabel(HEAT.busan.now)}).`]);
-  if (has(ub)) L.push(["b", `부산 미분양 <b>${num(ub)}호</b>${has(rB) ? `, 주택의 ${rB.toFixed(2)}%` : ""}`, `${has(rS) && rS > 0 && has(rB) ? `서울(${rS.toFixed(2)}%)의 ${(rB / rS).toFixed(0)}배. ` : ""}1년 전보다 ${pct(SIG.busan.uch, 1)}.`]);
-  if (mt.length) L.push(["c", `주담대 금리 <b>${last(mt).toFixed(2)}%</b>${has(mch) ? `, 1년 ${mch >= 0 ? "+" : "−"}${Math.abs(mch).toFixed(2)}%p` : ""}`, af.length ? `서울 중간 아파트를 절반 대출로 사면 월 ${num(last(af))}만 원${has(atAgo(af)) ? `(1년 전 ${num(atAgo(af))}만 원)` : ""}.` : ""]);
-  const TAG = { s: "서울", b: "부산", c: "공통" };
-  let h = `<ul class="iss" data-k="data">` + L.map(([t, a, w]) => `<li><span class="tag ${t}">${TAG[t]}</span><span>${a}${w ? `<span class="why">${w}</span>` : ""}</span></li>`).join("") + `</ul>`;
-  ["seoul", "busan", "policy"].forEach(k => { const it = (D.news || {})[k] || [];
-    h += `<ul class="news" data-k="${k}" hidden>` + (it.length ? it.map(i => `<li><a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.t)}</a><span class="src">${esc(i.s || "")} · ${esc(i.d || "")}</span></li>`).join("") : `<li class="note">이번 주 모은 기사가 없습니다.</li>`) + `</ul>`; });
-  $("newsBox").innerHTML = h;
-  $("newsNote").textContent = `뉴스는 구글 뉴스 최근 7일(${D.generated.slice(5, 10).replace("-", "/")} 수집), 사건·사고 기사는 거름.`;
-  document.querySelectorAll("#newsSeg button").forEach(btn => btn.addEventListener("click", () => {
-    document.querySelectorAll("#newsSeg button").forEach(x => x.classList.toggle("on", x === btn));
-    document.querySelectorAll("#newsBox > ul").forEach(ul => { ul.hidden = ul.dataset.k !== btn.dataset.k; });
-  }));
+  L.push(["방향", `${up >= 2 ? `<b>${up}주 연속 상승</b>` : dn >= 2 ? `<b>${dn}주 연속 하락</b>` : `이번 주 <b>${pct(chg(s, 1))}</b>`}, 최근 3개월 ${pct(s12)} · 1년 ${pct(s52, 1)}.`]);
+  if (mo.long) L.push(["속도", mo.long]);
+  if (bl) L.push(["넓이", `${DIST[city].length}개 구 중 오름 <b>${bl.u}</b> · 보합 ${bl.f} · 내림 <b>${bl.d}</b>${b0 ? ` (3개월 전 오름 ${b0.u} · 내림 ${b0.d})` : ""}.`]);
+  const lastTo = {};   // 구(권역)마다 최근 3개월 안의 마지막 전환만
+  REGS.filter(r => r.sc === city && r.lv >= 1).forEach(r => { const e = turnsOf(r.code).filter(x => x.date >= T13).pop(); if (e) lastTo[r.name] = { ...e, name: r.name }; });
+  const byTo = {}; Object.values(lastTo).sort((a, b) => a.date < b.date ? 1 : -1).forEach(e => { (byTo[e.to] = byTo[e.to] || []).push(`${e.name}(${wkL(e.date)}~)`); });
+  const cap = a => a.length > 5 ? `${a.slice(0, 5).join(", ")} 외 ${a.length - 5}곳` : a.join(", ");
+  L.push(["전환", Object.keys(byTo).length ? [1, 0, -1].filter(k => byTo[k]).map(k => `<b>${STN[k]}으로</b> ${esc(cap(byTo[k]))}`).join(" · ") : "최근 3개월 동안 방향이 바뀐 구는 없습니다."]);
+  const b = W(`buy:${code}`), r = W(`rent:${code}`), ago = (a, k) => a.length > k ? a[a.length - 1 - k][1] : null;
+  L.push(["수요", `살 사람 지수 <b>${num(last(b))}</b>(3개월 전 ${num(ago(b, 12))}) · 전세 사정 ${num(last(r))}(${num(ago(r, 12))}) · 거래 1년 전보다 ${pct(SIG[city].trch, 0)}.`]);
+  const il = issueLine(city); if (il) L.push(["뉴스", esc(il)]);
+  const word = tw0.w + (tw0.sub ? `(${tw0.sub})` : "");
+  SUMMARY.cities[city] = { name: c.nm, word, dir: tw0.dir, sub: mo.short, bullets: L };
+  const el = $(`brief-${city}`); el.style.setProperty("--cc", `var(${c.col})`);
+  el.innerHTML = `<div class="b-city">${c.nm} 아파트</div><div class="b-verdict ${tw0.dir}">${esc(word)}</div><div class="b-sub">${esc(mo.short)}</div>` +
+    `<ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
+}
+brief("seoul"); brief("busan");
+(function common() {
+  const L = [], rows = PROV.map(p => ({ p, v: chg(W(`sale:${p.cls}`), 12), st: stOf(last(speedOf(p.cls).m4.map((v, i) => [i, v]).filter(x => has(x[1])))) })).filter(r => has(r.v));
+  const u3 = rows.filter(r => +r.v.toFixed(2) > 0).length, su = rows.filter(r => r.st === 1).length, sd = rows.filter(r => r.st === -1).length, nm = speedOf(NAT).m4;
+  L.push(["전국", `17개 시·도 중 3개월 오른 곳 <b>${u3}</b>. 지금 4주 평균으로 오름 ${su} · 내림 ${sd}. 전국 4주 평균 주간 변동 ${pct(nm[nm.length - 1])}.`]);
+  const mt = E("mortgage"), base = E("baseRate"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null;
+  let lastMove = ""; for (let i = base.length - 1; i > 0; i--) if (base[i][1] !== base[i - 1][1]) { lastMove = `${ymL(base[i][0])} ${base[i][1] > base[i - 1][1] ? "인상" : "인하"}`; break; }
+  if (mt.length) L.push(["금리", `주담대(신규) <b>${last(mt).toFixed(2)}%</b>${has(mch) ? `, 1년 ${mch >= 0 ? "+" : "−"}${Math.abs(mch).toFixed(2)}%p` : ""} · 기준금리 ${last(base).toFixed(2)}%${lastMove ? `(${lastMove})` : ""}.`]);
+  const il = issueLine("nation"); if (il) L.push(["정책 뉴스", esc(il)]);
+  const tn = TROWS.filter(r => r.date >= T13 && r.lv === 1 && r.sc === "nation");
+  if (tn.length) L.push(["시·도 전환", tn.slice(0, 4).map(r => `${esc(r.names.join("·"))} ${STN[r.from]}→<b>${STN[r.to]}</b>(${wkL(r.date)}~)`).join(", ")]);
+  const now = new Date(Date.now() + 9 * 3600e3), d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); let add = (4 - d.getUTCDay() + 7) % 7; if (add === 0 && now.getUTCHours() >= 14) add = 7; d.setUTCDate(d.getUTCDate() + add);
+  const ev = (D.meta.events || []).filter(e => e.date >= now.toISOString().slice(0, 10)).slice(0, 2).map(e => `${esc(e.name)} ${wkL(e.date)}`);
+  L.push(["다음", `주간 가격동향 ${d.getUTCMonth() + 1}/${d.getUTCDate()}(목) 14시${ev.length ? " · " + ev.join(" · ") : ""}.`]);
+  SUMMARY.common = L;
+  $("brief-common").innerHTML = `<div class="b-city" style="color:var(--ink-2)">공통 · 전국과 돈 사정</div><ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
 })();
+SUMMARY.turns = TROWS.filter(r => r.date >= T13).slice(0, 12).map(r => ({ date: wkL(r.date), sc: r.sc, names: r.names.join("·"), from: STN[r.from], to: STN[r.to], fresh: r.fresh }));
+["seoul", "busan", "nation"].forEach(g => { const st = IS[g]; if (st) SUMMARY.issues[g] = { name: GN[g], week: wkL(st.cur.w), n: st.n, line: issueLine(g),
+  top: st.rows.slice(0, 5).map(r => ({ name: r.name, v: Math.round(r.v), dv: has(r.dv) ? Math.round(r.dv) : null })), up: has(st.up) ? Math.round(st.up) : null, dn: has(st.dn) ? Math.round(st.dn) : null }; });
 
 // ---- 8. 공급·미분양 ---------------------------------------------------------------------------
 function yearsOf(city) {
@@ -1093,6 +1414,20 @@ $("terms").innerHTML = [
     return s.ok ? `${esc(NM[k] || k)} 정상` : `<b class="bad">${esc(NM[k] || k)}: ${esc(s.note || "실패")}</b>`; }).join(" · ");
 })();
 $("foot").innerHTML = `자료: 한국부동산원 R-ONE(주간·월간 아파트 통계, 매입자 거주지·연령, 월세), 한국은행 ECOS(금리·미분양·인허가·주택가격전망 CSI·주택 수), 행정안전부 주민등록 인구, 구글 뉴스. 지도: ${esc(G.src || "")}. 모두 인증키 없는 공개 자료이고 매일 두 번 다시 만듭니다. 투자 판단의 근거가 아니라 흐름을 보는 참고 화면입니다.`;
+
+// ---- 메일용: 요약 JSON 을 페이지에 남기고, #mailshot-이름 으로 열면 그 그림만 그린다(tools/weekly-mail.py 가 크롬으로 찍음)
+{ const el = document.createElement("script"); el.type = "application/json"; el.id = "summary"; el.textContent = JSON.stringify(SUMMARY).replace(/</g, "\\u003c"); document.body.appendChild(el); }
+const MS = (location.hash.match(/^#mailshot-([\w-]+)$/) || [])[1];
+if (MS) {
+  document.documentElement.setAttribute("data-theme", "light");
+  const host = document.createElement("div"); host.style.cssText = "width:600px;padding:12px;box-sizing:border-box;background:#fff";
+  [...document.body.children].forEach(n => { if (n.tagName !== "SCRIPT") n.remove(); });
+  document.body.style.background = "#fff"; document.body.prepend(host);
+  if (MS === "trend") ["seoul", "busan"].forEach(c => { const d = document.createElement("div"); d.className = "card"; d.style.cssText = "box-shadow:none;margin-bottom:10px"; host.appendChild(d); trendCard(c, d); });
+  else if (MS.startsWith("issues-")) { const d = document.createElement("div"); d.className = "ihm-wrap"; host.appendChild(d); issueHeat(MS.slice(7), d); }
+  else if (MS === "temp") { const d = document.createElement("div"); d.className = "ch"; host.appendChild(d); chart(d, { ...CH.find(c => c.el.id === "tempCh").opt }); }
+  document.title = "H=" + Math.ceil(host.getBoundingClientRect().height);
+}
 
 // ---- 화면 모드·크기 -----------------------------------------------------------------------------
 $("themeBtn").addEventListener("click", () => {
