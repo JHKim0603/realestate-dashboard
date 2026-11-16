@@ -572,7 +572,9 @@ ws, wb = trend_word(chg(s, 12))[0], trend_word(chg(b, 12))[0]
 sub_of = lambda c: (SUM.get("cities", {}).get(c) or {}).get("tag", "")
 subject = (f"[부동산 주간] {wk_lab} · 서울 {ws}" + (f"({sub_of('seoul')})" if sub_of("seoul") else f"(이번 주 {pct(chg(s, 1))})")
            + f" · 부산 {wb}" + (f"({sub_of('busan')})" if sub_of("busan") else f"(이번 주 {pct(chg(b, 1))})"))
-body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{esc(subject)}</title></head>
+# 메일 앱의 어두운 모드가 색을 멋대로 뒤집지 않게 밝은 화면 전용이라고 알린다(애플 메일 등은 따름. Gmail 앱은 무시할 수 있음).
+body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><style>:root{{color-scheme:light only;}}</style><title>{esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:{BG}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{BG}"><tr><td align="center" style="padding:20px 10px">
 <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;color:{INK};{P}">

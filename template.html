@@ -11,12 +11,12 @@
      선 색은 서울 보라, 부산 청록, 전국 회색. 지도 칸 색은 기간마다 고정된 경계로 3단계씩 진해진다. */
   :root {
     --bg: #f3f2ee; --surface: #ffffff; --surface-2: #f8f7f4; --raised: #efede8; --border: #e3e0d8; --grid: #ece9e2;
-    --ink: #15171c; --ink-2: #464a53; --ink-3: #7c808a;
-    --rise: #d0352a; --fall: #1d62d3; --flat: #8a8e97;
-    --rise-1: #fbe2dc; --rise-2: #f2aa9a; --rise-3: #e06651;
-    --fall-1: #dee8fb; --fall-2: #a7c1f2; --fall-3: #5e8ce0;
-    --zero: #ecebe6; --na: #f1f0ec;
-    --c-seoul: #6a45d0; --c-busan: #08877a; --c-nat: #8a8e97; --c-bronze: #c07812; --warn: #c07812;
+    --ink: #15171c; --ink-2: #464a53; --ink-3: #696d76;
+    --rise: #d0352a; --fall: #1d62d3; --flat: #70747d;
+    --rise-1: #f8d3ca; --rise-2: #f2aa9a; --rise-3: #e06651;
+    --fall-1: #d2dff8; --fall-2: #a7c1f2; --fall-3: #5e8ce0;
+    --zero: #e3e1d9; --na: #f1f0ec;
+    --c-seoul: #6a45d0; --c-busan: #067467; --c-nat: #6c7079; --c-bronze: #a8670d; --warn: #a3620b;
     --river: #b5d4f0; --land-line: #ffffff; --map-shadow: rgba(30, 34, 45, .16);
     --shadow: 0 1px 2px rgba(20, 22, 28, .04), 0 10px 30px -18px rgba(20, 22, 28, .22);
     --accent: #2b4a7a;
@@ -27,9 +27,9 @@
       --bg: #0e1014; --surface: #161920; --surface-2: #1b1f27; --raised: #232833; --border: #2b313c; --grid: #242a35;
       --ink: #eef0f4; --ink-2: #b9bec8; --ink-3: #868c97;
       --rise: #ff6b5d; --fall: #609dff; --flat: #8a909b;
-      --rise-1: #3a2325; --rise-2: #6d302c; --rise-3: #a83e34;
-      --fall-1: #1b283f; --fall-2: #24416f; --fall-3: #3060b0;
-      --zero: #262b34; --na: #1f232b;
+      --rise-1: #4a2a2b; --rise-2: #73332e; --rise-3: #a83e34;
+      --fall-1: #20304d; --fall-2: #284878; --fall-3: #3060b0;
+      --zero: #313846; --na: #1f232b;
       --c-seoul: #ae98ff; --c-busan: #38cfbb; --c-nat: #8a909b; --c-bronze: #f0ad47; --warn: #f0ad47;
       --river: #213d59; --land-line: #0e1014; --map-shadow: rgba(0, 0, 0, .55);
       --shadow: none; --accent: #9dbdff;
@@ -40,9 +40,9 @@
     --bg: #0e1014; --surface: #161920; --surface-2: #1b1f27; --raised: #232833; --border: #2b313c; --grid: #242a35;
     --ink: #eef0f4; --ink-2: #b9bec8; --ink-3: #868c97;
     --rise: #ff6b5d; --fall: #609dff; --flat: #8a909b;
-    --rise-1: #3a2325; --rise-2: #6d302c; --rise-3: #a83e34;
-    --fall-1: #1b283f; --fall-2: #24416f; --fall-3: #3060b0;
-    --zero: #262b34; --na: #1f232b;
+    --rise-1: #4a2a2b; --rise-2: #73332e; --rise-3: #a83e34;
+    --fall-1: #20304d; --fall-2: #284878; --fall-3: #3060b0;
+    --zero: #313846; --na: #1f232b;
     --c-seoul: #ae98ff; --c-busan: #38cfbb; --c-nat: #8a909b; --c-bronze: #f0ad47; --warn: #f0ad47;
     --river: #213d59; --land-line: #0e1014; --map-shadow: rgba(0, 0, 0, .55);
     --shadow: none; --accent: #9dbdff;
@@ -132,9 +132,9 @@
   .sig { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 650; border-radius: 999px; padding: 4px 10px 4px 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2); }
   .sig i { font-style: normal; font-size: 11px; width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--raised); color: var(--ink-3); }
   .sig.p { border-color: color-mix(in srgb, var(--rise) 35%, var(--border)); background: color-mix(in srgb, var(--rise) 8%, var(--surface)); color: var(--ink); }
-  .sig.p i { background: var(--rise); color: #fff; }
+  .sig.p i { background: var(--rise); color: var(--surface); }
   .sig.n { border-color: color-mix(in srgb, var(--fall) 35%, var(--border)); background: color-mix(in srgb, var(--fall) 8%, var(--surface)); color: var(--ink); }
-  .sig.n i { background: var(--fall); color: #fff; }
+  .sig.n i { background: var(--fall); color: var(--surface); }
   .sig-sum { font-size: 12.5px; color: var(--ink-3); width: 100%; margin-top: 2px; }
   .sig-sum b.up { color: var(--rise); } .sig-sum b.down { color: var(--fall); }
   .heat-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 750; border-radius: 999px; padding: 3px 11px; border: 1px solid var(--border); background: var(--surface); }
@@ -144,7 +144,7 @@
   .heat-chip.h-0 { color: var(--ink-2); }
   .h-heat { display: flex; flex-direction: column; gap: 3px; }
   .hs-strip { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; }
-  .hs-strip i { height: 10px; border-radius: 2px; background: var(--zero); }
+  .hs-strip i { height: 10px; border-radius: 2px; background: var(--zero); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent); }
   .hs-strip i.h-r1 { background: var(--rise-1); } .hs-strip i.h-r2 { background: var(--rise-2); } .hs-strip i.h-r3 { background: var(--rise-3); }
   .hs-strip i.h-f1 { background: var(--fall-1); } .hs-strip i.h-f2 { background: var(--fall-2); } .hs-strip i.h-f3 { background: var(--fall-3); }
   .hs-l { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-3); }
@@ -191,7 +191,7 @@
   .geo .sel { fill: none; stroke: var(--ink); stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
   .geo text { pointer-events: none; font-variant-numeric: tabular-nums; }
   .geo .ln-n { font-size: 11.5px; font-weight: 750; fill: var(--ink); }
-  .geo .ln-v { font-size: 11px; font-weight: 650; fill: var(--ink-2); }
+  .geo .ln-v { font-size: 11px; font-weight: 700; fill: var(--ink); }
   .geo .co rect { fill: var(--surface); stroke: var(--border); }
   .geo .co.big rect { stroke-width: 1.6; }
   .geo .co .n { font-size: 11.5px; font-weight: 800; fill: var(--ink); }
@@ -266,7 +266,7 @@
   .quad .qbg { opacity: .55; }
   .quad .q-ul { fill: var(--fall-1); } .quad .q-ur { fill: var(--rise-1); } .quad .q-ll { fill: var(--fall-2); } .quad .q-lr { fill: var(--raised); }
   .quad .qt { font-size: 12.5px; font-weight: 800; fill: var(--ink); }
-  .quad .qd { font-size: 11px; fill: var(--ink-3); }
+  .quad .qd { font-size: 11px; fill: var(--ink-2); }
   .quad .ax { font-size: 11px; fill: var(--ink-3); }
   .quad .axl { font-size: 11.5px; fill: var(--ink-3); font-weight: 650; }
   .quad .zero { stroke: var(--ink-3); stroke-width: 1.2; }
@@ -338,7 +338,7 @@
   .b-sub { font-size: 14px; font-weight: 700; color: var(--ink-2); }
   .brief ul { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
   .brief li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
-  .brief li > span:first-child { font-size: 11.5px; font-weight: 800; color: var(--ink-3); background: var(--raised); border-radius: 6px; text-align: center; padding: 2px 0; height: fit-content; margin-top: 1px; }
+  .brief li > span:first-child { font-size: 11.5px; font-weight: 800; color: var(--ink-2); background: var(--raised); border-radius: 6px; text-align: center; padding: 2px 0; height: fit-content; margin-top: 1px; }
   .brief li b { color: var(--ink); }
   .brief.common ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 24px; }
   @media (max-width: 900px) { .brief.common ul { grid-template-columns: minmax(0, 1fr); } }
@@ -349,7 +349,7 @@
   .tr-h span { font-size: 12px; color: var(--ink-3); }
   .spd, .brd { position: relative; }
   .spd svg, .brd svg { display: block; width: 100%; overflow: visible; }
-  .spd .bar-u { fill: var(--rise); opacity: .42; } .spd .bar-d { fill: var(--fall); opacity: .42; }
+  .spd .bar-u { fill: var(--rise); opacity: .55; } .spd .bar-d { fill: var(--fall); opacity: .55; }
   .spd .ma { fill: none; stroke: var(--cc); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
   .spd .gl { stroke: var(--grid); } .spd .zero { stroke: var(--ink-3); stroke-width: 1; }
   .spd .ax, .brd .ax { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
@@ -424,11 +424,11 @@
   .tline .rl { font-size: 12px; font-weight: 800; fill: var(--ink); }
   .tline .rs { font-size: 10.5px; fill: var(--ink-3); }
   .tline .vl { font-size: 10.5px; fill: var(--ink-2); font-variant-numeric: tabular-nums; font-weight: 650; }
-  .tline .tt { font-size: 12px; font-weight: 800; }
-  .tline .tv { font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .tline .ts { font-size: 10.5px; font-variant-numeric: tabular-nums; }
+  .tline .tt { font-size: 12px; font-weight: 800; fill: var(--ink); }
+  .tline .tv { font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; fill: var(--ink); }
+  .tline .ts { font-size: 10.5px; font-variant-numeric: tabular-nums; fill: var(--ink-2); }
   .tline .wl { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
-  .tline .bar-u { fill: var(--rise); opacity: .5; } .tline .bar-d { fill: var(--fall); opacity: .5; }
+  .tline .bar-u { fill: var(--rise); opacity: .6; } .tline .bar-d { fill: var(--fall); opacity: .6; }
   .tline .mu { fill: var(--rise); opacity: .75; } .tline .md { fill: var(--fall); opacity: .75; }
   .tline .ma { fill: none; stroke: var(--cc); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
   .tline .zero { stroke: var(--ink-3); stroke-width: 1; } .tline .sep { stroke: var(--grid); }
@@ -1082,8 +1082,10 @@ function quad() {
     const a = p[0], z = p[n - 1], zx = X(z[1]), zy = Y(z[2]), out = zx >= x0;
     g += `<text x="${X(a[1]).toFixed(1)}" y="${(Y(a[2]) - 7).toFixed(1)}" text-anchor="middle" class="lab-s">${a[0]}</text>`;
     g += `<circle cx="${zx.toFixed(1)}" cy="${zy.toFixed(1)}" r="7.5" style="fill:var(${c.col});stroke:var(--surface);stroke-width:2.5"><title>${c.nm} ${z[0]}</title></circle>`;
+    const lw = tw(`${c.nm} ${z[0]}`, 13) + 4, near = (x0b, x1b) => p.slice(0, -1).filter(q => { const qx = X(q[1]), qy = Y(q[2]); return qx >= x0b && qx <= x1b && Math.abs(qy - zy) < 14; }).length;
+    const right = near(zx + 8, zx + 12 + lw) <= near(zx - 12 - lw, zx - 8) ? (zx + 12 + lw <= R || !(zx - 12 - lw >= L)) : !(zx - 12 - lw >= L);
     g += narrow ? `<text x="${zx.toFixed(1)}" y="${(zy - 13).toFixed(1)}" text-anchor="middle" class="lab" style="fill:var(${c.col})">${c.nm}</text>`
-      : `<text x="${(zx + (out ? 12 : -12)).toFixed(1)}" y="${(zy + 4.5).toFixed(1)}" text-anchor="${out ? "start" : "end"}" class="lab" style="fill:var(${c.col})">${c.nm} ${z[0]}</text>`;
+      : `<text x="${(zx + (right ? 12 : -12)).toFixed(1)}" y="${(zy + 4.5).toFixed(1)}" text-anchor="${right ? "start" : "end"}" class="lab" style="fill:var(${c.col})">${c.nm} ${z[0]}</text>`;
   });
   el.innerHTML = `<svg class="quad" viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="시장 국면 지도">${g}</svg>`;
 }
@@ -1334,10 +1336,11 @@ function timeline(g, el) {
   const T2 = T1 + H1 + 16, H2 = Wd < 480 ? 42 : 60;
   s += `<text x="2" y="${T2 + 17}" class="rl">많이 나온</text><text x="2" y="${T2 + 32}" class="rl">주제</text>`;
   ws.forEach((w, i) => { const tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v), a = tops[0], b2 = tops[1], thin = w.g[g].n < 30;
-    const al = 12 + Math.min(1, a.v / 45) * 50, fc = al > 38 ? "#fff" : "var(--ink)";
+    const al = 8 + Math.min(1, a.v / 45) * 26;
     s += `<rect x="${(X(i) - cw / 2 + 2).toFixed(1)}" y="${T2}" width="${(cw - 4).toFixed(1)}" height="${H2}" rx="7" style="fill:color-mix(in srgb, var(--accent) ${al.toFixed(0)}%, var(--surface));${thin ? "opacity:.45" : ""}"/>`;
-    s += `<text x="${X(i).toFixed(1)}" y="${T2 + 18}" text-anchor="middle" class="tt" style="fill:${fc}">${esc(TSHORT[a.t.key])}</text><text x="${X(i).toFixed(1)}" y="${T2 + 33}" text-anchor="middle" class="tv" style="fill:${fc}">${a.v.toFixed(0)}%</text>`;
-    if (H2 > 50 && b2 && b2.v >= 10) s += `<text x="${X(i).toFixed(1)}" y="${T2 + 51}" text-anchor="middle" class="ts" style="fill:${fc};opacity:.85">${esc(TSHORT[b2.t.key])} ${b2.v.toFixed(0)}%</text>`; });
+    const dim = thin ? ' style="fill:var(--ink-3)"' : "";   // 기사 30건 미만인 주는 글자도 흐리게
+    s += `<text x="${X(i).toFixed(1)}" y="${T2 + 18}" text-anchor="middle" class="tt"${dim}>${esc(TSHORT[a.t.key])}</text><text x="${X(i).toFixed(1)}" y="${T2 + 33}" text-anchor="middle" class="tv"${dim}>${a.v.toFixed(0)}%</text>`;
+    if (H2 > 50 && b2 && b2.v >= 10) s += `<text x="${X(i).toFixed(1)}" y="${T2 + 51}" text-anchor="middle" class="ts"${dim}>${esc(TSHORT[b2.t.key])} ${b2.v.toFixed(0)}%</text>`; });
   const T3 = T2 + H2 + 16, H3 = 34, mid = T3 + H3 / 2, md = ws.map(w => st.share(w, "up") - st.share(w, "down")), mm = Math.max(10, ...md.map(v => Math.abs(v || 0)));
   s += `<text x="2" y="${mid - 2}" class="rl">제목 논조</text><text x="2" y="${mid + 12}" class="rs">상승−하락</text>`;
   s += `<line x1="${PL}" x2="${Wd - PR}" y1="${mid}" y2="${mid}" class="sep"/>`;
