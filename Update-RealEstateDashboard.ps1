@@ -1,9 +1,10 @@
 ﻿#Requires -Version 7
 # 부동산 시장 Dashboard(서울·부산 아파트) 생성 스크립트.
 #
-# 하는 일: 한국부동산원 R-ONE(주간·월간 아파트 통계)과 한국은행 ECOS(금리·미분양·인허가·주택가격전망)를 받아
-# data-history.json 에 쌓고, template.html 의 __DATA_JSON__ 자리에 넣어 dashboard.html 을 만든다.
-# 화면의 계산(주간 변동률, 연속 상승·하락 주, 누적 변동, 구별 표)은 template.html 의 스크립트가 한다.
+# 하는 일: 한국부동산원 R-ONE(주간·월간 아파트 통계, 월세, 매입자 거주지·연령)과 한국은행 ECOS(금리·미분양·인허가·
+# 주택가격전망·주택 수)를 받아 data-history.json 에 쌓는다. 구글 뉴스 RSS(최근 7일)도 받는다(쌓지 않음).
+# template.html 의 __DATA_JSON__ 자리에 자료를, __GEO_JSON__ 자리에 지도 경계(geo/maps.json)를 넣어 dashboard.html 을 만든다.
+# 화면의 계산(변동률, 연속 주, 시장 온도, 지도 색, 월 상환액 등)은 template.html 의 스크립트가 한다.
 #
 # 인증키가 필요 없다. R-ONE 은 키가 없으면 한 번에 5행만 주고 페이지(pIndex)도 무시하므로, 지역(CLS_ID)과
 # 기간(START_WRTTIME~END_WRTTIME)을 좁혀 5행씩 이어 받는다. 그래서 처음 실행(3년치·1년치 채우기)은 1,500번쯤
@@ -113,12 +114,13 @@ function Get-NextPeriod([string]$id, [string]$cycle) {
 }
 
 # 기간 범위를 5행씩 이어 받는다(최신 주 찾기와, 구간 요청이 5행으로 꽉 차 잘렸을 때 나머지를 받을 때만 쓴다).
-function Get-RoneRange([string]$table, [string]$cycle, $cls, [string]$from, [string]$to, $itm = $null) {
+function Get-RoneRange([string]$table, [string]$cycle, $cls, [string]$from, [string]$to, $itm = $null, $grp = $null) {
     $rows = [System.Collections.Generic.List[object]]::new()
     $start = $from
     for ($guard = 0; $guard -lt 300; $guard++) {
         $q = [ordered]@{ STATBL_ID = $table; DTACYCLE_CD = $cycle; CLS_ID = $cls; START_WRTTIME = $start; END_WRTTIME = $to }
         if ($itm) { $q.ITM_ID = $itm }
+        if ($grp) { $q.GRP_ID = $grp }
         $page = @(Invoke-Rone $q)
         if ($page.Count -eq 0) { break }
         foreach ($p in $page) { $rows.Add($p) }
@@ -140,12 +142,13 @@ function Split-Periods([string[]]$ids, [int]$size, [string]$last) {
         , @($ids[$i], $end)
     })
 }
-# 구간 요청들을 만든다. key 는 data-history 의 계열 이름.
-function New-RoneRequests([string]$key, [string]$table, [string]$cycle, $cls, $itm, [object[]]$windows) {
+# 구간 요청들을 만든다. key 는 data-history 의 계열 이름. grp 는 지역을 GRP_ID 로 고르는 표(매입자 표)에만 쓴다.
+function New-RoneRequests([string]$key, [string]$table, [string]$cycle, $cls, $itm, [object[]]$windows, $grp = $null) {
     @(foreach ($w in $windows) {
         $q = [ordered]@{ STATBL_ID = $table; DTACYCLE_CD = $cycle; CLS_ID = $cls; START_WRTTIME = $w[0]; END_WRTTIME = $w[1] }
         if ($itm) { $q.ITM_ID = $itm }
-        [PSCustomObject]@{ key = $key; table = $table; cycle = $cycle; cls = $cls; itm = $itm; end = $w[1]; uri = (Get-RoneUri $q); rows = $null; err = $null }
+        if ($grp) { $q.GRP_ID = $grp }
+        [PSCustomObject]@{ key = $key; table = $table; cycle = $cycle; cls = $cls; itm = $itm; grp = $grp; end = $w[1]; uri = (Get-RoneUri $q); rows = $null; err = $null }
     })
 }
 # 구간 요청을 보내고, 5행으로 꽉 찬 구간은 마지막 행 다음부터 나머지를 받는다. 계열마다 행 목록과 실패 여부를 돌려준다.
@@ -159,7 +162,7 @@ function Get-RoneSeriesRows([object[]]$reqs) {
         foreach ($row in @($r.rows)) { $out[$r.key].rows.Add($row) }
         $rows = @($r.rows)
         if ($rows.Count -ge 5 -and [string]$rows[-1].WRTTIME_IDTFR_ID -lt $r.end) {
-            try { foreach ($row in (Get-RoneRange $r.table $r.cycle $r.cls (Get-NextPeriod ([string]$rows[-1].WRTTIME_IDTFR_ID) $r.cycle) $r.end $r.itm)) { $out[$r.key].rows.Add($row) } }
+            try { foreach ($row in (Get-RoneRange $r.table $r.cycle $r.cls (Get-NextPeriod ([string]$rows[-1].WRTTIME_IDTFR_ID) $r.cycle) $r.end $r.itm $r.grp)) { $out[$r.key].rows.Add($row) } }
             catch { $out[$r.key].failed++ }
         }
     }
@@ -191,6 +194,12 @@ foreach ($r in $config.regions) {
             foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$d[1]; weeks = [int]$config.rone.weeksShort }) }
         }
     }
+}
+# 전국 지도용 시·도 매매(서울·부산처럼 위에서 이미 받는 지역은 건너뛴다)
+$cityCls = @($config.regions | ForEach-Object { [int]$_.cls })
+foreach ($p in $config.provinces) {
+    if ($cityCls -contains [int]$p.cls) { continue }
+    $weeklyJobs.Add(@{ t = "sale"; cls = [int]$p.cls; weeks = [int]$config.rone.weeksShort })
 }
 
 # 계열마다 받을 주를 정한다. 이미 받은 값이 필요한 처음 주까지 닿으면 마지막으로 받은 주의 한 주 전부터만(발표 뒤 고쳐지는 일에 대비).
@@ -227,14 +236,17 @@ $monthFrom = $nowKst.AddMonths(-[int]$config.rone.monthsBack).ToString("yyyyMM")
 $monthTo = $nowKst.ToString("yyyyMM")
 $reqs = [System.Collections.Generic.List[object]]::new()
 foreach ($m in $config.rone.monthly) {
+    # 6차 화면에 더한 표(월세·매입자)는 months 로 받을 기간을 짧게 둔다
+    $mFrom = if ($m.months) { $nowKst.AddMonths(-[int]$m.months).ToString("yyyyMM") } else { $monthFrom }
     foreach ($p in $m.cls.PSObject.Properties) {
         $key = "$($m.key):$($p.Name)"
+        $grp = if ($m.grp) { $m.grp.($p.Name) } else { $null }
         if (-not $hist.monthly.ContainsKey($key)) { $hist.monthly[$key] = @{} }
         $have = @($hist.monthly[$key].Keys | Sort-Object)
-        $from = if ($have.Count -and ($have[0] -replace '-', '') -le $monthFrom) { ($have[[math]::Max(0, $have.Count - 3)] -replace '-', '') } else { $monthFrom }
+        $from = if ($have.Count -and ($have[0] -replace '-', '') -le $mFrom) { ($have[[math]::Max(0, $have.Count - 3)] -replace '-', '') } else { $mFrom }
         $ids = [System.Collections.Generic.List[string]]::new()
         for ($id = $from; $id -le $monthTo; $id = Get-NextPeriod $id "MM") { $ids.Add($id) }
-        foreach ($q in (New-RoneRequests $key $m.id "MM" $p.Value $m.itm (Split-Periods $ids.ToArray() 5 $monthTo))) { $reqs.Add($q) }
+        foreach ($q in (New-RoneRequests $key $m.id "MM" $p.Value $m.itm (Split-Periods $ids.ToArray() 5 $monthTo) $grp)) { $reqs.Add($q) }
     }
 }
 $got = Get-RoneSeriesRows $reqs.ToArray()
@@ -258,10 +270,12 @@ foreach ($e in $config.ecos) {
     if (-not $hist.ecos.ContainsKey($e.key)) { $hist.ecos[$e.key] = @{} }
     $store = $hist.ecos[$e.key]
     $items = (@($e.item1, $e.item2) | Where-Object { $_ }) -join "/"
+    $annual = $e.cycle -eq "A"
+    $range = if ($annual) { "A/$($nowKst.Year - 6)/$($nowKst.Year)" } else { "M/$eFrom/$eTo" }
     try {
         $got = 0
         for ($from = 1; $from -le 200; $from += 10) {
-            $uri = "https://ecos.bok.or.kr/api/StatisticSearch/$([uri]::EscapeDataString($ecosKey))/json/kr/$from/$($from + 9)/$($e.code)/M/$eFrom/$eTo/$items"
+            $uri = "https://ecos.bok.or.kr/api/StatisticSearch/$([uri]::EscapeDataString($ecosKey))/json/kr/$from/$($from + 9)/$($e.code)/$range/$items"
             $resp = $null
             for ($try = 1; $try -le 2 -and -not $resp; $try++) {
                 try { $resp = Invoke-RestMethod -Uri $uri -Headers $ua -TimeoutSec 30 } catch { if ($try -eq 2) { throw }; Start-Sleep -Seconds 3 }
@@ -270,7 +284,9 @@ foreach ($e in $config.ecos) {
             $page = @($resp.StatisticSearch.row)
             foreach ($r in $page) {
                 $t = [string]$r.TIME
-                if ($t -match '^\d{6}$' -and [string]$r.DATA_VALUE -match '^-?[\d.]+$') { $store["$($t.Substring(0, 4))-$($t.Substring(4, 2))"] = [double]$r.DATA_VALUE; $got++ }
+                if ([string]$r.DATA_VALUE -notmatch '^-?[\d.]+$') { continue }
+                if ($annual -and $t -match '^\d{4}$') { $store[$t] = [double]$r.DATA_VALUE; $got++ }
+                elseif ($t -match '^\d{6}$') { $store["$($t.Substring(0, 4))-$($t.Substring(4, 2))"] = [double]$r.DATA_VALUE; $got++ }
             }
             if ($page.Count -lt 10) { break }
             Start-Sleep -Milliseconds 200
@@ -284,6 +300,41 @@ foreach ($e in $config.ecos) {
 $status["ecos"] = [ordered]@{ ok = ($ecosFailed.Count -eq 0); note = if ($ecosFailed.Count) { "$($ecosFailed -join ', ') 은 저장해 둔 값입니다" } else { "" } }
 
 Write-History $hist
+
+# ---- 뉴스(구글 뉴스 RSS, 최근 7일) -------------------------------------------------------------
+# 쌓지 않고 그날 받은 것만 화면에 넣는다. 시장 낱말(keep)이 있는 제목만, 사건·사고(drop)는 빼고, 앞 14글자가 같은 제목은 하나만.
+Write-Host "뉴스..."
+$news = [ordered]@{}; $newsFailed = @()
+$keep = [regex]::new($config.news.keep); $drop = [regex]::new($config.news.drop)
+foreach ($p in $config.news.queries.PSObject.Properties) {
+    $list = [System.Collections.Generic.List[object]]::new()
+    try {
+        $q = [uri]::EscapeDataString("$($p.Value) when:7d")
+        $items = @(Invoke-RestMethod -Uri "https://news.google.com/rss/search?q=$q&hl=ko&gl=KR&ceid=KR:ko" -Headers $ua -TimeoutSec 30)
+        $rows = @(foreach ($it in $items) {
+            $src = if ($it.source -is [string]) { $it.source } else { [string]$it.source.'#text' }
+            $t = [string]$it.title
+            if ($src -and $t.EndsWith(" - $src")) { $t = $t.Substring(0, $t.Length - $src.Length - 3) }
+            $when = try { [DateTimeOffset]::Parse([string]$it.pubDate, [Globalization.CultureInfo]::InvariantCulture) } catch { $null }
+            if ($when) { [PSCustomObject]@{ t = $t.Trim(); s = $src; when = $when; u = [string]$it.link } }
+        }) | Sort-Object when -Descending
+        $seen = @{}
+        foreach ($r in $rows) {
+            if (-not $keep.IsMatch($r.t) -or $drop.IsMatch($r.t)) { continue }
+            $k = $r.t -replace '\W', ''; $k = $k.Substring(0, [math]::Min(14, $k.Length))
+            if ($seen.ContainsKey($k)) { continue }
+            $seen[$k] = 1
+            $kst = [TimeZoneInfo]::ConvertTime($r.when, $tz)
+            $list.Add([ordered]@{ t = $r.t; s = $r.s; d = $kst.ToString("M/d"); u = $r.u })
+            if ($list.Count -ge [int]$config.news.perTopic) { break }
+        }
+    } catch {
+        $newsFailed += $p.Name
+        Write-Warning "뉴스 $($p.Name) 실패: $($_.Exception.Message)"
+    }
+    $news[$p.Name] = $list
+}
+$status["news"] = [ordered]@{ ok = ($newsFailed.Count -eq 0); note = if ($newsFailed.Count) { "$($newsFailed -join ', ') 뉴스를 받지 못했습니다" } else { "" } }
 
 # ---- 화면에 넣을 자료 ------------------------------------------------------------------------
 # 주간: 도시 계열이 가진 주들을 한 줄 축으로 삼고, 모든 계열을 그 축에 맞춰 값 배열로 둔다(없으면 null).
@@ -309,7 +360,9 @@ $data = [ordered]@{
     }
     monthly   = $monthly
     ecos      = $ecos
-    meta      = [ordered]@{ monthly = $config.rone.monthly; ecos = $config.ecos; regions = $config.regions }
+    news      = $news
+    meta      = [ordered]@{ monthly = $config.rone.monthly; ecos = $config.ecos; regions = $config.regions; provinces = $config.provinces
+                            population = $config.population; policies = $config.policies; events = $config.events }
     status    = $status
 }
 $json = ConvertTo-Json $data -Depth 12 -Compress
@@ -317,6 +370,9 @@ $json = ConvertTo-Json $data -Depth 12 -Compress
 $json = $json -replace '</', '<\/'
 $template = Get-Content -Raw -Encoding utf8 (Join-Path $root "template.html")
 if ($template -notmatch '__DATA_JSON__') { throw "template.html 에 __DATA_JSON__ 자리가 없습니다" }
-$html = $template.Replace("__DATA_JSON__", $json)
+# 지도 경계(통계청 2018 행정구역을 tools/build-geo.py 로 줄여 SVG 좌표로 바꾼 것)
+$geo = (Get-Content -Raw -Encoding utf8 (Join-Path $root "geo/maps.json")).Trim()
+if ($template -notmatch '__GEO_JSON__') { throw "template.html 에 __GEO_JSON__ 자리가 없습니다" }
+$html = $template.Replace("__GEO_JSON__", $geo).Replace("__DATA_JSON__", $json)
 [IO.File]::WriteAllText((Join-Path $root $Out), $html, [Text.UTF8Encoding]::new($false))
 Write-Host "완료: $Out ($([math]::Round($html.Length / 1024))KB), 주 $($axisWeeks.Count)개, R-ONE 호출 $script:roneCalls 번"
