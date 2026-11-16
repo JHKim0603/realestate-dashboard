@@ -331,7 +331,8 @@ function Get-GNews([string]$q) {
 function ConvertTo-NewsItem($it) {
     $src = if ($it.source -is [string]) { $it.source } else { [string]$it.source.'#text' }
     $t = [string]$it.title
-    if ($src -and $t.EndsWith(" - $src")) { $t = $t.Substring(0, $t.Length - $src.Length - 3) }
+    # 언론사가 제목에 " - 언론사"를 이미 넣은 경우 구글이 한 번 더 붙이므로 끝에서 되풀이해 지운다
+    while ($src -and $t.TrimEnd().EndsWith(" - $src")) { $t = $t.TrimEnd(); $t = $t.Substring(0, $t.Length - $src.Length - 3) }
     $t = $t.Trim()
     if (-not $t -or -not $keep.IsMatch($t) -or $drop.IsMatch($t)) { return }
     $when = try { [DateTimeOffset]::Parse([string]$it.pubDate, [Globalization.CultureInfo]::InvariantCulture) } catch { $null }
@@ -394,7 +395,7 @@ $weekOut = @(foreach ($k in ($wkKeys | Select-Object -Last ([int]$nc.weeks))) {
 })
 $items = [ordered]@{}; foreach ($g in $groupNames) { $items[$g] = @($nh.items[$g]) }
 $news = [ordered]@{
-    topics = @($nc.topics | ForEach-Object { [ordered]@{ key = $_.key; name = $_.name; mood = $(if ($_.mood) { [int]$_.mood } else { 0 }) } })
+    topics = @($nc.topics | ForEach-Object { [ordered]@{ key = $_.key; name = $_.name; short = $(if ($_.short) { $_.short } else { $_.name }); mood = $(if ($_.mood) { [int]$_.mood } else { 0 }) } })
     groups = [ordered]@{}; weeks = $weekOut; items = $items
 }
 $news.queries = [ordered]@{}

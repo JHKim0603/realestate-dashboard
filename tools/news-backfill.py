@@ -51,7 +51,7 @@ def fetch(q):
     out = []
     for it in root.findall("./channel/item"):
         t, src = (it.findtext("title") or "").strip(), (it.findtext("source") or "").strip()
-        if src and t.endswith(" - " + src):
+        while src and t.endswith(" - " + src):   # 언론사 이름이 두 번 붙은 제목도 있다
             t = t[: -len(src) - 3].strip()
         if not t or not KEEP.search(t) or DROP.search(t):
             continue
