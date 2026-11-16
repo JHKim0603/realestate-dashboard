@@ -3,12 +3,25 @@ name: Update Real Estate Dashboard
 on:
   schedule:
     # 한국부동산원 주간 아파트 가격동향은 매주 목요일 14시(KST)에 나오고, 월간 통계와 한국은행 자료는 달 중순에 나온다.
-    # 메일을 보내지 않는 페이지라 정확한 시각이 필요 없어 하루 두 번만 둔다. GitHub 예약 실행은 몇 시간씩 늦게 시작하므로
-    # (work-dashboard 실측 3~8시간) 늦어도 그날 안에 목요일 발표가 반영되도록 오후 슬롯을 이른 시각에 둔다.
-    # 정시·30분은 GitHub 큐가 가장 붐비는 때라 피했다.
+    # 하루 두 번만 둔다. GitHub 예약 실행은 몇 시간씩 늦게 시작하므로(work-dashboard 실측 3~8시간) 늦어도 그날 안에
+    # 목요일 발표가 반영되도록 오후 슬롯을 이른 시각에 둔다. 정시·30분은 GitHub 큐가 가장 붐비는 때라 피했다.
+    # 주간 요약 메일은 목요일 발표가 반영된 첫 실행(보통 목요일 오후~금요일 오전)에서 한 번만 나간다(아래 mailgate).
     - cron: '17 5 * * *'    # KST 14:17
     - cron: '43 21 * * *'   # KST 06:43
   workflow_dispatch:
+    inputs:
+      send_email:
+        description: "주간 메일 보내기(끄면 시험 실행: 메일 없이 화면만)"
+        type: boolean
+        default: true
+      force_email:
+        description: "이번 주에 이미 보냈어도 지금 다시 보내기"
+        type: boolean
+        default: false
+      mail_preview:
+        description: "메일을 보내지 않고 본문·그림만 만들어 실행 결과(artifact)로 올리기"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -24,6 +37,9 @@ jobs:
     runs-on: ubuntu-latest
     # 평소에는 1~2분, 처음 채우는 실행도 몇 분이면 끝난다. 서버가 답을 주지 않아 길어지면 여기서 끊는다.
     timeout-minutes: 20
+    env:
+      # 메일 비밀값이 저장소에 있는지(값은 보지 않는다). 없으면 메일 단계를 조용히 건너뛴다.
+      HAS_MAIL: ${{ secrets.GMAIL_USERNAME != '' && secrets.GMAIL_APP_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -39,13 +55,83 @@ jobs:
         shell: pwsh
         run: ./Update-RealEstateDashboard.ps1
 
-      - name: Commit history
+      # 주간 메일은 한 주(KST, ISO 주)에 한 번. .last-weekly-mail 에 실제로 보낸 주를 적어 두고(커밋), 같은 주에는 다시 보내지 않는다.
+      # 보낼 때: 그 주 월요일 조사분(목요일 발표)이 들어온 첫 실행. 발표가 없던 주(명절 등)는 일요일에 지난 자료로 보낸다.
+      # 보내기에 실패하면 표시를 남기지 않아 다음 실행이 다시 보낸다. 시험 브랜치에서는 보내지 않는다.
+      - name: Decide whether this week's mail goes out
+        id: mailgate
+        run: |
+          today=$(TZ=Asia/Seoul date +%F); dow=$(TZ=Asia/Seoul date +%u); week=$(TZ=Asia/Seoul date +%G-W%V)
+          monday=$(date -d "$today -$((dow - 1)) days" +%F)
+          latest=$(jq -r '[.weekDates[]] | max' data-history.json)
+          last=$(cat .last-weekly-mail 2>/dev/null | tr -d '[:space:]')
+          echo "week=$week" >> "$GITHUB_OUTPUT"
+          send=false; why=""
+          if [[ "${GITHUB_REF_NAME}" != "main" ]]; then why="시험 브랜치(${GITHUB_REF_NAME})"
+          elif [[ "${{ inputs.send_email }}" == "false" ]]; then why="send_email=false(시험 실행)"
+          elif [[ "$HAS_MAIL" != "true" ]]; then why="저장소에 GMAIL_USERNAME·GMAIL_APP_PASSWORD 비밀값이 없음"
+          elif [[ "${{ inputs.force_email }}" == "true" ]]; then send=true; why="force_email"
+          elif [[ "$last" == "$week" ]]; then why="이번 주($week) 메일은 이미 보냄"
+          elif [[ "$latest" > "$monday" || "$latest" == "$monday" ]]; then send=true; why="이번 주 조사분($latest)이 들어옴"
+          elif [[ "$dow" == "7" ]]; then send=true; why="이번 주 발표가 없어 일요일에 지난 자료($latest)로"
+          else why="이번 주 조사분이 아직 없음(최신 $latest, 이번 주 월요일 $monday)"; fi
+          echo "send=$send" >> "$GITHUB_OUTPUT"
+          build=$send
+          if [[ "${{ inputs.mail_preview }}" == "true" ]]; then build=true; fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "주간 메일: send=$send build=$build - $why"
+
+      # 메일 본문·그림: 화면과 같은 자료(dashboard.html 안의 JSON)로 그리고 크롬으로 PNG 를 찍는다(tools/weekly-mail.py).
+      # 우분투 실행 환경에는 한글 글꼴이 없어 나눔고딕을 설치한다. 그림이 실패해도 메일은 글로 나간다.
+      - name: Draw weekly mail
+        id: draw
+        if: steps.mailgate.outputs.build == 'true'
         continue-on-error: true
         run: |
-          if [[ -n "$(git status --porcelain data-history.json)" ]]; then
+          sudo apt-get update -qq > /dev/null && sudo apt-get install -y -qq fonts-nanum > /dev/null && fc-cache -f > /dev/null || true
+          python3 tools/weekly-mail.py
+          echo "subject=$(cat email-subject.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload mail preview
+        if: inputs.mail_preview == true && steps.draw.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: weekly-mail-preview
+          path: |
+            email-summary.html
+            email-subject.txt
+            mail-charts/
+
+      # 메일이 실패해도(비밀값 만료, SMTP 장애) 화면 배포는 계속한다.
+      - name: Send weekly mail
+        id: mail
+        if: steps.mailgate.outputs.send == 'true' && steps.draw.outcome == 'success'
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v22
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: ${{ steps.draw.outputs.subject }}
+          to: jhyupkim@unid.co.kr
+          from: 부동산 시장 Dashboard <${{ secrets.GMAIL_USERNAME }}>
+          html_body: file://email-summary.html
+          # 첨부 그림은 파일 이름이 cid 가 되어 본문의 <img src="cid:파일이름"> 자리에 보인다.
+          attachments: mail-charts/*.png
+
+      - name: Mark this week as mailed
+        if: steps.mail.outcome == 'success'
+        run: echo "${{ steps.mailgate.outputs.week }}" > .last-weekly-mail
+
+      - name: Commit history and mail marker
+        continue-on-error: true
+        run: |
+          if [[ -n "$(git status --porcelain data-history.json .last-weekly-mail)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data-history.json
+            [[ -f .last-weekly-mail ]] && git add .last-weekly-mail
             git commit -m "chore: accumulate history $(TZ=Asia/Seoul date +%Y-%m-%d)"
             git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
             git push

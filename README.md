@@ -4,7 +4,7 @@
 페이지를 다시 만들고 GitHub Pages 로 배포합니다: https://jhkim0603.github.io/realestate-dashboard/
 
 work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스크립트가 `template.html` 의 자리표시자를 자료로 채우고,
-받은 값을 `data-history.json` 에 쌓습니다).
+받은 값을 `data-history.json` 에 쌓습니다). 일주일에 한 번 주간 요약 메일을 보냅니다(아래 '주간 메일').
 
 ## 화면
 
@@ -30,6 +30,21 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
 
 색: 빨강은 상승(또는 집값을 올리는 쪽), 파랑은 하락(내리는 쪽). 지도 칸 색은 기간마다 고정된 경계로 3단계씩 진해집니다.
 선 색은 서울 보라, 부산 청록, 전국 회색입니다. 밝은·어두운 화면을 모두 지원하고, 글꼴은 Pretendard(jsDelivr, 없으면 시스템 글꼴)입니다.
+
+## 주간 메일
+
+목요일에 한국부동산원 주간 통계가 나오면, 그것이 반영된 첫 실행(보통 목요일 오후~금요일 오전)에서 jhyupkim@unid.co.kr 로 한 번 보냅니다.
+
+- 내용: 서울·부산 각각 최근 3개월 방향(큰 글자), 연속 주, 이번 주·3개월·1년 변동, 1년 흐름 그림, "1년 새 약 얼마", 신호 5개,
+  최근 4주 구별 지도와 많이 오른·내린 곳, 전국 17개 시·도 지도와 순위, 숫자 이슈, 서울·부산·정책 뉴스 3건씩, 다가오는 일정.
+- 만드는 곳: `tools/weekly-mail.py`(표준 라이브러리만). 생성된 `dashboard.html` 의 자료로 화면과 같은 계산을 하고, 그림은 SVG 를
+  크롬으로 찍은 PNG 를 첨부해 본문에서 `cid:` 로 부릅니다(work·stock 의 `mail_charts.py` 와 같은 방식).
+- 한 주에 한 번: 실제로 보낸 주(ISO 주, KST)를 `.last-weekly-mail` 에 적어 커밋합니다. 보내기에 실패하면 적지 않아 다음 실행이
+  다시 보냅니다. 발표가 없던 주(명절 등)는 일요일에 지난 자료로 보냅니다. main 이 아닌 브랜치에서는 보내지 않습니다.
+- 필요한 비밀값: 저장소 Settings → Secrets 의 `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`(work·stock 과 같은 Gmail 앱 비밀번호).
+  없으면 메일 단계만 건너뜁니다.
+- 수동 실행: `gh workflow run update-dashboard.yml -f send_email=false`(메일 없이 화면만),
+  `-f force_email=true`(이번 주에 보냈어도 지금 다시), `-f send_email=false -f mail_preview=true`(보내지 않고 본문·그림을 실행 결과로 받기).
 
 ## 자료 (모두 인증키 없이)
 
@@ -66,9 +81,15 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
   경계와 가장 먼 점)와 한강·낙동강 선(강 한가운데를 지나는 구 경계)을 만듭니다. 좁은 구의 바다 쪽 이름표 자리는 `template.html` 의 `CALL`.
 - `config.json`: 통계표 ID, 지역 코드, ECOS 항목 코드, 시·도 코드, 인구, 정책 발표일(`policies`), 일정(`events`), 뉴스 검색어와 거르는 낱말.
 - `data-history.json`: 받은 값(봇이 커밋).
-- `.github/workflows/update-dashboard.yml`: 하루 두 번(KST 14:17, 06:43 예약, 실제로는 몇 시간 늦게 시작) 실행과 Pages 배포.
+- `tools/weekly-mail.py`: 주간 메일 본문(`email-summary.html`)·제목(`email-subject.txt`)·그림(`mail-charts/*.png`)을 만듭니다. 만든 파일은 커밋하지 않습니다.
+- `.last-weekly-mail`: 마지막으로 주간 메일을 보낸 주(봇이 커밋).
+- `.github/workflows/update-dashboard.yml`: 하루 두 번(KST 14:17, 06:43 예약, 실제로는 몇 시간 늦게 시작) 실행, 주간 메일, Pages 배포.
 
 ## 기록
+
+- **2026-11-16 주간 요약 메일.** 사용자 요청("일주일에 한 번 주간 요약 메일"). 목요일 발표가 반영된 첫 실행에서 한 번 보내고,
+  보낸 주를 `.last-weekly-mail` 로 기억합니다. 지도 이름표 자리(좁은 구를 바다 쪽으로 빼는 위치)를 `geo/maps.json` 의 `call` 로 옮겨
+  화면과 메일 그림이 같은 자리를 씁니다.
 
 - **2026-11-16 화면을 "추세가 바로 보이게" 다시 만듦(7차).** 사용자 요청: 특정 단지 내용은 빼고 서울·부산 시장 방향과 이슈만,
   누가 봐도 추세를 알 수 있게, 대한민국·서울·부산 지도를 빌려 고급스럽게. 몇 차례 시안(질문과 답 카드 → 시각화 → 부동산 포털

@@ -7,7 +7,7 @@
 #   시·도 경계는 2023년 군위군의 대구 편입이 반영되어 있지 않다(전국 지도의 색칠에는 영향 없음).
 # - TopoJSON 은 이웃한 구가 경계선(arc)을 함께 쓰므로 경계선마다 한 번씩 줄이면(Douglas-Peucker) 이웃끼리 틈이 생기지 않는다.
 # - 좌표는 위도 가운데의 cos 로 경도를 줄인 평면(작은 지역이라 충분), 너비 600(시·도 지도는 높이 기준)으로 맞춘다.
-# - 이름표 자리는 구 안에서 경계와 가장 먼 점(polylabel 근사)이다. 좁은 구는 아래 LABEL_AT 으로 바다·강 쪽에 빼고 선으로 잇는다.
+# - 이름표 자리는 구 안에서 경계와 가장 먼 점(polylabel 근사)이다. 좁은 곳은 아래 LABEL_AT 으로 바다 쪽에 빼고 선으로 잇는다.
 # - 강: 한강은 강북 구와 강남 구가 맞닿은 경계(강 한가운데)를, 낙동강은 부산 강서구와 사하·사상·북구의 경계를 따라 그린다.
 import json, math, os, sys, urllib.request
 
@@ -156,8 +156,14 @@ def river_paths(arc_ids, simp):
     return lines
 
 
-# 좁은 구의 이름표 자리(지도 좌표). 화면이 좁으면 이 자리에 이름을 두고 구 안쪽 점과 선으로 잇는다.
-LABEL_AT = {}
+# 좁은 곳의 이름표 자리(지도 좌표 x, y, 글자 정렬). 바다 쪽에 이름표를 두고 구 안쪽 점과 선으로 잇는다.
+# 대시보드 화면과 주간 메일 그림이 같은 자리를 쓴다(각 구의 "call"). 휴대폰 폭에서도 겹치지 않게 맞춘 값이다.
+LABEL_AT = {
+    "korea": {"11": [4, 70, "start"], "23": [4, 122, "start"], "29": [4, 186, "start"], "25": [4, 236, "start"], "24": [4, 330, "start"],
+              "22": [448, 252, "start"], "26": [448, 300, "start"], "21": [448, 350, "start"], "39": [222, 534, "start"]},
+    "busan": {"21010": [322, 522, "middle"], "21020": [150, 488, "middle"], "21030": [415, 462, "start"],
+              "21130": [450, 395, "start"], "21140": [450, 350, "start"]},
+}
 
 muni = load("muni"); prov = load("prov")
 ma = decode_arcs(muni); pa = decode_arcs(prov)
@@ -193,6 +199,10 @@ dok = [proj(p) for i, arc in enumerate(pa) for p in arc if p[0] > 131.8]
 if dok:
     korea["dokdo"] = [round(sum(p[0] for p in dok) / len(dok), 1), round(sum(p[1] for p in dok) / len(dok), 1)]
 out["korea"] = korea
+
+for key, calls in LABEL_AT.items():
+    for a in out[key]["areas"]:
+        if a["code"] in calls: a["call"] = calls[a["code"]]
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 with open(OUT, "w", encoding="utf-8", newline="\n") as f:

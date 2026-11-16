@@ -1,1 +1,5 @@
 dashboard.html
+# 주간 메일(실행 때 만들어 보내고 버림)
+email-summary.html
+email-subject.txt
+mail-charts/
