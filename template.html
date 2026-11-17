@@ -79,7 +79,7 @@
   .card-h h3 { font-size: 16px; font-weight: 750; margin: 0; letter-spacing: -0.01em; }
   .card-h .q { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
   .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .asof { font-size: 11px; font-weight: 700; color: var(--ink-3); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+  .asof { font-size: 12px; font-weight: 700; color: var(--ink-3); border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
   .cap { font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
   .cap b { color: var(--ink); }
   .note { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
@@ -119,7 +119,7 @@
   .h-chart .h-line { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
   .h-chart .h-zero { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 4; }
   .h-chart .h-mk { stroke: var(--grid); stroke-width: 1; }
-  .h-chart .h-ax { font-size: 11px; fill: var(--ink-3); }
+  .h-chart .h-ax { font-size: 12px; fill: var(--ink-3); }
   .h-chart .h-end { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .h-chart .hair { stroke: var(--ink-3); stroke-width: 1; }
   .h-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -130,7 +130,7 @@
   .h-money b { color: var(--ink); }
   .h-sig { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .sig { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 650; border-radius: 999px; padding: 4px 10px 4px 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-2); }
-  .sig i { font-style: normal; font-size: 11px; width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--raised); color: var(--ink-3); }
+  .sig i { font-style: normal; font-size: 12px; width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--raised); color: var(--ink-3); }
   .sig.p { border-color: color-mix(in srgb, var(--rise) 35%, var(--border)); background: color-mix(in srgb, var(--rise) 8%, var(--surface)); color: var(--ink); }
   .sig.p i { background: var(--rise); color: var(--surface); }
   .sig.n { border-color: color-mix(in srgb, var(--fall) 35%, var(--border)); background: color-mix(in srgb, var(--fall) 8%, var(--surface)); color: var(--ink); }
@@ -147,7 +147,7 @@
   .hs-strip i { height: 10px; border-radius: 2px; background: var(--zero); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent); }
   .hs-strip i.h-r1 { background: var(--rise-1); } .hs-strip i.h-r2 { background: var(--rise-2); } .hs-strip i.h-r3 { background: var(--rise-3); }
   .hs-strip i.h-f1 { background: var(--fall-1); } .hs-strip i.h-f2 { background: var(--fall-2); } .hs-strip i.h-f3 { background: var(--fall-3); }
-  .hs-l { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-3); }
+  .hs-l { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); }
 
   /* 2. 서울 vs 부산 숫자 */
   .score { padding: 6px 0 4px; gap: 0; }
@@ -190,17 +190,17 @@
   .geo .hi { fill: none; stroke-width: 2.6; vector-effect: non-scaling-stroke; pointer-events: none; }
   .geo .sel { fill: none; stroke: var(--ink); stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
   .geo text { pointer-events: none; font-variant-numeric: tabular-nums; }
-  .geo .ln-n { font-size: 11.5px; font-weight: 750; fill: var(--ink); }
-  .geo .ln-v { font-size: 11px; font-weight: 700; fill: var(--ink); }
+  .geo .ln-n { font-size: 12px; font-weight: 750; fill: var(--ink); }
+  .geo .ln-v { font-size: 12px; font-weight: 700; fill: var(--ink); }
   .geo .co rect { fill: var(--surface); stroke: var(--border); }
   .geo .co.big rect { stroke-width: 1.6; }
-  .geo .co .n { font-size: 11.5px; font-weight: 800; fill: var(--ink); }
-  .geo .co .v { font-size: 11.5px; font-weight: 750; }
+  .geo .co .n { font-size: 12px; font-weight: 800; fill: var(--ink); }
+  .geo .co .v { font-size: 12px; font-weight: 750; }
   .geo .co .v.up { fill: var(--rise); } .geo .co .v.down { fill: var(--fall); } .geo .co .v.flat { fill: var(--ink-3); }
   .geo .lk { stroke: var(--ink-3); stroke-width: 1; pointer-events: none; }
   .geo .lk-dot { fill: var(--ink); pointer-events: none; }
-  .geo .riv-lb { font-size: 11px; font-style: italic; font-weight: 600; fill: color-mix(in srgb, var(--river) 40%, var(--ink-3)); letter-spacing: .1em; }
-  .geo .isl { font-size: 10px; fill: var(--ink-3); }
+  .geo .riv-lb { font-size: 12px; font-style: italic; font-weight: 600; fill: color-mix(in srgb, var(--river) 40%, var(--ink-3)); letter-spacing: .1em; }
+  .geo .isl { font-size: 12px; fill: var(--ink-3); }
   .kmap { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
   @media (max-width: 860px) { .kmap { grid-template-columns: 1fr; } }
   .k-head { font-size: 15px; line-height: 1.6; color: var(--ink-2); }
@@ -230,7 +230,7 @@
   .tl i { display: block; height: 8px; border-radius: 3px; }
   .tl i.u { background: var(--rise); } .tl i.d { background: var(--fall); }
   .tl b { text-align: right; font-variant-numeric: tabular-nums; }
-  .scale { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-3); }
+  .scale { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
   .scale i { display: inline-block; width: 24px; height: 11px; border-radius: 3px; }
   .detail { border-top: 1px dashed var(--grid); padding-top: 14px; display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 20px; align-items: start; }
   @media (max-width: 760px) { .detail { grid-template-columns: 1fr; } }
@@ -238,7 +238,7 @@
   .dt-name small { font-size: 12.5px; font-weight: 600; color: var(--ink-3); margin-left: 6px; }
   .dt-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
   .dt-nums div { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 7px 10px; display: flex; flex-direction: column; }
-  .dt-nums span { font-size: 11.5px; color: var(--ink-3); }
+  .dt-nums span { font-size: 12px; color: var(--ink-3); }
   .dt-nums b { font-size: 18px; font-variant-numeric: tabular-nums; }
   .dt-rank { font-size: 12.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.55; }
 
@@ -247,7 +247,7 @@
   .ch svg { display: block; width: 100%; overflow: visible; }
   .ch .gl { stroke: var(--grid); stroke-width: 1; }
   .ch .gl.base { stroke: var(--ink-3); stroke-dasharray: 4 3; }
-  .ch .ax { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .ch .ax { font-size: 12px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
   .ch .ln { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
   .ch .ln.dash { stroke-dasharray: 5 4; }
   .ch .ln.thin { stroke-width: 1.5; }
@@ -255,7 +255,7 @@
   .ch .end-lb { font-size: 12px; font-weight: 750; }
   .ch .hair { stroke: var(--ink-3); stroke-width: 1; }
   .ch .mk { stroke: var(--warn); stroke-dasharray: 2 3; stroke-width: 1; }
-  .ch .mk-lb { font-size: 10.5px; fill: var(--warn); font-weight: 750; }
+  .ch .mk-lb { font-size: 12px; fill: var(--warn); font-weight: 750; }
   .ch .mk.pol { stroke: var(--ink-2); stroke-dasharray: 3 3; }
   .ch .mk-lb.pol { fill: var(--ink-2); }
   .tip { position: absolute; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 6px 10px; font-size: 12px; line-height: 1.55; color: var(--ink); box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .3); pointer-events: none; white-space: nowrap; z-index: 3; }
@@ -266,13 +266,13 @@
   .quad .qbg { opacity: .55; }
   .quad .q-ul { fill: var(--fall-1); } .quad .q-ur { fill: var(--rise-1); } .quad .q-ll { fill: var(--fall-2); } .quad .q-lr { fill: var(--raised); }
   .quad .qt { font-size: 12.5px; font-weight: 800; fill: var(--ink); }
-  .quad .qd { font-size: 11px; fill: var(--ink-2); }
-  .quad .ax { font-size: 11px; fill: var(--ink-3); }
-  .quad .axl { font-size: 11.5px; fill: var(--ink-3); font-weight: 650; }
+  .quad .qd { font-size: 12px; fill: var(--ink-2); }
+  .quad .ax { font-size: 12px; fill: var(--ink-3); }
+  .quad .axl { font-size: 12px; fill: var(--ink-3); font-weight: 650; }
   .quad .zero { stroke: var(--ink-3); stroke-width: 1.2; }
   .quad .trail { fill: none; stroke-width: 2; stroke-linejoin: round; opacity: .75; }
   .quad .lab { font-size: 13px; font-weight: 800; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
-  .quad .lab-s { font-size: 11px; fill: var(--ink-3); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+  .quad .lab-s { font-size: 12px; fill: var(--ink-3); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
   .gauges { display: grid; grid-template-columns: 40px repeat(3, minmax(0, 1fr)); gap: 4px 6px; align-items: center; }
   .gauges .gh { font-size: 12px; font-weight: 700; color: var(--ink-3); text-align: center; line-height: 1.3; }
   .gauges .gc { font-size: 13px; font-weight: 800; }
@@ -285,27 +285,27 @@
   .gauge .ghost { stroke: var(--ink-3); stroke-width: 2; stroke-dasharray: 2 2; }
   .gauge .gv { font-size: 27px; font-weight: 800; fill: var(--ink); font-variant-numeric: tabular-nums; }
   .gauge .gt { font-size: 15px; fill: var(--ink-3); font-weight: 700; }
-  .gauge .ga { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .gauge .ga { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
   .gauge .gw { font-size: 12px; font-weight: 750; margin-top: -2px; }
   .gauge .gw.up { color: var(--rise); } .gauge .gw.down { color: var(--fall); }
 
   /* 6. 주간 히트맵 */
   .hmx { display: flex; flex-direction: column; gap: 2px; }
   .hmx .hh, .hmx .hr { display: grid; gap: 2px; align-items: center; }
-  .hmx .hh span { font-size: 10.5px; color: var(--ink-3); white-space: nowrap; overflow: visible; }
+  .hmx .hh span { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: visible; }
   .hmx .hr i { display: block; height: 15px; border-radius: 2px; background: var(--zero); }
   .hmx .hr i.r1 { background: var(--rise-1); } .hmx .hr i.r2 { background: var(--rise-2); } .hmx .hr i.r3 { background: var(--rise-3); }
   .hmx .hr i.f1 { background: var(--fall-1); } .hmx .hr i.f2 { background: var(--fall-2); } .hmx .hr i.f3 { background: var(--fall-3); }
   .hmx .hn { font-size: 12px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hmx .hr b { font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; }
-  .hmx .hg { font-size: 11.5px; font-weight: 800; color: var(--ink-3); margin-top: 6px; }
+  .hmx .hr b { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .hmx .hg { font-size: 12px; font-weight: 800; color: var(--ink-3); margin-top: 6px; }
 
   /* 7. 이슈·뉴스 */
   .iss, .news { list-style: none; margin: 0; padding: 0; }
   .iss li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--grid); font-size: 14px; line-height: 1.55; }
   .iss li:first-child, .news li:first-child { border-top: 0; padding-top: 2px; }
   .iss .why { display: block; font-size: 12.5px; color: var(--ink-3); }
-  .tag { font-size: 11.5px; font-weight: 800; border-radius: 6px; padding: 2px 0; text-align: center; height: fit-content; margin-top: 1px; }
+  .tag { font-size: 12px; font-weight: 800; border-radius: 6px; padding: 2px 0; text-align: center; height: fit-content; margin-top: 1px; }
   .tag.s { color: var(--c-seoul); background: color-mix(in srgb, var(--c-seoul) 13%, transparent); }
   .tag.b { color: var(--c-busan); background: color-mix(in srgb, var(--c-busan) 13%, transparent); }
   .tag.c { color: var(--ink-2); background: var(--raised); }
@@ -319,11 +319,11 @@
   @media (max-width: 520px) { .pair { grid-template-columns: 1fr; } }
   .pair .seoul { --cc: var(--c-seoul); } .pair .busan { --cc: var(--c-busan); }
   .pair-t { font-size: 13px; font-weight: 800; color: var(--cc); display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
-  .pair-t span { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+  .pair-t span { font-size: 12px; font-weight: 600; color: var(--ink-3); }
   .ybar .yb { fill: var(--cc); opacity: .85; }
   .ybar .yb.part { opacity: .35; }
-  .ybar .yl { font-size: 11px; fill: var(--ink-3); }
-  .ybar .yv { font-size: 11px; font-weight: 700; fill: var(--ink); }
+  .ybar .yl { font-size: 12px; fill: var(--ink-3); }
+  .ybar .yv { font-size: 12px; font-weight: 700; fill: var(--ink); }
   .ybar .avg { stroke: var(--ink-3); stroke-dasharray: 4 3; }
   .ybar .dem { stroke: var(--warn); stroke-width: 1.6; stroke-dasharray: 7 3; }
 
@@ -338,7 +338,7 @@
   .b-sub { font-size: 14px; font-weight: 700; color: var(--ink-2); }
   .brief ul { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
   .brief li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
-  .brief li > span:first-child { font-size: 11.5px; font-weight: 800; color: var(--ink-2); background: var(--raised); border-radius: 6px; text-align: center; padding: 2px 0; height: fit-content; margin-top: 1px; }
+  .brief li > span:first-child { font-size: 12px; font-weight: 800; color: var(--ink-2); background: var(--raised); border-radius: 6px; text-align: center; padding: 2px 0; height: fit-content; margin-top: 1px; }
   .brief li b { color: var(--ink); }
   .brief.common ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 24px; }
   @media (max-width: 900px) { .brief.common ul { grid-template-columns: minmax(0, 1fr); } }
@@ -352,17 +352,17 @@
   .spd .bar-u { fill: var(--rise); opacity: .55; } .spd .bar-d { fill: var(--fall); opacity: .55; }
   .spd .ma { fill: none; stroke: var(--cc); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
   .spd .gl { stroke: var(--grid); } .spd .zero { stroke: var(--ink-3); stroke-width: 1; }
-  .spd .ax, .brd .ax { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+  .spd .ax, .brd .ax { font-size: 12px; fill: var(--ink-3); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
   .spd .lb { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .spd .ago { fill: var(--surface); stroke: var(--cc); stroke-width: 2; }
   .spd .hair, .brd .hair { stroke: var(--ink-3); stroke-width: 1; }
   .brd .u { fill: var(--rise-3); } .brd .f { fill: var(--zero); } .brd .d { fill: var(--fall-3); }
-  .brd .lb { font-size: 11.5px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .brd .lb { font-size: 12px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
   .turns { display: flex; flex-direction: column; max-height: 430px; overflow-y: auto; }
   .tn { display: grid; grid-template-columns: 58px 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; padding: 6px 4px; border-top: 1px solid var(--grid); }
   .tn:first-child { border-top: 0; }
   .tn em { font-style: normal; color: var(--ink-3); font-variant-numeric: tabular-nums; font-size: 12px; }
-  .tn .w { font-size: 11px; font-weight: 800; border-radius: 5px; text-align: center; padding: 1px 0; }
+  .tn .w { font-size: 12px; font-weight: 800; border-radius: 5px; text-align: center; padding: 1px 0; }
   .tn .w.seoul { color: var(--c-seoul); background: color-mix(in srgb, var(--c-seoul) 12%, transparent); }
   .tn .w.busan { color: var(--c-busan); background: color-mix(in srgb, var(--c-busan) 12%, transparent); }
   .tn .w.nation { color: var(--ink-2); background: var(--raised); }
@@ -372,7 +372,7 @@
   .st i.s1 { color: var(--rise); background: color-mix(in srgb, var(--rise) 12%, transparent); }
   .st i.s0 { color: var(--ink-2); background: var(--raised); }
   .st i.s-1 { color: var(--fall); background: color-mix(in srgb, var(--fall) 12%, transparent); }
-  .st .new { font-size: 10.5px; color: var(--warn); font-weight: 800; }
+  .st .new { font-size: 12px; color: var(--warn); font-weight: 800; }
   @media (max-width: 520px) { .tn { grid-template-columns: 50px 40px minmax(0, 1fr); } .tn .st { grid-column: 2 / -1; } }
 
   /* 요즘 이슈 */
@@ -392,49 +392,49 @@
   .mood { margin-top: 12px; font-size: 13px; color: var(--ink-2); line-height: 1.6; }
   .mood b.up { color: var(--rise); } .mood b.down { color: var(--fall); }
   .ihm-wrap { overflow-x: auto; margin-top: 6px; }
-  .ihm { border-collapse: separate; border-spacing: 2px; font-size: 11.5px; width: 100%; min-width: 540px; }
-  .ihm th { font-weight: 600; color: var(--ink-3); white-space: nowrap; padding: 0 2px; font-size: 11px; }
+  .ihm { border-collapse: separate; border-spacing: 2px; font-size: 12px; width: 100%; min-width: 540px; }
+  .ihm th { font-weight: 600; color: var(--ink-3); white-space: nowrap; padding: 0 2px; font-size: 12px; }
   .ihm th.r { text-align: left; color: var(--ink); font-weight: 700; padding-right: 6px; font-size: 12px; }
   .ihm td { text-align: center; border-radius: 3px; height: 22px; font-variant-numeric: tabular-nums; color: var(--ink); }
   .ihm td.cur { outline: 1.5px dashed var(--ink-3); outline-offset: -1.5px; }
-  .ihm tr.n td { color: var(--ink-3); font-size: 10.5px; height: 16px; }
-  .ihm tr.md td { font-weight: 700; font-size: 11px; }
+  .ihm tr.n td { color: var(--ink-3); font-size: 12px; height: 16px; }
+  .ihm tr.md td { font-weight: 700; font-size: 12px; }
   .weeks { display: flex; flex-direction: column; gap: 10px; max-height: 560px; overflow-y: auto; }
   .wk { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; border-top: 1px solid var(--grid); padding-top: 8px; }
   .wk:first-child { border-top: 0; padding-top: 0; }
   .wk > em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
   .chips { display: flex; gap: 4px; flex-wrap: wrap; margin: 2px 0 3px; }
-  .chip { font-size: 11px; font-weight: 750; border-radius: 999px; padding: 1px 8px; background: var(--raised); color: var(--ink-2); white-space: nowrap; }
+  .chip { font-size: 12px; font-weight: 750; border-radius: 999px; padding: 1px 8px; background: var(--raised); color: var(--ink-2); white-space: nowrap; }
   .chip.hot { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
   .wk a { display: block; font-size: 13px; line-height: 1.5; color: var(--ink); text-decoration: none; margin-top: 2px; }
   .wk a:hover { text-decoration: underline; color: var(--accent); }
-  .wk a small { color: var(--ink-3); font-size: 11.5px; }
+  .wk a small { color: var(--ink-3); font-size: 12px; }
 
   /* 9차: 신호 칩 화살표는 지표 자체의 방향, 색은 집값에 주는 영향 */
-  .sig i.ar { background: transparent !important; color: inherit !important; width: auto; height: auto; font-size: 10px; }
+  .sig i.ar { background: transparent !important; color: inherit !important; width: auto; height: auto; font-size: 12px; }
   .strip { display: grid; grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 1px; width: 130px; }
   .strip i { display: block; height: 12px; border-radius: 1.5px; background: var(--zero); }
   .strip i.s1 { background: var(--rise-2); } .strip i.s-1 { background: var(--fall-2); } .strip i.sn { background: transparent; }
   .tn { grid-template-columns: 58px 44px minmax(0, 1fr) 132px 150px !important; }
   .tn .st { justify-content: flex-end; }
-  .tn .new { font-size: 10.5px; color: var(--warn); font-weight: 800; margin-left: 4px; }
+  .tn .new { font-size: 12px; color: var(--warn); font-weight: 800; margin-left: 4px; }
   @media (max-width: 560px) { .tn { grid-template-columns: 50px 40px minmax(0, 1fr) !important; } .tn .strip { grid-column: 1 / 3; width: auto; } .tn .st { grid-column: 3; } }
   .tline { position: relative; margin: 4px 0 10px; }
   .tline svg { display: block; width: 100%; overflow: visible; }
   .tline .rl { font-size: 12px; font-weight: 800; fill: var(--ink); }
-  .tline .rs { font-size: 10.5px; fill: var(--ink-3); }
-  .tline .vl { font-size: 10.5px; fill: var(--ink-2); font-variant-numeric: tabular-nums; font-weight: 650; }
+  .tline .rs { font-size: 12px; fill: var(--ink-3); }
+  .tline .vl { font-size: 12px; fill: var(--ink-2); font-variant-numeric: tabular-nums; font-weight: 650; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
   .tline .tt { font-size: 12px; font-weight: 800; fill: var(--ink); }
-  .tline .tv { font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; fill: var(--ink); }
-  .tline .ts { font-size: 10.5px; font-variant-numeric: tabular-nums; fill: var(--ink-2); }
-  .tline .wl { font-size: 11px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .tline .tv { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; fill: var(--ink); }
+  .tline .ts { font-size: 12px; font-variant-numeric: tabular-nums; fill: var(--ink-2); }
+  .tline .wl { font-size: 12px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
   .tline .bar-u { fill: var(--rise); opacity: .6; } .tline .bar-d { fill: var(--fall); opacity: .6; }
   .tline .mu { fill: var(--rise); opacity: .75; } .tline .md { fill: var(--fall); opacity: .75; }
   .tline .ma { fill: none; stroke: var(--cc); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
   .tline .zero { stroke: var(--ink-3); stroke-width: 1; } .tline .sep { stroke: var(--grid); }
   .tline .hair { stroke: var(--ink-3); stroke-width: 1; }
   .tline .tip { max-width: 340px; white-space: normal; }
-  .tline .tip a, .tline .tip div.h { display: block; font-size: 11.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.45; }
+  .tline .tip a, .tline .tip div.h { display: block; font-size: 12px; color: var(--ink-2); margin-top: 3px; line-height: 1.45; }
   .trows { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
   .tr2 { display: grid; grid-template-columns: 100px minmax(0, 1fr) 40px 58px; gap: 8px; align-items: center; font-size: 13px; }
   .tr2 .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -448,10 +448,10 @@
   .ex b { font-size: 13px; }
   .ex a { display: block; font-size: 13px; color: var(--ink-2); text-decoration: none; line-height: 1.5; margin-top: 2px; }
   .ex a:hover { color: var(--accent); text-decoration: underline; }
-  .ex small { color: var(--ink-3); font-size: 11.5px; }
+  .ex small { color: var(--ink-3); font-size: 12px; }
 
   .spd .mk { stroke: var(--warn); stroke-dasharray: 2 3; stroke-width: 1; } .spd .mk.pol { stroke: var(--ink-2); }
-  .spd .mk-lb { font-size: 10.5px; fill: var(--warn); font-weight: 750; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; } .spd .mk-lb.pol { fill: var(--ink-2); }
+  .spd .mk-lb { font-size: 12px; fill: var(--warn); font-weight: 750; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; } .spd .mk-lb.pol { fill: var(--ink-2); }
   .brief li { grid-template-columns: 74px minmax(0, 1fr) !important; }
   .brief .dim { color: var(--ink-3); font-size: 12.5px; }
 
@@ -466,7 +466,7 @@
   .terms dd { margin: 0 0 6px; }
   .sch { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
   .sch div { display: flex; justify-content: space-between; gap: 10px; }
-  .sch em { font-style: normal; font-size: 11.5px; font-weight: 800; color: var(--ink-2); background: var(--raised); border-radius: 5px; padding: 1px 6px; margin-right: 6px; }
+  .sch em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--ink-2); background: var(--raised); border-radius: 5px; padding: 1px 6px; margin-right: 6px; }
   .sch b { white-space: nowrap; font-variant-numeric: tabular-nums; }
   .status { font-size: 12.5px; color: var(--ink-3); }
   .status b.bad { color: var(--rise); }
@@ -643,7 +643,7 @@ const tD = iso => Date.parse((iso.length === 7 ? iso + "-15" : iso) + "T00:00:00
 const pct = (x, d = 2) => { if (!has(x)) return "–"; const r = +x.toFixed(d); return (r > 0 ? "+" : r < 0 ? "−" : "") + Math.abs(r).toFixed(d) + "%"; };
 const cls = (x, d = 2) => { if (!has(x)) return "flat"; const r = +x.toFixed(d); return r > 0 ? "up" : r < 0 ? "down" : "flat"; };
 const num = (v, d = 0) => has(v) ? v.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d }) : "–";
-const tw = (s, f = 11) => { let w = 0; for (const ch of String(s)) w += /[ㄱ-힝]/.test(ch) ? f * 1.04 : f * 0.6; return w; };
+const tw = (s, f = 12) => { let w = 0; for (const ch of String(s)) w += /[ㄱ-힝]/.test(ch) ? f * 1.04 : f * 0.6; return w; };
 const man = v => v >= 10000 ? (v / 10000).toFixed(1) + "만" : num(v);
 const won = w => { const a = Math.abs(w); if (a >= 1e8) return (a / 1e8).toFixed(a >= 1e9 ? 1 : 2).replace(/\.?0+$/, "") + "억 원"; if (a >= 1e4) return num(Math.round(a / 1e4 / (a >= 1e7 ? 100 : 10)) * (a >= 1e7 ? 100 : 10)) + "만 원"; return num(a) + "원"; };
 
@@ -750,7 +750,7 @@ function draw(c) {
   const lastMk = {};
   (opt.marks || []).forEach(m => { const x = X(m.t); if (x < PL + 4 || x > Wd - PR) return; const row = m.row || 0;
     g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PT}" y2="${H - PB}" class="mk ${m.cls || ""}"/>`;
-    const hw = tw(m.label, 10.5) / 2 + 3; if (x - hw >= (row in lastMk ? lastMk[row] : -1e9)) { g += `<text x="${x.toFixed(1)}" y="${10 + row * 12}" text-anchor="middle" class="mk-lb ${m.cls || ""}">${esc(m.label)}</text>`; lastMk[row] = x + hw; } });
+    const hw = tw(m.label, 12) / 2 + 3; if (x - hw >= (row in lastMk ? lastMk[row] : -1e9)) { g += `<text x="${x.toFixed(1)}" y="${10 + row * 12}" text-anchor="middle" class="mk-lb ${m.cls || ""}">${esc(m.label)}</text>`; lastMk[row] = x + hw; } });
   for (let v = lo; v <= hi + step / 1e6; v += step) {
     const vv = Math.abs(v) < step / 1e6 ? 0 : v, y = Y(vv).toFixed(1);
     g += `<line x1="${PL}" x2="${Wd - PR}" y1="${y}" y2="${y}" class="gl"/><text x="${PL - 6}" y="${(+y + 4).toFixed(1)}" text-anchor="end" class="ax">${esc(yf(vv))}</text>`;
@@ -905,7 +905,7 @@ function heroChart(city) {
   const seg = pts.slice(i3).map(p => Y(p[1])), ly = Math.min(...seg) - 9, lx = (X(pts[i3][0]) + X(t1)) / 2;
   g += `<text x="${lx.toFixed(1)}" y="${Math.max(PT + 2, ly).toFixed(1)}" text-anchor="middle" class="h-ax" style="fill:var(${col3});font-weight:750">최근 3개월 ${pct(s12, 2)}</text>`;
   g += `<circle cx="${X(t1).toFixed(1)}" cy="${Y(endV).toFixed(1)}" r="5.5" style="fill:var(${col3});stroke:var(--surface);stroke-width:2.5"/>`;
-  g += `<text x="${(X(t1) + 9).toFixed(1)}" y="${(Y(endV) + 6).toFixed(1)}" class="h-end" style="fill:var(${col})"><tspan style="font-size:11px;font-weight:650;fill:var(--ink-3)">1년 </tspan>${pct(endV, 1)}</text>`;
+  g += `<text x="${(X(t1) + 9).toFixed(1)}" y="${(Y(endV) + 6).toFixed(1)}" class="h-end" style="fill:var(${col})"><tspan style="font-size:12px;font-weight:650;fill:var(--ink-3)">1년 </tspan>${pct(endV, 1)}</text>`;
   g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
   el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="${CITY[city].nm} 집값 1년 흐름, 지금 ${pct(endV, 1)}">${g}</svg><div class="tip" hidden></div>`;
   hover(el, [{ name: "1년 전보다", pts, color: col }], X, PL, Wd - PR, Wd, { tf: v => pct(v) });
@@ -963,7 +963,7 @@ function geoMap(el, m, o) {
   const his = o.hi || {}, txt = r => [o.short ? o.short(r.nm) : r.nm, has(r.v) ? pct(r.v, o.digits) : "–"];
   rows.filter(r => r.a.call).sort((p, q) => (q.key in his) - (p.key in his)).forEach(r => {
     const [nm, vt] = txt(r), call = r.a.call, cx = r.a.lx * k, cy = r.a.ly * k;
-    const w = tw(nm, 11.5) + tw(vt, 11.5) + 18, an = call[2]; let x0 = call[0] * k - (an === "middle" ? w / 2 : an === "end" ? w : 0), y = call[1] * k;
+    const w = tw(nm, 12) + tw(vt, 12) + 18, an = call[2]; let x0 = call[0] * k - (an === "middle" ? w / 2 : an === "end" ? w : 0), y = call[1] * k;
     x0 = Math.max(1, Math.min(Wd - w - 1, x0)); y = Math.max(11, Math.min(H - 11, y));
     if (!put(x0, y - 11, x0 + w, y + 11)) return;
     const ex = Math.max(x0, Math.min(x0 + w, cx)), ey = Math.max(y - 10, Math.min(y + 10, cy)), big = r.key in his;
@@ -972,7 +972,7 @@ function geoMap(el, m, o) {
   });
   const OFF = [[0, 0], [0.45, 0], [-0.45, 0], [0, 0.4], [0, -0.4]];
   rows.filter(r => !r.a.call).sort((p, q) => q.a.r - p.a.r).forEach(r => {
-    const [nm, vt] = txt(r), cx = r.a.lx * k, cy = r.a.ly * k, rho = r.a.r * k, bw = Math.max(tw(nm, 11.5), tw(vt, 11)), w1 = tw(nm, 11.5);
+    const [nm, vt] = txt(r), cx = r.a.lx * k, cy = r.a.ly * k, rho = r.a.r * k, bw = Math.max(tw(nm, 12), tw(vt, 12)), w1 = tw(nm, 12);
     if (rho >= 11 && bw / 2 <= rho * 1.75) for (const [ox, oy] of OFF) { const x = cx + ox * rho, y = cy + oy * rho;
       if (put(x - bw / 2, y - 10, x + bw / 2, y + 13)) { labs += `<text x="${x.toFixed(1)}" y="${(y - 1).toFixed(1)}" text-anchor="middle" class="ln-n">${esc(nm)}</text><text x="${x.toFixed(1)}" y="${(y + 12).toFixed(1)}" text-anchor="middle" class="ln-v">${esc(vt)}</text>`; return; } }
     if (rho >= 6 && w1 / 2 <= rho * 2.1) for (const [ox, oy] of OFF) { const x = cx + ox * rho, y = cy + oy * rho;
@@ -1092,7 +1092,7 @@ function quad() {
 quad(); VIS.push(quad);
 $("qAsof").textContent = mAsof(lastTrade);
 if (QUAD.seoul.length && QUAD.busan.length) { const qs = QUAD.seoul[QUAD.seoul.length - 1], qb = QUAD.busan[QUAD.busan.length - 1];
-  $("quadCap").innerHTML = `점 하나가 한 달, 꼬리는 지난 1년, 큰 점이 최신(${qs[0]})입니다. 서울은 <b>${phase(qs[1], qs[2])}</b>(집값 ${pct(qs[1], 1)}, 거래 ${pct(qs[2], 0)}), 부산은 <b>${phase(qb[1], qb[2])}</b>(집값 ${pct(qb[1], 1)}, 거래 ${pct(qb[2], 0)}) 국면에 있습니다.`; }
+  $("quadCap").innerHTML = `점 하나가 한 달, 꼬리는 지난 1년, 큰 점이 최신(${qs[0]})입니다. 서울은 <b>${phase(qs[1], qs[2])}</b>(집값 ${pct(qs[1], 1)}, 거래 ${pct(qs[2], 0)}), 부산은 <b>${phase(qb[1], qb[2])}</b>(집값 ${pct(qb[1], 1)}, 거래 ${pct(qb[2], 0)}) 국면에 있습니다. 거래량과 같은 달로 맞추려고 집값은 월간 지수의 3개월 변동률을 써서 맨 위 카드(주간 지수)와 조금 다릅니다.`; }
 function gauge(v, ago, word, wc) {
   const cx = 100, cy = 92, r = 76, f = a => a.toFixed(1);
   const pt = (val, rr) => { const th = Math.PI * (1 - Math.max(0, Math.min(200, val)) / 200); return [cx + rr * Math.cos(th), cy - rr * Math.sin(th)]; };
@@ -1226,7 +1226,8 @@ function drawSpeed(el, dates, wk, m4) {
     g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PT - 8}" y2="${H - PB}" class="mk ${m.cls}"/>`;
     if (last && last.cls === m.cls && i - last.i < 8) last.labs.push(m.label); else grp.push({ i, x, cls: m.cls, labs: [m.label] }); });
   let lastLx = -1e9;
-  grp.forEach(o => { const lab = (o.cls === "rate" ? "기준금리 " : "") + o.labs.join("→"), w = tw(lab, 10.5), x = Math.max(PL + w / 2, Math.min(Wd - PR - w / 2, o.x));
+  grp.forEach(o => { const same = o.cls === "rate" && o.labs.every(l => l[0] === o.labs[0][0]) && /^[▲▼]/.test(o.labs[0]);
+    const lab = o.cls === "rate" ? (same ? `기준금리 ${o.labs[0][0] === "▲" ? "인상" : "인하"} ${o.labs.map(l => l.slice(1)).join("→")}%` : "기준금리 " + o.labs.join("→")) : o.labs.join("→"), w = tw(lab, 12), x = Math.max(PL + w / 2, Math.min(Wd - PR - w / 2, o.x));
     if (x - w / 2 > lastLx + 4) { g += `<text x="${x.toFixed(1)}" y="${PT - 12}" text-anchor="middle" class="mk-lb ${o.cls}">${esc(lab)}</text>`; lastLx = x + w / 2; } });
   const y0 = Y(0);
   wk.forEach((v, i) => { const y = Y(v); g += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Math.min(y, y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.8, Math.abs(y - y0)).toFixed(1)}" class="${v >= 0 ? "bar-u" : "bar-d"}"/>`; });
@@ -1310,7 +1311,7 @@ function issueLine(g) {
   const [a, b] = st.rows, rise = st.rows.filter(r => has(r.dv) && r.dv >= 5).sort((x, y) => y.dv - x.dv)[0];
   let s = `${wkR(st.cur.w)}${st.partial ? "(진행 중)" : ""} 기사는 ${a.name}(${a.v.toFixed(0)}%), ${b.name}(${b.v.toFixed(0)}%) 순으로 많았고`;
   s += rise ? `, ${rise.name} 비중이 4주 평균보다 ${rise.dv.toFixed(0)}%p 늘었습니다.` : `, 4주 평균보다 크게 늘어난 주제는 없습니다.`;
-  if (has(st.up) && has(st.dn)) s += ` 제목 논조는 ${st.up > st.dn + 3 ? "상승 쪽이 더 많습니다" : st.dn > st.up + 3 ? "하락 쪽이 더 많습니다" : "상승·하락이 비슷합니다"}(상승 관련 단어 ${st.up.toFixed(0)}% · 하락 관련 단어 ${st.dn.toFixed(0)}%).`;
+  if (has(st.up) && has(st.dn)) s += ` 제목 논조는 ${st.up > st.dn + 3 ? "상승 쪽이 더 많습니다" : st.dn > st.up + 3 ? "하락 쪽이 더 많습니다" : "상승·하락이 비슷합니다"}(상승 관련 단어 ${st.up.toFixed(0)}%, 하락 관련 단어 ${st.dn.toFixed(0)}%).`;
   return s;
 }
 // 집값 흐름과 그 주의 이슈: 위 = 주간 변동률(그 주 월요일 조사), 가운데 = 가장 많이 나온 주제, 아래 = 제목 논조(상승 − 하락 단어 비율)
@@ -1327,12 +1328,13 @@ function timeline(g, el) {
   const T1 = 8, H1 = 96, Y = v => T1 + (hi - v) / (hi - lo) * H1, y0 = Y(0), bw = Math.min(24, cw * 0.46);
   let s = `<text x="2" y="${T1 + 14}" class="rl">주간 변동률</text><text x="2" y="${T1 + 28}" class="rs">선 = 4주 평균</text>`;
   s += `<line x1="${PL}" x2="${Wd - PR}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" class="zero"/>`;
+  let vls = "";
   pv.forEach((p, i) => { const x = X(i);
     if (!p) { s += `<text x="${x.toFixed(1)}" y="${(y0 - 6).toFixed(1)}" text-anchor="middle" class="rs">발표 전</text>`; return; }
     const y = Y(p.wk); s += `<rect x="${(x - bw / 2).toFixed(1)}" y="${Math.min(y, y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(y - y0)).toFixed(1)}" class="${p.wk >= 0 ? "bar-u" : "bar-d"}"/>`;
-    if (cw >= 46) s += `<text x="${x.toFixed(1)}" y="${(p.wk >= 0 ? Math.min(y, y0) - 4 : Math.max(y, y0) + 12).toFixed(1)}" text-anchor="middle" class="vl">${pct(p.wk)}</text>`; });
+    if (cw >= 46) vls += `<text x="${x.toFixed(1)}" y="${(p.wk >= 0 ? Math.min(y, y0) - 4 : Math.max(y, y0) + 12).toFixed(1)}" text-anchor="middle" class="vl">${pct(p.wk)}</text>`; });
   let path = "", pen = false; pv.forEach((p, i) => { if (!p || !has(p.m4)) { pen = false; return; } path += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(p.m4).toFixed(1)}`; pen = true; });
-  s += `<path d="${path}" class="ma"/>`;
+  s += `<path d="${path}" class="ma"/>` + vls;
   const T2 = T1 + H1 + 16, H2 = Wd < 480 ? 42 : 60;
   s += `<text x="2" y="${T2 + 17}" class="rl">많이 나온</text><text x="2" y="${T2 + 32}" class="rl">주제</text>`;
   ws.forEach((w, i) => { const tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v), a = tops[0], b2 = tops[1], thin = w.g[g].n < 30;
@@ -1381,7 +1383,7 @@ function issues() {
     return `<div class="ex"><b>${esc(r.name)} ${r.v.toFixed(0)}%</b>` + (ex.length ? ex.map(it => `<a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(cleanT(it.t, it.s))} <small>${esc(it.s || "")} · ${esc(it.d || "")}</small></a>`).join("") : `<div class="note">최근 7일 기사 중에는 해당 기사가 없습니다.</div>`) + `</div>`; }).join("");
   $("isMood").innerHTML = has(st.up) ? `제목 논조: 상승 관련 단어가 들어간 기사 <b class="up">${st.up.toFixed(0)}%</b> · 하락 관련 단어 <b class="down">${st.dn.toFixed(0)}%</b>. 단어로 센 대략값이라 '상승폭 둔화'처럼 두 쪽이 섞인 제목도 포함됩니다.` : "";
   $("isWeeks").innerHTML = st.ws.slice(-8).reverse().map(w => { const r = w.g[g], tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v).slice(0, 3);
-    return `<div class="wk"><em>${wkR(w.w)}${w.w === thisMon ? "<br><small style='font-weight:600;color:var(--ink-3)'>진행 중</small>" : ""}</em><div><div class="chips">${tops.map(o => `<span class="chip${o.v >= 25 ? " hot" : ""}">${esc(o.t.name)} ${o.v.toFixed(0)}%</span>`).join("")}</div>` +
+    return `<div class="wk"><em>${wkR(w.w)}${w.w === thisMon ? "<br><small style='font-size:12px;font-weight:600;color:var(--ink-3)'>진행 중</small>" : ""}</em><div><div class="chips">${tops.map(o => `<span class="chip${o.v >= 25 ? " hot" : ""}">${esc(o.t.name)} ${o.v.toFixed(0)}%</span>`).join("")}</div>` +
       (r.top || []).map(a => `<a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(cleanT(a.t, a.s))} <small>${esc(a.s || "")}${a.d ? " · " + esc(a.d) : ""}</small></a>`).join("") + `</div></div>`; }).join("");
   $("newsBox").innerHTML = items.length ? `<ul class="news">` + items.map(i => `<li><a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(cleanT(i.t, i.s))}</a><span class="src">${esc(i.s || "")} · ${esc(i.d || "")}</span>` +
     `<div class="chips">${(i.tp || []).filter(k => ISSUE.some(t => t.key === k)).map(k => `<span class="chip">${esc(TNAME[k])}</span>`).join("")}</div></li>`).join("") + `</ul>` : `<div class="note">최근 7일 기사가 없습니다.</div>`;
@@ -1393,22 +1395,23 @@ issues(); VIS.push(() => timeline(IG, $("isLine")));
 
 // ---- 흐름 정리(도시별 판정과 근거 문장) -------------------------------------------------------------
 const SUMMARY = { week: wkAsof, generated: D.generated, cities: {}, common: [], turns: [], issues: {} };
-const plain = v => v.replace(/<span class="dim">(.*?)<\/span>/g, "($1)");
+// 흐린 보충 글은 메일에서 괄호로 붙인다. 이미 '…입니다.'로 끝나는 문장이면 괄호 없이 그대로 둔다.
+const plain = v => v.replace(/<span class="dim">(.*?)<\/span>/g, (m, t) => /다\.$/.test(t) ? t : `(${t})`);
 function brief(city) {
   const c = CITY[city], code = c.code, s = W(`sale:${code}`), wk = wkChg(s), unit = unitOf(city), N = DIST[city].length;
   const s12 = chg(s, 12), s52 = chg(s, 52), up = streak(wk, true), dn = streak(wk, false), tw0 = trendWord(s12), mo = momOf(code);
   const br = BR[city], bl = br[br.length - 1], b0 = br.length > 13 ? br[br.length - 14] : null;
   const L = [];
-  L.push(["방향", `${up >= 2 ? `<b>${up}주 연속 상승</b>` : dn >= 2 ? `<b>${dn}주 연속 하락</b>` : `이번 주 <b>${pct(chg(s, 1))}</b>`}, 최근 3개월 ${pct(s12)} · 1년 ${pct(s52, 1)}.`]);
+  L.push(["방향", `${up >= 2 ? `<b>${up}주 연속 상승</b>했고` : dn >= 2 ? `<b>${dn}주 연속 하락</b>했고` : `이번 주는 <b>${pct(chg(s, 1))}</b>이고`}, 최근 3개월 ${pct(s12)}, 1년 ${pct(s52, 1)}입니다.`]);
   if (mo.long) L.push(["속도", mo.long]);
-  if (bl) L.push(["구별", `${N}개 ${unit} 중 상승 <b>${bl.u}곳</b>, 보합 ${bl.f}곳, 하락 <b>${bl.d}곳</b>${b0 ? `(3개월 전: 상승 ${b0.u}곳, 하락 ${b0.d}곳)` : ""}.`]);
+  if (bl) L.push(["구별", `4주 평균으로 보면 ${N}개 ${unit} 중 상승 <b>${bl.u}곳</b>, 보합 ${bl.f}곳, 하락 <b>${bl.d}곳</b>입니다${b0 ? `(3개월 전 상승 ${b0.u}곳, 하락 ${b0.d}곳)` : ""}.`]);
   const lastOf = {};   // 구마다 최근 3개월 안의 마지막 전환만
   TLIST.filter(e => e.sc === city && e.lv === 2 && e.date >= T13).forEach(e => { if (!lastOf[e.name] || lastOf[e.name].date < e.date) lastOf[e.name] = e; });
   const byTo = {}; Object.values(lastOf).sort((a, b) => a.date < b.date ? -1 : 1).forEach(e => { (byTo[e.to] = byTo[e.to] || []).push(`${e.name}(${wkL(e.date)}주)`); });
   const cap = a => a.length > 5 ? `${a.slice(0, 5).join(", ")} 외 ${a.length - 5}곳` : a.join(", ");
-  L.push(["전환", Object.keys(byTo).length ? [1, 0, -1].filter(k => byTo[k]).map(k => `<b>${STN[k]} 전환</b> ${esc(cap(byTo[k]))}`).join(" · ") : "최근 3개월 동안 흐름이 바뀐 곳은 없습니다."]);
+  L.push(["전환", Object.keys(byTo).length ? [1, 0, -1].filter(k => byTo[k]).map(k => `<b>${STN[k]} 전환</b> ${esc(cap(byTo[k]))}`).join(" / ") : "최근 3개월 동안 흐름이 바뀐 곳은 없습니다."]);
   const b = W(`buy:${code}`), r = W(`rent:${code}`), ago = (a, k) => a.length > k ? a[a.length - 1 - k][1] : null, trch = SIG[city].trch;
-  L.push(["심리·거래", `매수우위지수 <b>${num(last(b))}</b>(3개월 전 ${num(ago(b, 12))}) · 전세수급지수 ${num(last(r))}(${num(ago(r, 12))}) · 거래량은 1년 전보다 ${has(trch) ? `${Math.abs(trch).toFixed(0)}% ${trch >= 0 ? "증가" : "감소"}` : "–"}. <span class="dim">두 지수 모두 100을 넘으면 수요 우위</span>`]);
+  L.push(["심리·거래", `매수우위지수는 <b>${num(last(b))}</b>(3개월 전 ${num(ago(b, 12))}), 전세수급지수는 ${num(last(r))}(3개월 전 ${num(ago(r, 12))})입니다.${has(trch) ? ` 거래량은 1년 전보다 ${Math.abs(trch).toFixed(0)}% ${trch >= 0 ? "늘었습니다" : "줄었습니다"}.` : ""} <span class="dim">두 지수는 100을 넘으면 사려는 사람(전세는 구하려는 사람)이 더 많다는 뜻입니다.</span>`]);
   const il = issueLine(city); if (il) L.push(["뉴스", esc(il)]);
   const word = tw0.w + (tw0.sub ? `(${tw0.sub})` : "");
   SUMMARY.cities[city] = { name: c.nm, word, dir: tw0.dir, sub: mo.short, tag: mo.tag, bullets: L.map(([k, v]) => [k, plain(v)]) };
@@ -1419,18 +1422,19 @@ function brief(city) {
 brief("seoul"); brief("busan");
 (function common() {
   const L = [], rows = PROV.map(p => { const m = speedOf(p.cls).m4.filter(has); return { p, v: chg(W(`sale:${p.cls}`), 12), st: stOf(m[m.length - 1]) }; }).filter(r => has(r.v));
-  const c3 = udf(rows.map(r => r.v), 2), su = rows.filter(r => r.st === 1).length, sd = rows.filter(r => r.st === -1).length, nm = speedOf(NAT).m4;
-  L.push(["전국", `17개 시·도 중 최근 3개월 상승 <b>${c3.u}곳</b>, 하락 ${c3.d}곳${c3.f ? `(보합 ${c3.f}곳)` : ""}. 4주 평균으로는 상승 ${su}곳 · 하락 ${sd}곳이고, 전국 평균 주간 변동률은 ${pct(nm[nm.length - 1])}입니다.`]);
+  // 아래 전국 지도와 같은 자릿수(3개월은 소수 첫째 자리)로 센다. 둘째 자리로 세어 지도와 하락·보합 수가 달랐다(2026-11-17).
+  const c3 = udf(rows.map(r => r.v), 1), su = rows.filter(r => r.st === 1).length, sd = rows.filter(r => r.st === -1).length, sf = rows.length - su - sd, nm = speedOf(NAT).m4;
+  L.push(["전국", `최근 3개월 동안 17개 시·도 중 <b>${c3.u}곳</b>이 오르고 ${c3.d}곳이 내렸습니다${c3.f ? `(보합 ${c3.f}곳)` : ""}. 4주 평균으로 보면 상승 ${su}곳, 보합 ${sf}곳, 하락 ${sd}곳이고, 전국 평균 주간 변동률은 ${pct(nm[nm.length - 1])}입니다.`]);
   const mt = E("mortgage"), base = E("baseRate"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null;
   let lastMove = ""; for (let i = base.length - 1; i > 0; i--) if (base[i][1] !== base[i - 1][1]) { lastMove = `${+base[i][0].slice(0, 4)}년 ${+base[i][0].slice(5, 7)}월 ${base[i][1] > base[i - 1][1] ? "인상" : "인하"}`; break; }
-  if (mt.length) L.push(["금리", `주택담보대출 금리(신규)는 <b>${last(mt).toFixed(2)}%</b>${has(mch) ? `로 1년 새 ${Math.abs(mch).toFixed(2)}%p ${mch >= 0 ? "올랐고" : "내렸고"}` : "이고"}, 기준금리는 ${last(base).toFixed(2)}%입니다${lastMove ? `(${lastMove})` : ""}.`]);
+  if (mt.length) L.push(["금리", `주택담보대출 금리(신규)는 <b>${last(mt).toFixed(2)}%</b>${has(mch) ? `로 1년 전보다 ${Math.abs(mch).toFixed(2)}%p ${mch >= 0 ? "올랐고" : "내렸고"}` : "이고"}, 기준금리는 ${last(base).toFixed(2)}%입니다${lastMove ? `(${lastMove})` : ""}.`]);
   const il = issueLine("nation"); if (il) L.push(["전국 뉴스", esc(il)]);
   const lastP = {}; TLIST.filter(e => e.sc === "nation" && e.lv === 1 && e.date >= T13).forEach(e => { if (!lastP[e.name] || lastP[e.name].date < e.date) lastP[e.name] = e; });
   const tn = Object.values(lastP).sort((a, b) => a.date < b.date ? 1 : -1);
   if (tn.length) L.push(["시·도 전환", tn.slice(0, 5).map(r => `${esc(r.name)} ${STN[r.from]}→<b>${STN[r.to]}</b>(${wkL(r.date)}주)`).join(", ")]);
   const now = new Date(Date.now() + 9 * 3600e3), d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); let add = (4 - d.getUTCDay() + 7) % 7; if (add === 0 && now.getUTCHours() >= 14) add = 7; d.setUTCDate(d.getUTCDate() + add);
-  const ev = (D.meta.events || []).filter(e => e.date >= now.toISOString().slice(0, 10)).slice(0, 2).map(e => `${esc(e.name)} ${wkL(e.date)}`);
-  L.push(["다음 일정", `주간 가격동향 ${d.getUTCMonth() + 1}/${d.getUTCDate()}(목) 14시 발표${ev.length ? " · " + ev.join(" · ") : ""}.`]);
+  const seenEv = new Set(), ev = (D.meta.events || []).filter(e => e.date >= now.toISOString().slice(0, 10) && !seenEv.has(e.name) && seenEv.add(e.name)).slice(0, 2).map(e => `${esc(e.name)}(${wkL(e.date)})`);
+  L.push(["다음 일정", `주간 가격동향은 ${d.getUTCMonth() + 1}/${d.getUTCDate()}(목) 14시에 나옵니다.${ev.length ? ` 그다음 일정은 ${ev.join(", ")}입니다.` : ""}`]);
   SUMMARY.common = L;
   $("brief-common").innerHTML = `<div class="b-city" style="color:var(--ink-2)">공통 · 전국과 금리</div><ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
 })();
@@ -1457,7 +1461,7 @@ function ybars(id) {
   let g = "";
   arr.forEach(([y, v, part], i) => { const x = PL + slot * i + slot / 2;
     g += `<rect class="yb${part ? " part" : ""}" x="${(x - bw / 2).toFixed(1)}" y="${Y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - PB - Y(v)).toFixed(1)}"><title>${y}년${part ? ` (${part}까지)` : ""} ${num(v)}호</title></rect>`;
-    g += `<text x="${x.toFixed(1)}" y="${(Y(v) - 5).toFixed(1)}" text-anchor="middle" class="yv">${man(v)}</text>`;
+    g += `<text x="${x.toFixed(1)}" y="${(Y(v) - 5).toFixed(1)}" text-anchor="middle" class="yv">${v >= 1000 ? (v / 10000).toFixed(1) + "만" : num(v)}</text>`;
     g += `<text x="${x.toFixed(1)}" y="${H - 19}" text-anchor="middle" class="yl">${y}</text>`;
     if (part) g += `<text x="${x.toFixed(1)}" y="${H - 5}" text-anchor="middle" class="yl">~${part}</text>`; });
   g += `<line x1="${PL}" x2="${Wd - PR}" y1="${Y(av).toFixed(1)}" y2="${Y(av).toFixed(1)}" class="avg"/>`;

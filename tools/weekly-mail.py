@@ -115,7 +115,7 @@ def won(w):
     return f"{a:,.0f}원"
 
 
-def tw(s, f=11):
+def tw(s, f=12):
     return sum(f * 1.04 if "ㄱ" <= ch <= "힝" else f * 0.6 for ch in str(s))
 
 
@@ -223,18 +223,18 @@ def hero_svg(city):
          f'<stop offset="0" stop-color="{col}" stop-opacity=".26"/><stop offset="1" stop-color="{col}" stop-opacity=".03"/></linearGradient></defs>')
     g += f'<rect width="{Wd}" height="{H}" fill="{SURF}"/>'
     g += f'<line x1="{X(i3):.1f}" x2="{X(i3):.1f}" y1="{PT - 6}" y2="{H - PB}" stroke="{GRID}"/>'
-    g += text(X(i3), H - 7, "3개월 전", 11, INK3, 500, "middle") + text(PL, H - 7, "1년 전", 11, INK3) + text(X(52), H - 7, "지금", 11, INK3, 500, "end")
+    g += text(X(i3), H - 7, "3개월 전", 12, INK3, 500, "middle") + text(PL, H - 7, "1년 전", 12, INK3) + text(X(52), H - 7, "지금", 12, INK3, 500, "end")
     g += f'<path d="{path(pts)} L{X(52):.1f},{y0:.1f} L{X(0):.1f},{y0:.1f} Z" fill="url(#g)"/>'
     g += f'<line x1="{PL}" x2="{Wd - PR}" y1="{y0:.1f}" y2="{y0:.1f}" stroke="{INK3}" stroke-dasharray="4 4"/>'
     if abs(Y(end) - y0) > 18:
-        g += text(Wd - PR + 8, y0 + 4, "1년 전 수준", 11, INK3)
+        g += text(Wd - PR + 8, y0 + 4, "1년 전 수준", 12, INK3)
     g += f'<path d="{path(pts[:i3 + 1])}" fill="none" stroke="{col}" stroke-width="2.2" stroke-opacity=".55" stroke-linejoin="round"/>'
     g += f'<path d="{path(pts[i3:])}" fill="none" stroke="{col3}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
     ly = max(PT + 2, min(Y(v) for _, v in pts[i3:]) - 9)
-    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct(s12)}", 11.5, col3, 750, "middle")
+    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct(s12)}", 12, col3, 750, "middle")
     g += f'<circle cx="{X(52):.1f}" cy="{Y(end):.1f}" r="5.5" fill="{col3}" stroke="{SURF}" stroke-width="2.5"/>'
     g += (f'<text x="{X(52) + 9:.1f}" y="{Y(end) + 6:.1f}" font-size="17" font-weight="800" fill="{col}">'
-          f'<tspan font-size="11" font-weight="600" fill="{INK3}">1년 </tspan>{esc(pct(end, 1))}</text>')
+          f'<tspan font-size="12" font-weight="600" fill="{INK3}">1년 </tspan>{esc(pct(end, 1))}</text>')
     return {"file": f"hero-{city}.png", "w": Wd, "h": H, "svg": g}
 
 
@@ -270,7 +270,7 @@ def map_svg(key, val, name, short, width, hi=None, file=None):
     for r in sorted([r for r in rows if r["a"].get("call")], key=lambda r: r["a"]["code"] not in hi):
         a, nm, vt = r["a"], short(r["nm"]), pct(r["v"], 1)
         cx, cy = a["lx"] * k, a["ly"] * k
-        w = tw(nm, 11.5) + tw(vt, 11.5) + 18
+        w = tw(nm, 12) + tw(vt, 12) + 18
         x0 = a["call"][0] * k - (w / 2 if a["call"][2] == "middle" else w if a["call"][2] == "end" else 0)
         x0, y = max(1, min(Wd - w - 1, x0)), max(11, min(H - 11, a["call"][1] * k))
         if not put(x0, y - 11, x0 + w, y + 11):
@@ -279,25 +279,25 @@ def map_svg(key, val, name, short, width, hi=None, file=None):
         big = hi.get(a["code"])
         labs += f'<line x1="{cx:.1f}" y1="{cy:.1f}" x2="{ex:.1f}" y2="{ey:.1f}" stroke="{INK3}"/><circle cx="{cx:.1f}" cy="{cy:.1f}" r="2.3" fill="{INK}"/>'
         labs += f'<rect x="{x0:.1f}" y="{y - 10:.1f}" width="{w:.1f}" height="20" rx="10" fill="#fff" stroke="{big or "#e3e0d8"}" stroke-width="{1.6 if big else 1}"/>'
-        labs += (f'<text x="{x0 + 8:.1f}" y="{y + 4:.1f}" font-size="11.5" font-weight="800" fill="{big or INK}">{esc(nm)}'
+        labs += (f'<text x="{x0 + 8:.1f}" y="{y + 4:.1f}" font-size="12" font-weight="800" fill="{big or INK}">{esc(nm)}'
                  f'<tspan dx="5" font-weight="750" fill="{COLOR[cls(r["v"], 1)] if cls(r["v"], 1) != "flat" else INK3}">{esc(vt)}</tspan></text>')
     for r in sorted([r for r in rows if not r["a"].get("call")], key=lambda r: -r["a"]["r"]):
         a, nm, vt = r["a"], short(r["nm"]), pct(r["v"], 1)
         cx, cy, rho = a["lx"] * k, a["ly"] * k, a["r"] * k
-        bw, w1 = max(tw(nm, 11.5), tw(vt, 11)), tw(nm, 11.5)
+        bw, w1 = max(tw(nm, 12), tw(vt, 12)), tw(nm, 12)
         done = False
         if rho >= 11 and bw / 2 <= rho * 1.75:
             for ox, oy in ((0, 0), (0.45, 0), (-0.45, 0), (0, 0.4), (0, -0.4)):
                 x, y = cx + ox * rho, cy + oy * rho
                 if put(x - bw / 2, y - 10, x + bw / 2, y + 13):
-                    labs += text(x, y - 1, nm, 11.5, INK, 750, "middle") + text(x, y + 12, vt, 11, INK2, 650, "middle")
+                    labs += text(x, y - 1, nm, 12, INK, 750, "middle") + text(x, y + 12, vt, 12, INK2, 650, "middle")
                     done = True
                     break
         if not done and rho >= 6 and w1 / 2 <= rho * 2.1:
             for ox, oy in ((0, 0), (0.45, 0), (-0.45, 0), (0, 0.4), (0, -0.4)):
                 x, y = cx + ox * rho, cy + oy * rho
                 if put(x - w1 / 2, y - 6, x + w1 / 2, y + 6):
-                    labs += text(x, y + 4, nm, 11.5, INK, 750, "middle")
+                    labs += text(x, y + 4, nm, 12, INK, 750, "middle")
                     break
     g = (f'<defs><filter id="sh" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#1e222d" flood-opacity=".16"/></filter></defs>'
          f'<rect width="{Wd}" height="{H}" fill="{SURF}"/><g filter="url(#sh)" transform="scale({k:.5f})">{land}</g><g transform="scale({k:.5f})">{top}</g>{labs}')
@@ -455,7 +455,7 @@ def city_block(c):
   <b style="color:{INK}">최근 4주 {unit}별</b> · 상승 {n_r} · 보합 {len(rows) - n_r - n_d} · 하락 {n_d}<br>많이 오른 {unit}: {top3}<br>많이 내린 {unit}: {bot3}
   {img(f"map-{c}.png", 600, f"{nm} 구별 최근 4주 변동 지도")}
 </td></tr>
-<tr><td style="padding:0 18px 14px;font-size:11.5px;color:{INK3};{P}">지도 색: 진할수록 변동이 큼(빨강 = 상승, 파랑 = 하락, 4주 변동률 ±0.2%·±0.4%·±0.8% 구간)</td></tr>
+<tr><td style="padding:0 18px 14px;font-size:12px;color:{INK3};{P}">지도 색: 진할수록 변동이 큼(빨강 = 상승, 파랑 = 하락, 4주 변동률 ±0.2%·±0.4%·±0.8% 구간)</td></tr>
 </table></td></tr>"""
 
 
@@ -488,7 +488,7 @@ def card(inner, pad="16px 18px"):
 
 def bullets(L):
     return '<table role="presentation" cellpadding="0" cellspacing="0" width="100%">' + "".join(
-        f'<tr><td style="padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:66px;{P}"><span style="display:inline-block;font-size:11px;font-weight:800;'
+        f'<tr><td style="padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:66px;{P}"><span style="display:inline-block;font-size:12px;font-weight:800;'
         f'color:{INK3};background:#efede8;border-radius:5px;padding:1px 6px">{esc(k)}</span></td>'
         f'<td style="padding:5px 0;font-size:13.5px;color:{INK2};line-height:1.6;{P}">{v}</td></tr>' for k, v in L) + "</table>"
 
@@ -525,7 +525,7 @@ def trend_block():
                 f'<div style="font-size:12.5px;color:{INK3};margin-top:2px">막대 = 주간 변동률, 선 = 4주 평균, 점선 = 기준금리 변경 · 아래 띠 = 상승(빨강)·보합(회색)·하락(파랑) 구 수</div>'
                 f'{img("trend.png", 600, "서울·부산 주간 변동률과 상승·하락 구 수")}'
                 + (f'<div style="font-size:14px;font-weight:800;color:{INK};margin:10px 0 4px">최근 3개월 추세 전환</div><table role="presentation" cellpadding="0" cellspacing="0">{rows}</table>'
-                   f'<div style="font-size:11.5px;color:{INK3};margin-top:4px">4주 평균 주간 변동률로 본 상승·보합(±0.01% 이내)·하락 상태가 바뀌어 3주 이상 이어진 곳(확인 중 = 아직 2주째).</div>' if turns else ""))
+                   f'<div style="font-size:12px;color:{INK3};margin-top:4px">4주 평균 주간 변동률로 본 상승·보합(±0.01% 이내)·하락 상태가 바뀌어 3주 이상 이어진 곳(확인 중 = 아직 2주째).</div>' if turns else ""))
 
 
 def issue_news_block():
@@ -551,7 +551,7 @@ def issue_news_block():
                 t_ = t_[: -len(i["s"]) - 3].strip()
             body += (f'<div style="font-size:13.5px;line-height:1.5;margin:4px 0"><a href="{esc(i["u"])}" style="color:{INK};text-decoration:none">{esc(t_)}</a> '
                      f'<span style="color:{INK3};font-size:12px">{esc(i.get("s", ""))} · {esc(i.get("d", ""))}</span></div>')
-    body += f'<div style="font-size:11.5px;color:{INK3};margin-top:8px">구글 뉴스 검색(서울·부산·전국 정책), 사건·사고 기사는 제외. 주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸 = 주간 변동률, 가운데 = 가장 많이 나온 주제, 아래 = 제목 논조(상승−하락 단어 비율).</div>'
+    body += f'<div style="font-size:12px;color:{INK3};margin-top:8px">구글 뉴스 검색(서울·부산·전국 정책), 사건·사고 기사는 제외. 주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸 = 주간 변동률, 가운데 = 가장 많이 나온 주제, 아래 = 제목 논조(상승−하락 단어 비율).</div>'
     return card(body)
 
 
@@ -592,7 +592,7 @@ body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name
 {city_block("busan")}
 {korea_block()}
 <tr><td style="padding:2px 4px 6px;font-size:13px;color:{INK2};line-height:1.7;{P}">다가오는 일정: {schedule_block()}</td></tr>
-<tr><td style="padding:6px 4px 0;font-size:11.5px;color:{INK3};line-height:1.6;{P}">자료: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스. 지도: {esc((G or {}).get("src", ""))}.
+<tr><td style="padding:6px 4px 0;font-size:12px;color:{INK3};line-height:1.6;{P}">자료: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스. 지도: {esc((G or {}).get("src", ""))}.
 '1년 동안 약 얼마'는 중위 매매가격에 1년 지수 변동률을 적용한 어림값입니다. 매주 목요일 발표가 반영되면 한 번 보내는 메일입니다.</td></tr>
 </table></td></tr></table></body></html>"""
 OUTDIR.mkdir(parents=True, exist_ok=True)

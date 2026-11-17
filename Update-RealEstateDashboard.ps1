@@ -323,9 +323,16 @@ function Get-TitleId([string]$t) {
 }
 function Get-GNews([string]$q) {
     $u = "https://news.google.com/rss/search?q=$([uri]::EscapeDataString($q))&hl=ko&gl=KR&ceid=KR:ko"
-    for ($try = 1; $try -le 2; $try++) {
+    for ($try = 1; $try -le 3; $try++) {
         try { return @(Invoke-RestMethod -Uri $u -Headers $ua -TimeoutSec 20) }
-        catch { if ($try -eq 2 -or $_.Exception.Message -match '503|429') { throw }; Start-Sleep -Seconds 2 }
+        catch {
+            $m = $_.Exception.Message
+            # 429(요청이 많음)는 잠시 뒤 풀리는 일이 많아 실행마다 한 번은 30초 쉬고 다시 묻는다.
+            # 2026-11-17 첫 검색이 429 로 막혀 그 실행의 뉴스가 통째로 지난 값이 됐다. 503 은 오래 막혀 바로 멈춘다.
+            if ($m -match '429' -and -not $script:waited429) { $script:waited429 = $true; Write-Host "    구글 뉴스 429, 30초 뒤 다시 묻습니다"; Start-Sleep -Seconds 30; continue }
+            if ($try -ge 2 -or $m -match '503|429') { throw }
+            Start-Sleep -Seconds 2
+        }
     }
 }
 function ConvertTo-NewsItem($it) {
@@ -342,13 +349,13 @@ function ConvertTo-NewsItem($it) {
 }
 $monday = $nowKst.Date.AddDays(-(([int]$nowKst.DayOfWeek + 6) % 7))
 $curW = $monday.ToString("yyyy-MM-dd"); $prevW = $monday.AddDays(-7).ToString("yyyy-MM-dd")
-$blocked = $false; $newsFailed = 0; $newsCalls = 0; $added = 0
+$blocked = $false; $blockCode = ""; $newsFailed = 0; $newsCalls = 0; $added = 0; $script:waited429 = $false
 foreach ($g in $groupNames) {
     $list = [System.Collections.Generic.List[object]]::new(); $seen = @{}
     foreach ($q in $nc.groups.$g.queries) {
         if ($blocked) { break }
         try { $raw = Get-GNews "$q when:7d"; $newsCalls++ }
-        catch { $newsFailed++; if ($_.Exception.Message -match '503|429') { $blocked = $true }; Write-Warning "뉴스 $g '$q' 실패: $($_.Exception.Message)"; continue }
+        catch { $newsFailed++; if ($_.Exception.Message -match '(503|429)') { $blocked = $true; $blockCode = $Matches[1] }; Write-Warning "뉴스 $g '$q' 실패: $($_.Exception.Message)"; continue }
         foreach ($it in $raw) { $x = ConvertTo-NewsItem $it; if (-not $x -or $seen.ContainsKey($x.id)) { continue }; $seen[$x.id] = 1; $list.Add($x) }
         Start-Sleep -Milliseconds 300
     }
@@ -401,7 +408,7 @@ $news = [ordered]@{
 $news.queries = [ordered]@{}
 foreach ($g in $groupNames) { $news.groups[$g] = $nc.groups.$g.name; $news.queries[$g] = @($nc.groups.$g.queries) }
 Write-Host "  뉴스 검색 $newsCalls 번, 실패 $newsFailed, 새 기사 $added, 주 $($weekOut.Count)개$(if ($blocked) { ' (구글이 막아 멈춤)' })"
-$status["news"] = [ordered]@{ ok = ($newsFailed -eq 0); note = if ($blocked) { "구글 뉴스가 응답을 막아(503) 지난 값을 씁니다" } elseif ($newsFailed) { "뉴스 검색 $newsFailed 번 실패" } else { "" } }
+$status["news"] = [ordered]@{ ok = ($newsFailed -eq 0); note = if ($blocked) { "구글 뉴스가 응답을 막아($blockCode) 이번 실행은 지난 기사 목록을 씁니다" } elseif ($newsFailed) { "뉴스 검색 $newsFailed 번 실패" } else { "" } }
 
 # ---- 화면에 넣을 자료 ------------------------------------------------------------------------
 # 주간: 도시 계열이 가진 주들을 한 줄 축으로 삼고, 모든 계열을 그 축에 맞춰 값 배열로 둔다(없으면 null).
