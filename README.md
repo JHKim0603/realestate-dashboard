@@ -87,6 +87,8 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
 
 ## 파일
 
+- `DASHBOARD-RULES.md`: 세 대시보드(stockdashboard, work-dashboard, realestate-dashboard)가 똑같이 쓰는 작업 규칙입니다(문체, 글자 12px, 숫자 표기, 메일 모양, 작업 순서, 올리기 전 점검). 고치면 세 저장소를 같이 고칩니다. 실행 때마다 다른 저장소의 파일과 비교해 다르면 경고합니다.
+- `CLAUDE.md`: 이 저장소만의 작업 안내(실행 방법, 봇이 관리하는 자료 파일, 색의 뜻). 공통 규칙을 불러옵니다.
 - `Update-RealEstateDashboard.ps1`: 자료를 받아 `data-history.json` 에 쌓고 `dashboard.html` 을 만듭니다(pwsh 7).
 - `template.html`: 화면. 변동률·연속 주·시장 온도·국면·지도 색·월 상환액 등 계산은 이 안의 스크립트가 합니다.
   자리표시자는 `__DATA_JSON__`(자료)과 `__GEO_JSON__`(지도) 두 개입니다.

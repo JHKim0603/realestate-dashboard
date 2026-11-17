@@ -43,6 +43,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # DASHBOARD-RULES.md 는 stockdashboard, work-dashboard 와 똑같이 쓰는 공통 규칙이다. 한쪽만 고치면 어긋나므로
+      # 실행 때마다 stockdashboard 의 같은 파일과 비교해 다르면 경고만 남긴다(배포는 막지 않는다).
+      - name: Compare shared rules with stockdashboard
+        continue-on-error: true
+        run: |
+          # 세 대시보드 공통 규칙(DASHBOARD-RULES.md)도 같은 파일이어야 한다(2026-11-17).
+          if curl -fsSL "https://raw.githubusercontent.com/JHKim0603/stockdashboard/master/DASHBOARD-RULES.md" -o /tmp/sibling-rules.md; then
+            if cmp -s DASHBOARD-RULES.md /tmp/sibling-rules.md; then echo "DASHBOARD-RULES.md matches stockdashboard"
+            else echo "::warning::DASHBOARD-RULES.md differs from stockdashboard - 세 저장소의 공통 규칙 파일을 같게 맞추세요"; fi
+          fi
+
       # R-ONE 서버(www.reb.or.kr)는 중간 인증서를 보내지 않아 그대로는 인증서 검증이 실패한다. 발급처(WISeKey)가 공개한
       # 중간 인증서를 러너의 신뢰 목록에 더해 체인을 완성한다. 검증을 끄지 않는다. 인증서는 2029-02-24 까지 유효하다.
       - name: Add the R-ONE intermediate certificate
