@@ -136,11 +136,16 @@ function Get-WeekId([DateTime]$d) { "{0}{1:D2}" -f [System.Globalization.ISOWeek
 
 # 기간 번호 목록을 구간으로 나눈다. 구간 끝은 다음 구간 시작 번호 바로 앞이라 사이에 빠지는 번호가 없다
 # (연말 주 번호가 ISO 와 달라도 범위 비교라 어느 한 구간에는 들어간다). 한 구간은 많아야 5행이 되도록 크기를 잡는다.
+# 구간이 하나뿐이어도 [시작, 끝] 묶음의 목록으로 돌려준다. 예전 판은 @(...) 를 그대로 돌려줘서 구간이 하나일 때
+# PowerShell 이 바깥 배열을 풀어 버렸고, 구간이 '2'~'0' 같은 낱글자가 되어 R-ONE 이 빈 답을 줬다. 그래서 처음 채운 뒤로
+# 최근 몇 주·몇 달만 다시 받는 실행(2026-11-16 이후 모든 실행)이 새 값을 하나도 받지 못했다(2026-11-20 발견).
 function Split-Periods([string[]]$ids, [int]$size, [string]$last) {
-    @(for ($i = 0; $i -lt $ids.Count; $i += $size) {
+    $out = [System.Collections.Generic.List[object]]::new()
+    for ($i = 0; $i -lt $ids.Count; $i += $size) {
         $end = if ($i + $size -lt $ids.Count) { ([int64]$ids[$i + $size] - 1).ToString() } else { $last }
-        , @($ids[$i], $end)
-    })
+        $out.Add(@($ids[$i], $end))
+    }
+    , $out.ToArray()
 }
 # 구간 요청들을 만든다. key 는 data-history 의 계열 이름. grp 는 지역을 GRP_ID 로 고르는 표(매입자 표)에만 쓴다.
 function New-RoneRequests([string]$key, [string]$table, [string]$cycle, $cls, $itm, [object[]]$windows, $grp = $null) {
@@ -413,12 +418,23 @@ $status["news"] = [ordered]@{ ok = ($newsFailed -eq 0); note = if ($blocked) { "
 # ---- 화면에 넣을 자료 ------------------------------------------------------------------------
 # 주간: 도시 계열이 가진 주들을 한 줄 축으로 삼고, 모든 계열을 그 축에 맞춰 값 배열로 둔다(없으면 null).
 $axisWeeks = @($hist.weekly["sale:50001"].Keys | Where-Object { $_ -le $latestWeek } | Sort-Object | Select-Object -Last ([int]$config.rone.weeksLong))
+# 최신 주를 실제로 받았는지 본다. 받지 못했으면 받은 주까지만 '조사' 날짜로 쓰고 자료 상태에 적는다
+# (2026-11-20: 11/16 조사분을 받지 못했는데 화면 머리에는 '11/16 조사 반영'으로 나왔음).
+$shownWeek = if ($axisWeeks.Count) { [string]$axisWeeks[-1] } else { $latestWeek }
+$shownDate = if ($hist.weekDates[$shownWeek]) { [string]$hist.weekDates[$shownWeek] } else { $latestDate.ToString("yyyy-MM-dd") }
+if ($shownWeek -ne $latestWeek) {
+    $sd = [DateTime]::ParseExact($shownDate, "yyyy-MM-dd", $null)
+    $msg = "한국부동산원에 {0}/{1} 조사분이 나왔지만 받지 못해 {2}/{3} 조사까지 보입니다" -f $latestDate.Month, $latestDate.Day, $sd.Month, $sd.Day
+    $status["rone.weekly"].ok = $false; $status["rone.weekly"].note = $msg; $status["rone.weekly"].asOf = $shownDate
+    Write-Warning $msg
+}
 $series = [ordered]@{}
 foreach ($key in ($hist.weekly.Keys | Sort-Object)) {
     $m = $hist.weekly[$key]
     $series[$key] = @($axisWeeks | ForEach-Object { if ($m.ContainsKey($_)) { $m[$_] } else { $null } })
 }
-$toPairs = { param($m) @($m.Keys | Sort-Object | ForEach-Object { , @($_, $m[$_]) }) }
+# 값이 하나뿐인 계열도 [[키, 값]] 모양을 지키도록 바깥 배열을 한 번 감싸서 돌려준다(Split-Periods 와 같은 이유).
+$toPairs = { param($m) , @($m.Keys | Sort-Object | ForEach-Object { , @($_, $m[$_]) }) }
 $monthly = [ordered]@{}; foreach ($k in ($hist.monthly.Keys | Sort-Object)) { $monthly[$k] = & $toPairs $hist.monthly[$k] }
 $ecos = [ordered]@{}; foreach ($k in ($hist.ecos.Keys | Sort-Object)) { $ecos[$k] = & $toPairs $hist.ecos[$k] }
 
@@ -427,7 +443,7 @@ $data = [ordered]@{
     title     = $config.title
     subtitle  = $config.subtitle
     weekly    = [ordered]@{
-        latest = $latestWeek; latestDate = $latestDate.ToString("yyyy-MM-dd")
+        latest = $shownWeek; latestDate = $shownDate
         weeks  = $axisWeeks
         dates  = @($axisWeeks | ForEach-Object { $hist.weekDates[$_] })
         series = $series

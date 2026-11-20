@@ -1,13 +1,18 @@
 # 밝은·어두운 화면 글자·그림 대비 점검: python tools/contrast-audit.py <dashboard.html> <결과 폴더> [화면 폭]. 크롬으로 두 화면을 열어 3:1 미만 글자를 보여 준다.
-import json, re, subprocess, sys, pathlib, collections
+import json, os, re, shutil, subprocess, sys, pathlib, collections
 page, outdir = pathlib.Path(sys.argv[1]).resolve(), pathlib.Path(sys.argv[2]).resolve()
 outdir.mkdir(parents=True, exist_ok=True)
 html = page.read_text(encoding='utf-8').replace('</body>', '<script>' + (pathlib.Path(__file__).parent / 'contrast-audit.js').read_text(encoding='utf-8') + '</script></body>')
 tgt = outdir / 'audit.html'; tgt.write_text(html, encoding='utf-8')
-CH = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+# 크롬 위치는 PC마다 다르다(Program Files 와 Program Files (x86)). 처음 판은 (x86) 만 봐서 다른 PC에서 돌지 않았다.
+CH = next((p for p in (shutil.which('chrome'), shutil.which('google-chrome'), r'C:\Program Files\Google\Chrome\Application\chrome.exe',
+                       r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe') if p and os.path.exists(p)), None)
+if not CH: sys.exit('크롬을 찾지 못했습니다')
+# 크롬 프로필을 결과 폴더 안에 둔다. 회사 PC에서는 임시 폴더(TEMP)에 프로필을 만들면 크롬이 화면을 그리지 못하고 멈춘 적이 있다(2026-11-20).
+prof = outdir / 'chrome-profile'
 res = {}
 for th in ('light', 'dark'):
-    dom = subprocess.run([CH, '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars', '--virtual-time-budget=10000',
+    dom = subprocess.run([CH, '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars', '--virtual-time-budget=10000', f'--user-data-dir={prof}',
                           f'--window-size={sys.argv[3] if len(sys.argv) > 3 else 1280},16000', '--dump-dom', tgt.as_uri() + f'#audit-{th}'], capture_output=True, timeout=180).stdout.decode('utf-8', 'replace')
     m = re.search(r'<pre id="auditOut" hidden="">(.*?)</pre>', dom, re.S)
     import html as H

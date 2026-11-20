@@ -142,12 +142,6 @@
   .heat-chip.h-r1, .heat-chip.h-r2, .heat-chip.h-r3 { color: var(--rise); border-color: color-mix(in srgb, var(--rise) 35%, var(--border)); }
   .heat-chip.h-f1, .heat-chip.h-f2, .heat-chip.h-f3 { color: var(--fall); border-color: color-mix(in srgb, var(--fall) 35%, var(--border)); }
   .heat-chip.h-0 { color: var(--ink-2); }
-  .h-heat { display: flex; flex-direction: column; gap: 3px; }
-  .hs-strip { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; }
-  .hs-strip i { height: 10px; border-radius: 2px; background: var(--zero); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent); }
-  .hs-strip i.h-r1 { background: var(--rise-1); } .hs-strip i.h-r2 { background: var(--rise-2); } .hs-strip i.h-r3 { background: var(--rise-3); }
-  .hs-strip i.h-f1 { background: var(--fall-1); } .hs-strip i.h-f2 { background: var(--fall-2); } .hs-strip i.h-f3 { background: var(--fall-3); }
-  .hs-l { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); }
 
   /* 2. 서울 vs 부산 숫자 */
   .score { padding: 6px 0 4px; gap: 0; }
@@ -232,6 +226,9 @@
   .tl b { text-align: right; font-variant-numeric: tabular-nums; }
   .scale { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
   .scale i { display: inline-block; width: 24px; height: 11px; border-radius: 3px; }
+  .hm-fold { border-top: 1px dashed var(--grid); margin-top: 14px; padding-top: 12px; }
+  .hm-fold > summary { font-size: 14px; font-weight: 750; cursor: pointer; }
+  .hm-fold > summary span { font-size: 12.5px; font-weight: 500; color: var(--ink-3); margin-left: 8px; }
   .detail { border-top: 1px dashed var(--grid); padding-top: 14px; display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 20px; align-items: start; }
   @media (max-width: 760px) { .detail { grid-template-columns: 1fr; } }
   .dt-name { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
@@ -283,8 +280,8 @@
   .gauge .needle { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
   .gauge .hub { fill: var(--ink); }
   .gauge .ghost { stroke: var(--ink-3); stroke-width: 2; stroke-dasharray: 2 2; }
-  .gauge .gv { font-size: 27px; font-weight: 800; fill: var(--ink); font-variant-numeric: tabular-nums; }
-  .gauge .gt { font-size: 15px; fill: var(--ink-3); font-weight: 700; }
+  .gauge .gv { font-size: 28px; font-weight: 800; fill: var(--ink); font-variant-numeric: tabular-nums; }
+  .gauge .gt-tick { stroke: var(--ink-2); stroke-width: 2.5; stroke-linecap: round; }
   .gauge .ga { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
   .gauge .gw { font-size: 12px; font-weight: 750; margin-top: -2px; }
   .gauge .gw.up { color: var(--rise); } .gauge .gw.down { color: var(--fall); }
@@ -446,6 +443,7 @@
   @media (max-width: 520px) { .tr2 { grid-template-columns: 84px minmax(0, 1fr) 36px 52px; } }
   .exs { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
   .ex b { font-size: 13px; }
+  .ex b .more { color: var(--warn); font-weight: 700; font-size: 12.5px; margin-left: 4px; }
   .ex a { display: block; font-size: 13px; color: var(--ink-2); text-decoration: none; line-height: 1.5; margin-top: 2px; }
   .ex a:hover { color: var(--accent); text-decoration: underline; }
   .ex small { color: var(--ink-3); font-size: 12px; }
@@ -477,14 +475,14 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">서울 · 부산 아파트 시장</div>
+      <div class="eyebrow">서울·부산 아파트 시장</div>
       <h1>부동산 시장 Dashboard</h1>
     </div>
     <div class="top-r"><span class="pill"><span class="dot"></span><span id="asof"></span></span><button type="button" class="icon-btn" id="themeBtn" aria-label="밝은 화면과 어두운 화면 바꾸기">◐ 화면 모드</button></div>
   </header>
   <nav class="jump" aria-label="바로 가기">
     <a href="#now">지금 집값</a><a href="#brief">흐름 정리</a><a href="#trend">방향·속도</a><a href="#issues">요즘 이슈</a><a href="#score">숫자 비교</a><a href="#korea">전국 지도</a><a href="#maps">서울·부산 지도</a>
-    <a href="#phase">시장 국면</a><a href="#heat">주간 흐름</a><a href="#flow">집값 3년</a><a href="#supply">공급·미분양</a><a href="#buyers">누가 사나</a><a href="#money">금리·자금</a><a href="#more">용어·일정</a>
+    <a href="#phase">시장 국면</a><a href="#flow">집값 3년</a><a href="#supply">공급·미분양</a><a href="#buyers">누가 사나</a><a href="#money">금리·자금</a><a href="#more">용어·일정</a>
   </nav>
 
   <section id="now">
@@ -504,13 +502,8 @@
       <div class="card" id="trend-seoul"></div>
       <div class="card" id="trend-busan"></div>
     </div>
-    <div class="row-w" style="margin-top:14px">
-      <div class="card"><div class="card-h"><div><h3>최근 추세 전환</h3><div class="q">4주 평균 주간 변동률로 본 상승·보합·하락 상태가 바뀌어 3주 이상 이어진 곳(최근 6개월) · 띠 = 최근 26주 상태</div></div><div class="tools"><span class="asof" id="tAsof"></span><div class="seg" role="group" aria-label="범위" id="tSeg"><button type="button" data-k="all" class="on">전체</button><button type="button" data-k="seoul">서울</button><button type="button" data-k="busan">부산</button><button type="button" data-k="nation">시·도</button></div></div></div>
-        <div class="turns" id="turns"></div><div class="cap">보합 = 4주 평균 주간 변동률 ±0.01% 이내. '확인 중'은 바뀐 상태가 아직 2주째인 곳입니다.</div></div>
-      <div class="card"><div class="card-h"><div><h3>시장 온도 추이</h3><div class="q">월별 시장 온도(0~100) · 배경 띠 = 매수자·매도자 중 누구에게 유리한 시장인지</div></div><div class="tools"><span class="asof" id="tmAsof"></span></div></div>
-        <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div>
-        <div class="ch" id="tempCh"></div><div class="cap">배경 띠: 파랑 = 매수자 우위(40 미만), 회색 = 중립, 옅은 빨강 = 매도자 우위(55~70), 빨강 = 강한 매도자 우위(70 이상). 시장 온도는 매수심리·전세수급·집값 3개월·거래량·미분양을 0~100점으로 바꿔 평균한 값입니다('시장 온도계' 설명 참고).</div></div>
-    </div>
+    <div class="card" style="margin-top:14px"><div class="card-h"><div><h3>최근 추세 전환</h3><div class="q">4주 평균 주간 변동률로 본 상승·보합·하락 상태가 바뀌어 3주 이상 이어진 곳(최근 6개월), 띠는 최근 26주 상태</div></div><div class="tools"><span class="asof" id="tAsof"></span><div class="seg" role="group" aria-label="범위" id="tSeg"><button type="button" data-k="all" class="on">전체</button><button type="button" data-k="seoul">서울</button><button type="button" data-k="busan">부산</button><button type="button" data-k="nation">시·도</button></div></div></div>
+      <div class="turns" id="turns"></div><div class="cap">보합은 4주 평균 주간 변동률이 ±0.01% 이내인 경우입니다. '확인 중'은 바뀐 상태가 아직 2주째인 곳입니다.</div></div>
   </section>
 
   <section id="issues">
@@ -518,13 +511,14 @@
     <div class="card">
       <div class="card-h"><div class="k-head" id="isHead"></div>
         <div class="tools"><span class="asof" id="isAsof"></span><div class="seg" role="group" aria-label="뉴스 묶음" id="isSeg"><button type="button" data-g="seoul" class="on">서울</button><button type="button" data-g="busan">부산</button><button type="button" data-g="nation">전국·정책</button></div></div></div>
-      <div class="map-t">집값 흐름과 그 주의 이슈<span>위 = 주간 변동률(그 주 월요일 조사) · 가운데 = 가장 많이 나온 주제 · 아래 = 제목 논조 · 칸에 올리면 그 주 기사</span></div>
+      <div class="map-t">집값 흐름과 그 주의 이슈<span>칸에 올리면 그 주 기사가 보입니다</span></div>
       <div class="tline" id="isLine"></div>
+      <div class="cap" style="margin-top:2px">위는 주간 변동률(그 주 월요일 조사), 가운데는 직전 4주 평균보다 가장 많이 늘어난 주제, 아래는 제목 논조입니다. 검색어에 '전세'가 들어 있어 전세·월세 기사는 어느 주에나 많이 잡힙니다. 그래서 주제는 비율보다 4주 평균보다 얼마나 늘었는지로 봅니다.</div>
       <div class="is-grid"><div><div class="map-t">주제별 흐름(최근 12주)<span id="isWk"></span></div><div class="trows" id="isTopics"></div></div>
-        <div><div class="map-t">많이 나온 주제의 최근 기사</div><div class="exs" id="isEx"></div><div class="mood" id="isMood"></div></div></div>
+        <div><div class="map-t">눈에 띄는 주제의 최근 기사</div><div class="exs" id="isEx"></div><div class="mood" id="isMood"></div></div></div>
     </div>
     <div class="row-w" style="margin-top:14px">
-      <div class="card"><div class="card-h"><div><h3>주별 대표 기사</h3><div class="q">그 주에 어떤 이야기가 있었나 · 주제로 분류된 기사 중 검색 상위 3건</div></div></div><div class="weeks" id="isWeeks"></div></div>
+      <div class="card"><div class="card-h"><div><h3>주별 대표 기사</h3><div class="q">그 주에 어떤 이야기가 있었나, 주제로 분류된 기사 중 검색 상위 3건(진한 칸은 4주 평균보다 5%p 넘게 늘어난 주제)</div></div></div><div class="weeks" id="isWeeks"></div></div>
       <div class="card"><div class="card-h"><div><h3>최근 7일 기사</h3><div class="q">제목 아래 태그 = 분류된 주제</div></div></div><div id="newsBox"></div><div class="note" id="newsNote"></div></div>
     </div>
   </section>
@@ -556,6 +550,11 @@
       </div>
       <div class="scale" id="mScale"></div>
       <div class="detail"><div id="detailInfo"></div><div><div class="legend" id="dtLegend"></div><div class="ch" id="detailCh"></div></div></div>
+      <details class="hm-fold" id="heat"><summary>구별 26주 흐름 보기<span>칸 하나가 한 주, 언제부터 색이 바뀌었는지 보입니다</span></summary>
+        <div class="card-h" style="margin-top:10px"><div class="q">최근 26주, 주간 매매가격 변동</div><div class="tools"><span class="asof" id="hAsof"></span><div class="seg" role="group" aria-label="도시" id="hmSeg"><button type="button" data-c="seoul" class="on">서울</button><button type="button" data-c="busan">부산</button></div></div></div>
+        <div class="hmx" id="hmx"></div>
+        <div class="cap">주간 변동률이 ±0.02% 미만이면 회색이고, ±0.05%와 ±0.15%를 넘을수록 색이 진해집니다. 맨 오른쪽 숫자는 26주 누적 변동률입니다.</div>
+      </details>
     </div>
   </section>
 
@@ -565,24 +564,18 @@
       <div class="card"><div class="card-h"><div><h3>시장 국면 지도</h3><div class="q">가격과 거래량이 함께 움직이나? 지난 1년의 이동 경로</div></div><div class="tools"><span class="asof" id="qAsof"></span></div></div>
         <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div>
         <div class="ch" id="quad"></div><div class="cap" id="quadCap"></div></div>
-      <div class="card"><div class="card-h"><div><h3>시장 온도계</h3><div class="q">100이 균형 · 오른쪽(빨강)일수록 집값 상승 요인</div></div><div class="tools"><span class="asof" id="gAsof"></span></div></div>
+      <div class="card"><div class="card-h"><div><h3>시장 온도계</h3><div class="q">100이 균형, 오른쪽(빨강)일수록 집값 상승 요인</div></div><div class="tools"><span class="asof" id="gAsof"></span></div></div>
         <div class="gauges" id="gauges"></div><div class="cap" id="heatCap"></div></div>
     </div>
-  </section>
-
-  <section id="heat">
-    <div class="sec-h"><h2>구별 주간 흐름</h2><p>칸 하나가 한 주 · 언제부터 색이 바뀌었는지 보입니다</p></div>
-    <div class="card">
-      <div class="card-h"><div class="q">최근 26주, 주간 매매가격 변동</div><div class="tools"><span class="asof" id="hAsof"></span><div class="seg" role="group" aria-label="도시" id="hmSeg"><button type="button" data-c="seoul" class="on">서울</button><button type="button" data-c="busan">부산</button></div></div></div>
-      <div class="hmx" id="hmx"></div>
-      <div class="cap">주간 변동률 ±0.02% 미만은 회색이고, ±0.05%·±0.15%를 넘을수록 색이 진해집니다. 맨 오른쪽 숫자는 26주 누적 변동률입니다.</div>
-    </div>
+    <div class="card" style="margin-top:14px"><div class="card-h"><div><h3>시장 온도 추이</h3><div class="q">월별 시장 온도(0~100), 배경 띠는 매수자와 매도자 중 누구에게 유리한 시장인지</div></div><div class="tools"><span class="asof" id="tmAsof"></span></div></div>
+      <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div>
+      <div class="ch" id="tempCh"></div><div class="cap" id="tempCap"></div></div>
   </section>
 
   <section id="flow">
     <div class="sec-h"><h2>집값 흐름(최근 3년)</h2><p>정책·금리가 바뀐 때를 그래프에 표시</p></div>
     <div>
-      <div class="card"><div class="card-h"><div><h3>집값 흐름</h3><div class="q">기간 시작을 0%로 맞춘 누적 변동률 · 회색 점선 = 정책 발표, 주황 점선 = 기준금리 변경</div></div>
+      <div class="card"><div class="card-h"><div><h3>집값 흐름</h3><div class="q">기간 시작을 0%로 맞춘 누적 변동률, 회색 점선은 정책 발표, 주황 점선은 기준금리 변경</div></div>
         <div class="tools"><span class="asof" id="pAsof"></span><div class="seg" role="group" aria-label="기간" id="priceSeg"><button type="button" data-n="52">1년</button><button type="button" data-n="156" class="on">3년</button></div></div></div>
         <div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span><span><i style="border-color:var(--c-nat)"></i>전국</span><span><i class="dash" style="border-color:var(--ink-2)"></i>정책</span><span><i class="dash" style="border-color:var(--warn)"></i>기준금리</span></div>
         <div class="ch" id="priceCh"></div><div class="cap" id="polCap"></div></div>
@@ -595,7 +588,7 @@
       <div class="card"><div class="card-h"><div><h3>연도별 주택 건설 인허가</h3><div class="q">회색 점선 = 연평균, 주황 점선 = 적정수요(인구 × 0.5%)</div></div><div class="tools"><span class="asof" id="yAsof"></span></div></div>
         <div class="pair"><div class="seoul"><div class="pair-t">서울<span id="ybt-seoul"></span></div><div class="ch" id="yb-seoul" data-c="seoul"></div></div><div class="busan"><div class="pair-t">부산<span id="ybt-busan"></span></div><div class="ch" id="yb-busan" data-c="busan"></div></div></div>
         <div class="cap">허가 → 착공 6개월~2년, 착공 → 입주 30~36개월. 적정수요는 참고선입니다(20년 평균 입주량이 더 잘 맞는다는 실무 의견도 있음). 올해 막대는 1월부터 누적한 값이라 옅게 표시했습니다.</div></div>
-      <div class="card"><div class="card-h"><div><h3>안 팔린 새 아파트(미분양)</h3><div class="q">최근 5년 · 도시마다 세로축이 다름</div></div><div class="tools"><span class="asof" id="uAsof"></span></div></div>
+      <div class="card"><div class="card-h"><div><h3>안 팔린 새 아파트(미분양)</h3><div class="q">최근 5년, 도시마다 세로축이 다름</div></div><div class="tools"><span class="asof" id="uAsof"></span></div></div>
         <div class="pair"><div class="seoul"><div class="pair-t">서울<span id="ur-seoul"></span></div><div class="ch" id="unsold-seoul"></div></div><div class="busan"><div class="pair-t">부산<span id="ur-busan"></span></div><div class="ch" id="unsold-busan"></div></div></div>
         <div class="cap" id="unsoldCap"></div></div>
     </div>
@@ -606,7 +599,7 @@
     <div class="row3">
       <div class="card"><div class="card-h"><div><h3>외지인 매입 비중</h3><div class="q">다른 시·도 거주자가 산 비율</div></div><div class="tools"><span class="asof" id="oAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="outCh"></div><div class="cap">오르면 다른 지역의 투자 수요가 들어온다는 신호로 봅니다.</div></div>
       <div class="card"><div class="card-h"><div><h3>2030 매입 비중</h3><div class="q">20대 이하 + 30대가 산 비율</div></div><div class="tools"><span class="asof" id="aAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="youngCh"></div><div class="cap">높아지면 첫 집 수요(이른바 '영끌')가 늘었다는 뜻입니다.</div></div>
-      <div class="card"><div class="card-h"><div><h3>월세 지수</h3><div class="q">아파트 월세통합지수 · 2026.6 = 100</div></div><div class="tools"><span class="asof" id="rAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="rentCh"></div><div class="cap" id="rentCap"></div></div>
+      <div class="card"><div class="card-h"><div><h3>월세 지수</h3><div class="q">아파트 월세통합지수(2026.6 = 100)</div></div><div class="tools"><span class="asof" id="rAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="rentCh"></div><div class="cap" id="rentCap"></div></div>
     </div>
   </section>
 
@@ -644,8 +637,12 @@ const pct = (x, d = 2) => { if (!has(x)) return "–"; const r = +x.toFixed(d); 
 const cls = (x, d = 2) => { if (!has(x)) return "flat"; const r = +x.toFixed(d); return r > 0 ? "up" : r < 0 ? "down" : "flat"; };
 const num = (v, d = 0) => has(v) ? v.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d }) : "–";
 const tw = (s, f = 12) => { let w = 0; for (const ch of String(s)) w += /[ㄱ-힝]/.test(ch) ? f * 1.04 : f * 0.6; return w; };
+// 기간 변동률(3개월·1년·누적): 10% 이상이면 정수, 그 밖은 소수 첫째 자리(공통 규칙 4).
+// 주간 변동률과 4주 평균 주간 변동률은 한 주에 0.0x% 단위로 움직여 소수 둘째 자리로 둔다(이 저장소의 예외, CLAUDE.md).
+const dgL = x => has(x) && Math.abs(x) >= 9.95 ? 0 : 1;
+const pctL = x => pct(x, dgL(x)), clsL = x => cls(x, dgL(x));
 const man = v => v >= 10000 ? (v / 10000).toFixed(1) + "만" : num(v);
-const won = w => { const a = Math.abs(w); if (a >= 1e8) return (a / 1e8).toFixed(a >= 1e9 ? 1 : 2).replace(/\.?0+$/, "") + "억 원"; if (a >= 1e4) return num(Math.round(a / 1e4 / (a >= 1e7 ? 100 : 10)) * (a >= 1e7 ? 100 : 10)) + "만 원"; return num(a) + "원"; };
+const won = w => { const a = Math.abs(w); if (a >= 1e8) return (a / 1e8).toFixed(1).replace(/\.0$/, "") + "억 원"; if (a >= 1e4) return num(Math.round(a / 1e4 / (a >= 1e7 ? 100 : 10)) * (a >= 1e7 ? 100 : 10)) + "만 원"; return num(a) + "원"; };
 
 // ---- 자료 꺼내기 -----------------------------------------------------------------------------
 const WK = D.weekly, WC = {};
@@ -869,14 +866,13 @@ function hero(city) {
   const sigH = sg.map(x => `<span class="sig ${x.d > 0 ? "p" : x.d < 0 ? "n" : ""}" title="${esc(x.t)}"><i>${x.ar > 0 ? "▲" : x.ar < 0 ? "▼" : "–"}</i>${esc(x.label)}</span>`).join("");
   const H = HEAT[city];
   el.className = `hero ${tw0.dir}`; el.style.setProperty("--cc", `var(${c.col})`);
-  el.innerHTML = `<div class="h-top"><span class="h-city">${c.nm} 아파트 · 최근 3개월</span>${has(H.now) ? `<span class="heat-chip ${heatCls(H.now)}" title="시장 온도: 아래 '시장 온도계' 설명 참고">시장 온도 <b>${H.now}</b>${heatLabel(H.now)}</span>` : ""}</div>
+  el.innerHTML = `<div class="h-top"><span class="h-city">${c.nm} 아파트, 최근 3개월</span>${has(H.now) ? `<span class="heat-chip ${heatCls(H.now)}" title="시장 온도: 아래 '시장 온도 추이' 설명 참고">시장 온도 <b>${H.now}</b>${heatLabel(H.now)}</span>` : ""}</div>
     <div class="h-main"><svg class="h-arrow" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31"/><g transform="rotate(${(-ang).toFixed(1)} 32 32)"><path d="M15 32 H47 M36 20 L48 32 L36 44"/></g></svg>
-      <div><div class="h-word">${esc(tw0.w)}${tw0.sub ? `<small>${esc(tw0.sub)}</small>` : ""}</div><div class="h-sub">${run}${mo.short ? ` · ${mo.short}` : ""}</div></div></div>
+      <div><div class="h-word">${esc(tw0.w)}${tw0.sub ? `<small>${esc(tw0.sub)}</small>` : ""}</div><div class="h-sub">${run}${mo.short ? `, ${mo.short}` : ""}</div></div></div>
     <div class="h-chart" id="hc-${city}"></div>
-    <div class="h-nums"><div><span>1년</span><b class="${cls(s52, 1)}">${pct(s52, 1)}</b></div><div><span>3개월</span><b class="${cls(s12)}">${pct(s12)}</b></div><div><span>이번 주</span><b class="${cls(s1)}">${pct(s1)}</b></div></div>
+    <div class="h-nums"><div><span>1년</span><b class="${clsL(s52)}">${pctL(s52)}</b></div><div><span>3개월</span><b class="${clsL(s12)}">${pctL(s12)}</b></div><div><span>이번 주</span><b class="${cls(s1)}">${pct(s1)}</b></div></div>
     ${money ? `<p class="h-money">${money}</p>` : ""}
-    <div class="h-sig">${sigH}<div class="sig-sum">색: 빨강 = 집값 상승 요인, 파랑 = 하락 요인(▲▼는 지표의 방향) · <b class="up">상승 요인 ${nUp}개</b>, <b class="down">하락 요인 ${nDn}개</b></div></div>
-    ${H.ser.length ? `<div class="h-heat"><div class="hs-strip" title="월별 시장 온도">${H.ser.map(([m, v]) => `<i class="${heatCls(v)}" title="${ymL(m)} 시장 온도 ${v.toFixed(0)}"></i>`).join("")}</div><div class="hs-l"><span>${ymL(H.ser[0][0])}</span><span>월별 시장 온도(빨강일수록 매도자 우위)</span><span>${ymL(H.ser[H.ser.length - 1][0])}</span></div></div>` : ""}`;
+    <div class="h-sig">${sigH}<div class="sig-sum">빨강은 집값을 올리는 요인, 파랑은 내리는 요인입니다(▲▼는 지표의 방향). <b class="up">상승 요인 ${nUp}개</b>, <b class="down">하락 요인 ${nDn}개</b>입니다.</div></div>`;
   heroChart(city);
 }
 function heroChart(city) {
@@ -890,7 +886,7 @@ function heroChart(city) {
   // 색: 1년 전체(옅은 선·면)는 1년 변동의 방향, 최근 3개월(굵은 선)은 3개월 변동의 방향. 위 숫자 칸의 색과 같다.
   const colOf = d => d === "up" ? "--rise" : d === "down" ? "--fall" : "--flat";
   const endV = vs[vs.length - 1], dir = cls(endV, 1), col = colOf(dir);
-  const s12 = chg(s, 12), col3 = colOf(cls(s12)), i3 = pts.length - 13;
+  const s12 = chg(s, 12), col3 = colOf(clsL(s12)), i3 = pts.length - 13;
   const path = a => a.map(([t, v], i) => `${i ? "L" : "M"}${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join("");
   const line = path(pts), y0 = Y(0), gid = `hg-${city}`, down = dir === "down";
   let g = `<defs><linearGradient id="${gid}" x1="0" y1="${down ? 1 : 0}" x2="0" y2="${down ? 0 : 1}"><stop offset="0" stop-color="var(${col})" stop-opacity=".26"/><stop offset="1" stop-color="var(${col})" stop-opacity=".03"/></linearGradient></defs>`;
@@ -903,18 +899,18 @@ function heroChart(city) {
   g += `<path d="${path(pts.slice(0, i3 + 1))}" class="h-line" style="stroke:var(${col});stroke-width:2.2;opacity:.55"/>`;
   g += `<path d="${path(pts.slice(i3))}" class="h-line" style="stroke:var(${col3});stroke-width:4"/>`;
   const seg = pts.slice(i3).map(p => Y(p[1])), ly = Math.min(...seg) - 9, lx = (X(pts[i3][0]) + X(t1)) / 2;
-  g += `<text x="${lx.toFixed(1)}" y="${Math.max(PT + 2, ly).toFixed(1)}" text-anchor="middle" class="h-ax" style="fill:var(${col3});font-weight:750">최근 3개월 ${pct(s12, 2)}</text>`;
+  g += `<text x="${lx.toFixed(1)}" y="${Math.max(PT + 2, ly).toFixed(1)}" text-anchor="middle" class="h-ax" style="fill:var(${col3});font-weight:750">최근 3개월 ${pctL(s12)}</text>`;
   g += `<circle cx="${X(t1).toFixed(1)}" cy="${Y(endV).toFixed(1)}" r="5.5" style="fill:var(${col3});stroke:var(--surface);stroke-width:2.5"/>`;
-  g += `<text x="${(X(t1) + 9).toFixed(1)}" y="${(Y(endV) + 6).toFixed(1)}" class="h-end" style="fill:var(${col})"><tspan style="font-size:12px;font-weight:650;fill:var(--ink-3)">1년 </tspan>${pct(endV, 1)}</text>`;
+  g += `<text x="${(X(t1) + 9).toFixed(1)}" y="${(Y(endV) + 6).toFixed(1)}" class="h-end" style="fill:var(${col})"><tspan style="font-size:12px;font-weight:650;fill:var(--ink-3)">1년 </tspan>${pctL(endV)}</text>`;
   g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
-  el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="${CITY[city].nm} 집값 1년 흐름, 지금 ${pct(endV, 1)}">${g}</svg><div class="tip" hidden></div>`;
-  hover(el, [{ name: "1년 전보다", pts, color: col }], X, PL, Wd - PR, Wd, { tf: v => pct(v) });
+  el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="${CITY[city].nm} 집값 1년 흐름, 지금 ${pctL(endV)}">${g}</svg><div class="tip" hidden></div>`;
+  hover(el, [{ name: "1년 전보다", pts, color: col }], X, PL, Wd - PR, Wd, { tf: v => pctL(v) });
 }
 ["seoul", "busan"].forEach(hero);
 VIS.push(() => { heroChart("seoul"); heroChart("busan"); });
 const lastTrade = lastKey(M("trade:seoul"));
-$("asof").textContent = `${wkAsof} 반영 · ${D.generated} 갱신`;
-$("fresh").innerHTML = `기준: 집값·전세·매수심리는 <b>${wkAsof}</b>(한국부동산원 주간 통계, 매주 목요일 발표) · 거래·미분양·월세·매입자·금리는 <b>${mAsof(lastTrade)}</b>(월간 통계, 신고·집계에 1~2개월 소요). 큰 글자와 화살표 기울기는 최근 3개월 변동률로 정합니다(±0.1% 미만 제자리, ±0.3% 미만 거의 제자리, ±1% 미만 조금씩, ±3% 이상 빠르게).`;
+$("asof").textContent = `${wkAsof} 반영, ${D.generated} 갱신`;
+$("fresh").innerHTML = `집값·전세·매수심리는 <b>${wkAsof}</b> 기준입니다(한국부동산원 주간 통계, 매주 목요일 발표). 거래·미분양·월세·매입자·금리는 <b>${mAsof(lastTrade)}</b>의 월간 통계입니다(신고와 집계에 1~2개월 걸림). 큰 글자와 화살표 기울기는 최근 3개월 변동률로 정합니다(±0.1% 미만 제자리, ±0.3% 미만 거의 제자리, ±1% 미만 조금씩, ±3% 이상 빠르게).`;
 
 // ---- 2. 서울과 부산, 숫자로 -------------------------------------------------------------------
 function spark(v) {
@@ -929,10 +925,10 @@ function scoreCard() {
   const cell = (city, v, vc, d, sp) => `<div class="sc-c ${city}"><span class="v ${vc || ""}">${v}</span><span class="d">${d}</span>${sp}</div>`;
   const R = [];
   const row = (k, sub, f) => R.push(`<div class="sc-row"><div class="sc-k"><b>${k}</b><span>${sub}</span></div>${["seoul", "busan"].map(c => f(c)).join("")}</div>`);
-  row("집값 · 1년", "주간 매매가격지수", c => { const s = W(`sale:${CITY[c].code}`), x = chg(s, 52); return cell(c, pct(x, 1), cls(x, 1), `3개월 ${pct(chg(s, 12))}`, spark(s.slice(-53).map(p => p[1]))); });
-  row("전세 · 1년", "주간 전세가격지수", c => { const s = W(`jeonse:${CITY[c].code}`), x = chg(s, 52); return cell(c, pct(x, 1), cls(x, 1), `3개월 ${pct(chg(s, 12))}`, spark(s.slice(-53).map(p => p[1]))); });
-  row("월세 · 1년", "월세통합지수", c => { const r = RENT[c], x = yoyOf(last(r), atAgo(r)), md = last(M(`rentMed:${c}`)); return cell(c, pct(x, 1), cls(x, 1), has(md) ? `중위 월세 ${num(md / 10)}만 원` : "", spark(r.slice(-25).map(p => p[1]))); });
-  row("월 상환액", "중위 가격 아파트, 절반을 30년 대출", c => { const a = AFF[c], v = last(a), p = atAgo(a); return cell(c, has(v) ? `${num(v)}만 원` : "–", "", has(p) ? `1년 전 ${num(p)}만 원 · ${pct((v / p - 1) * 100, 0)}` : "", spark(a.slice(-25).map(q => q[1]))); });
+  row("집값 1년", "주간 매매가격지수", c => { const s = W(`sale:${CITY[c].code}`), x = chg(s, 52); return cell(c, pctL(x), clsL(x), `3개월 ${pctL(chg(s, 12))}`, spark(s.slice(-53).map(p => p[1]))); });
+  row("전세 1년", "주간 전세가격지수", c => { const s = W(`jeonse:${CITY[c].code}`), x = chg(s, 52); return cell(c, pctL(x), clsL(x), `3개월 ${pctL(chg(s, 12))}`, spark(s.slice(-53).map(p => p[1]))); });
+  row("월세 1년", "월세통합지수", c => { const r = RENT[c], x = yoyOf(last(r), atAgo(r)), md = last(M(`rentMed:${c}`)); return cell(c, pctL(x), clsL(x), has(md) ? `중위 월세 ${num(md / 10)}만 원` : "", spark(r.slice(-25).map(p => p[1]))); });
+  row("월 상환액", "중위 가격 아파트, 절반을 30년 대출", c => { const a = AFF[c], v = last(a), p = atAgo(a); return cell(c, has(v) ? `${num(v)}만 원` : "–", "", has(p) ? `1년 전 ${num(p)}만 원, ${pctL((v / p - 1) * 100)}` : "", spark(a.slice(-25).map(q => q[1]))); });
   row("거래량", "3개월 평균, 1년 전 대비", c => { const sg = SIG[c]; return cell(c, pct(sg.trch, 0), cls(sg.trch, 0), sg.ma.length ? `월 ${num(sg.ma[sg.ma.length - 1])}건` : "", spark(sg.ma.slice(-24))); });
   row("미분양", "안 팔린 새 아파트", c => { const u = E(`unsold.${c}`), v = last(u), r = has(HOUSES[c]) && has(v) ? v / HOUSES[c] * 100 : null; return cell(c, `${num(v)}호`, "", `${has(r) ? `주택 수 대비 ${r.toFixed(2)}% · ` : ""}1년 ${pct(SIG[c].uch, 0)}`, spark(u.slice(-24).map(p => p[1]))); });
   row("외지인 매입", "다른 시·도 거주자가 산 비율", c => { const a = BUY[c].out, v = last(a), p = atAgo(a); return cell(c, has(v) ? `${v.toFixed(1)}%` : "–", "", has(p) ? `1년 전 ${p.toFixed(1)}% · ${ymL(lastKey(a))}` : "", spark(a.slice(-24).map(q => q[1]))); });
@@ -945,7 +941,7 @@ scoreCard();
 const BIN = { 1: [0.02, 0.05, 0.15], 4: [0.2, 0.4, 0.8], 12: [0.5, 1, 2], 52: [2, 5, 10] }, PN = { 1: "이번 주", 4: "4주", 12: "3개월", 52: "1년" };
 const lvOf = (v, th) => { if (!has(v)) return "na"; const a = Math.abs(v), l = a < th[0] ? 0 : a < th[1] ? 1 : a < th[2] ? 2 : 3; return l ? (v > 0 ? "r" : "f") + l : ""; };
 const scaleHtml = th => { const sw = c => `<i style="background:var(${c})"></i>`;
-  return `하락 ${sw("--fall-3")}${sw("--fall-2")}${sw("--fall-1")}${sw("--zero")}${sw("--rise-1")}${sw("--rise-2")}${sw("--rise-3")} 상승 · 색 구간 ${th.map(x => "±" + x + "%").join(" / ")}`; };
+  return `하락 ${sw("--fall-3")}${sw("--fall-2")}${sw("--fall-1")}${sw("--zero")}${sw("--rise-1")}${sw("--rise-2")}${sw("--rise-3")} 상승, 색 구간 ${th.map(x => "±" + x + "%").join(" / ")}`; };
 const udf = (vals, dg) => { const u = vals.filter(v => +v.toFixed(dg) > 0).length, d = vals.filter(v => +v.toFixed(dg) < 0).length; return { u, d, f: vals.length - u - d }; };
 function geoMap(el, m, o) {
   if (!el || !m) return;
@@ -997,9 +993,9 @@ function korea() {
     return `<div class="rk ${c}"><em>${i + 1}</em><span>${esc(r.p.name)}</span><span class="bar"><i class="${r.v >= 0 ? "u" : "d"}" style="width:${(Math.abs(r.v) / mx * 50).toFixed(1)}%"></i></span><b class="${cls(r.v, dg)}">${pct(r.v, dg)}</b></div>`; }).join("");
   const cnt = udf(rows.map(r => r.v), dg), pos = code => rows.findIndex(r => r.p.cls === code) + 1;
   const sv = rows.find(r => r.p.cls === CITY.seoul.code), bv = rows.find(r => r.p.cls === CITY.busan.code);
-  $("kRankT").textContent = `${PN[n]} · 상승 ${cnt.u} · 보합 ${cnt.f} · 하락 ${cnt.d}`;
-  $("kHead").innerHTML = rows.length ? `${PN[n]} 동안 17개 시·도 중 <b>${cnt.u}곳이 오르고 ${cnt.d}곳이 내렸습니다</b>${cnt.f ? `(보합 ${cnt.f}곳)` : ""}.<br><span class="seoul">서울 ${sv ? pct(sv.v, dg) : "–"}</span>(${pos(CITY.seoul.code)}위) · <span class="busan">부산 ${bv ? pct(bv.v, dg) : "–"}</span>(${pos(CITY.busan.code)}위) · 전국 ${pct(chg(W(`sale:${NAT}`), n), dg)}` : "시·도 자료가 아직 없습니다.";
-  $("kScale").innerHTML = scaleHtml(th) + " · 광주·전남은 한국부동산원 통계에서 '전남광주'로 묶여 있지만 지도에서는 따로 표시";
+  $("kRankT").textContent = `${PN[n]}, 상승 ${cnt.u} · 보합 ${cnt.f} · 하락 ${cnt.d}`;
+  $("kHead").innerHTML = rows.length ? `${PN[n]} 동안 17개 시·도 중 <b>${cnt.u}곳이 오르고 ${cnt.d}곳이 내렸습니다</b>${cnt.f ? `(보합 ${cnt.f}곳)` : ""}.<br><span class="seoul">서울 ${sv ? pct(sv.v, dg) : "–"}</span>(${pos(CITY.seoul.code)}위), <span class="busan">부산 ${bv ? pct(bv.v, dg) : "–"}</span>(${pos(CITY.busan.code)}위), 전국 ${pct(chg(W(`sale:${NAT}`), n), dg)}` : "시·도 자료가 아직 없습니다.";
+  $("kScale").innerHTML = scaleHtml(th) + ". 광주·전남은 한국부동산원 통계에서 '전남광주'로 묶여 있지만 지도에서는 따로 칠했습니다.";
 }
 document.querySelectorAll("#kSeg button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("#kSeg button").forEach(x => x.classList.toggle("on", x === b)); KN = +b.dataset.n; korea(); }));
@@ -1010,7 +1006,8 @@ korea(); VIS.push(korea);
 let MN = 12, TOPDIR = 1, SEL = null;
 const codeByName = city => obj(DIST[city].map(d => [d.n, d.c]));
 function cityMaps() {
-  const n = MN, th = BIN[n], dg = n === 4 ? 2 : 1;
+  // 4주도 기간 변동률이라 소수 첫째 자리로 쓴다(메일의 구별 지도와 같은 자릿수, 2026-11-20).
+  const n = MN, th = BIN[n], dg = 1;
   ["seoul", "busan"].forEach(city => {
     const nb = codeByName(city);
     geoMap($(`map-${city}`), G[city], { th, digits: dg, pn: PN[n], val: a => nb[a.name] ? chg(W(`sale:${nb[a.name]}`), n) : null, key: a => String(nb[a.name]), name: a => a.name, short,
@@ -1022,7 +1019,7 @@ function cityMaps() {
     $(`cnt-${city}`).textContent = `${PN[n]} 상승 ${cnt.u} · 보합 ${cnt.f} · 하락 ${cnt.d}`;
   });
   $("mScale").innerHTML = scaleHtml(th);
-  $("mapQ").textContent = `구별 ${PN[n]} 매매가격 변동률 · 목록은 ${TOPDIR > 0 ? "상승률" : "하락률"} 순`;
+  $("mapQ").textContent = `구별 ${PN[n]} 매매가격 변동률, 목록은 ${TOPDIR > 0 ? "상승률" : "하락률"} 순`;
 }
 document.querySelectorAll("#mSeg button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("#mSeg button").forEach(x => x.classList.toggle("on", x === b)); MN = +b.dataset.n; cityMaps(); }));
@@ -1035,11 +1032,11 @@ function detail(city, code) {
   const s = W(`sale:${code}`), j = W(`jeonse:${code}`);
   const rk = DIST[city].map(t => ({ c: t.c, v: chg(W(`sale:${t.c}`), 12) })).filter(r => has(r.v)).sort((a, b) => b.v - a.v);
   const pos = rk.findIndex(r => r.c === code) + 1, cityV = chg(W(`sale:${c.code}`), 12), me = chg(s, 12);
-  const box = (k, v, dg = 2) => `<div><span>${k}</span><b class="${cls(v, dg)}">${pct(v, dg)}</b></div>`;
-  $("detailInfo").innerHTML = `<div class="dt-name">${esc(d.n)}<small>${c.nm} · ${esc(d.g)}</small></div><div class="dt-nums">${box("매매 3개월", me)}${box("매매 1년", chg(s, 52), 1)}${j.length > 52 ? box("전세 3개월", chg(j, 12)) + box("전세 1년", chg(j, 52), 1) : ""}</div>` +
-    `<div class="dt-rank">${c.nm} ${rk.length}개 ${city === "busan" ? "구·군" : "구"} 중 3개월 상승률 <b>${pos}위</b>로, ${c.nm} 평균(${pct(cityV)})${me > 0 && cityV < 0 ? "과 달리 올랐습니다" : me < 0 && cityV > 0 ? "과 달리 내렸습니다" : me >= cityV ? (me > 0 ? "보다 더 많이 올랐습니다" : "보다 덜 내렸습니다") : (me >= 0 ? "보다 덜 올랐습니다" : "보다 더 많이 내렸습니다")}.</div>`;
+  const box = (k, v) => `<div><span>${k}</span><b class="${clsL(v)}">${pctL(v)}</b></div>`;
+  $("detailInfo").innerHTML = `<div class="dt-name">${esc(d.n)}<small>${c.nm} · ${esc(d.g)}</small></div><div class="dt-nums">${box("매매 3개월", me)}${box("매매 1년", chg(s, 52))}${j.length > 52 ? box("전세 3개월", chg(j, 12)) + box("전세 1년", chg(j, 52)) : ""}</div>` +
+    `<div class="dt-rank">${c.nm} ${rk.length}개 ${city === "busan" ? "구·군" : "구"} 중 3개월 상승률 <b>${pos}위</b>로, ${c.nm} 평균(${pctL(cityV)})${me > 0 && cityV < 0 ? "과 달리 올랐습니다" : me < 0 && cityV > 0 ? "과 달리 내렸습니다" : me >= cityV ? (me > 0 ? "보다 더 많이 올랐습니다" : "보다 덜 내렸습니다") : (me >= 0 ? "보다 덜 올랐습니다" : "보다 더 많이 내렸습니다")}.</div>`;
   $("dtLegend").innerHTML = `<span><i style="border-color:var(${c.col})"></i>${esc(d.n)} 매매</span>${j.length > 52 ? `<span><i class="dash" style="border-color:var(--c-bronze)"></i>${esc(d.n)} 전세</span>` : ""}<span><i style="border-color:var(--c-nat)"></i>${c.nm} 평균</span><span style="color:var(--ink-3)">1년 전 = 0%</span>`;
-  const opt = { h: 210, base: 0, yf: v => (v > 0 ? "+" : "") + v + "%", tf: v => pct(v), ef: v => pct(v, 1), label: `${d.n} 1년`,
+  const opt = { h: 210, base: 0, yf: v => (v > 0 ? "+" : "") + v + "%", tf: v => pctL(v), ef: v => pctL(v), label: `${d.n} 1년`,
     series: [{ name: `${c.nm} 평균`, pts: cum(W(`sale:${c.code}`), 52), color: "--c-nat", thin: true }, ...(j.length > 52 ? [{ name: "전세", pts: cum(j, 52), color: "--c-bronze", dash: true }] : []),
              { name: `${d.n} 매매`, pts: cum(s, 52), color: c.col }] };
   if (detC) { detC.opt = opt; draw(detC); } else detC = chart("detailCh", opt);
@@ -1101,7 +1098,8 @@ function gauge(v, ago, word, wc) {
   return `<div class="gauge"><svg viewBox="0 -8 200 136" role="img" aria-label="지금 ${v.toFixed(0)}${has(ago) ? `, 1년 전 ${ago.toFixed(0)}` : ""}">` +
     `<path d="M${f(lx)},${f(ly)} A${r},${r} 0 0 1 ${f(mx)},${f(my)}" class="arc-l" fill="none" stroke-width="14"/><path d="M${f(mx)},${f(my)} A${r},${r} 0 0 1 ${f(rx)},${f(ry)}" class="arc-r" fill="none" stroke-width="14"/>` +
     `${ghost}<line x1="${cx}" y1="${cy}" x2="${f(nx)}" y2="${f(ny)}" class="needle"/><circle cx="${cx}" cy="${cy}" r="5" class="hub"/>` +
-    `<text x="${cx}" y="${f(my - 10)}" text-anchor="middle" class="gt">100</text><text x="${cx}" y="${cy + 30}" text-anchor="middle" class="gv">${v.toFixed(0)}</text></svg>` +
+    // 100(균형) 자리는 눈금으로만 둔다. 휴대폰에서 계기판이 작아지면 '100' 글자가 7~10px 로 줄어 12px 기준을 넘지 못했다(2026-11-20).
+    `<line x1="${cx}" y1="${f(my - 11)}" x2="${cx}" y2="${f(my + 11)}" class="gt-tick"/><text x="${cx}" y="${cy + 30}" text-anchor="middle" class="gv">${v.toFixed(0)}</text></svg>` +
     `<div class="gw ${wc}">${esc(word)}</div><div class="ga">${has(ago) ? `1년 전 ${ago.toFixed(0)}` : ""}</div></div>`;
 }
 (function gauges() {
@@ -1116,7 +1114,8 @@ function gauge(v, ago, word, wc) {
   });
   $("gauges").innerHTML = h;
   const hp = c => HEAT[c].parts;
-  $("heatCap").innerHTML = `<b>시장 온도</b>(맨 위 카드의 숫자)는 다섯 가지 지표를 0~100점으로 바꿔 평균한 값입니다(기준 고정, 미국 Zillow의 시장 열기 지수 방식). 서울: 매수심리 ${hp("seoul")[0]} · 전세수급 ${hp("seoul")[1]} · 집값 ${hp("seoul")[2]} · 거래량 ${hp("seoul")[3]} · 미분양 ${hp("seoul")[4]} / 부산: ${hp("busan").join(" · ")}. 40 미만 매수자 우위, 55 이상 매도자 우위, 70 이상 강한 매도자 우위. 부산의 전망 CSI는 6대 광역시 값입니다.`;
+  $("heatCap").innerHTML = `계기판의 100은 사려는 사람과 팔려는 사람이 비슷한 균형점입니다. 부산의 전망 CSI는 6대 광역시 값입니다.`;
+  $("tempCap").innerHTML = `<b>시장 온도</b>(맨 위 카드의 숫자)는 매수심리, 전세수급, 집값 3개월, 거래량, 미분양을 0~100점으로 바꿔 평균한 값입니다(기준 고정, 미국 Zillow의 시장 열기 지수 방식). 지금 서울은 각각 ${hp("seoul").join(", ")}점이고, 부산은 ${hp("busan").join(", ")}점입니다. 40 미만은 매수자 우위, 55 이상은 매도자 우위, 70 이상은 강한 매도자 우위로 봅니다.`;
   $("gAsof").textContent = wkAsof;
 })();
 
@@ -1146,6 +1145,7 @@ function heatmap() {
 document.querySelectorAll("#hmSeg button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("#hmSeg button").forEach(x => x.classList.toggle("on", x === b)); HC = b.dataset.c; heatmap(); }));
 heatmap(); VIS.push(heatmap);
+$("heat").addEventListener("toggle", () => { if ($("heat").open) heatmap(); });   // 접힌 채로 그리면 폭이 0이라 열 때 다시 그린다
 $("hAsof").textContent = wkAsof;
 
 // ---- 7. 집값 흐름(정책·금리 표시) + 이슈·뉴스 --------------------------------------------------
@@ -1158,7 +1158,7 @@ function price(n) {
   const S = [{ name: "전국", pts: cum(W(`sale:${NAT}`), n), color: "--c-nat", thin: true },
              { name: "서울", pts: cum(W(`sale:${CITY.seoul.code}`), n), color: "--c-seoul" }, { name: "부산", pts: cum(W(`sale:${CITY.busan.code}`), n), color: "--c-busan" }];
   const t0 = S[1].pts[0][0], marks = MARKS.filter(m => m.t >= t0);
-  const opt = { h: 280, padT: 40, base: 0, yf: v => (v > 0 ? "+" : "") + v + "%", tf: v => pct(v), ef: v => pct(v, 1), marks, series: S, label: "집값 흐름" };
+  const opt = { h: 280, padT: 40, base: 0, yf: v => (v > 0 ? "+" : "") + v + "%", tf: v => pctL(v), ef: v => pctL(v), marks, series: S, label: "집값 흐름" };
   if (priceC) { priceC.opt = opt; draw(priceC); } else priceC = chart("priceCh", opt);
 }
 document.querySelectorAll("#priceSeg button").forEach(b => b.addEventListener("click", () => {
@@ -1219,10 +1219,10 @@ function drawSpeed(el, dates, wk, m4) {
   for (let v = lo; v <= hi + step / 1e6; v += step) { const vv = Math.abs(v) < step / 1e6 ? 0 : v, y = Y(vv).toFixed(1);
     g += `<line x1="${PL}" x2="${Wd - PR}" y1="${y}" y2="${y}" class="gl"/><text x="${PL - 6}" y="${(+y + 4).toFixed(1)}" text-anchor="end" class="ax">${(vv > 0 ? "+" : "") + vv.toFixed(dp)}%</text>`; }
   // 기준금리 변경·정책 발표 표시(이 1년 안에 있는 것만)
-  const t0 = tD(dates[0]), tEnd = tD(dates[n - 1]) + 7 * 864e5, grp = [];
+  const t0 = tD(dates[0]), tEnd = tD(dates[n - 1]) + 7 * 864e5, grp = [], mkX = [];
   MARKS.filter(m => m.t >= t0 && m.t <= tEnd).sort((a, b) => a.t - b.t).forEach(m => {
     let i = dates.findIndex(d => tD(d) >= m.t); if (i < 0) i = n - 1;
-    const x = X(i) - slot / 2, last = grp[grp.length - 1];
+    const x = X(i) - slot / 2, last = grp[grp.length - 1]; mkX.push(x);
     g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PT - 8}" y2="${H - PB}" class="mk ${m.cls}"/>`;
     if (last && last.cls === m.cls && i - last.i < 8) last.labs.push(m.label); else grp.push({ i, x, cls: m.cls, labs: [m.label] }); });
   let lastLx = -1e9;
@@ -1237,7 +1237,18 @@ function drawSpeed(el, dates, wk, m4) {
   let lastX = -1e9; dates.forEach((d, i) => { if (i && d.slice(5, 7) === dates[i - 1].slice(5, 7)) return; const x = X(i); if (x - lastX < 42 || x < PL + 8) return; lastX = x;
     const m = +d.slice(5, 7); g += `<text x="${x.toFixed(1)}" y="${H - 5}" text-anchor="middle" class="ax">${m === 1 ? d.slice(2, 4) + ".1" : m + "월"}</text>`; });
   const ia = n - 14, iz = n - 1;
-  if (has(m4[ia])) g += `<circle cx="${X(ia).toFixed(1)}" cy="${Y(m4[ia]).toFixed(1)}" r="4" class="ago"/><text x="${X(ia).toFixed(1)}" y="${Math.max(PT + 2, Y(m4[ia]) - 9).toFixed(1)}" text-anchor="middle" class="ax">3개월 전 ${pct(m4[ia])}</text>`;
+  if (has(m4[ia])) {
+    // '3개월 전' 이름표는 기준금리·정책 점선과 겹치지 않는 자리를 고른다(위 가운데 → 오른쪽 위 → 왼쪽 위 → 아래 가운데).
+    const xa = X(ia), ya = Y(m4[ia]), lab = `3개월 전 ${pct(m4[ia])}`, w = tw(lab, 12);
+    const up1 = Math.max(PT + 2, ya - 9), up2 = Math.max(PT + 2, ya - 24);   // up2: 한 줄 더 위(좁은 화면에서 오른쪽 끝 이름표를 피할 때)
+    const cand = [[xa, up1, "middle"], [xa + 6, up1, "start"], [xa - 6, up1, "end"], [xa + 6, up2, "start"], [xa - 6, up2, "end"], [xa, ya + 20, "middle"]];
+    // 오른쪽 여백은 끝 이름표(4주 평균 값, Wd - PR + 10 부터)와 위아래로 18px 넘게 떨어져 있을 때만 다 쓴다.
+    const yz = has(m4[iz]) ? Y(m4[iz]) : -1e9;
+    const ok = ([x, y, an]) => { const a = an === "middle" ? x - w / 2 : an === "start" ? x : x - w, b = a + w, maxB = Math.abs(y - yz) > 18 ? Wd - 4 : Wd - PR + 8;
+      return a >= PL && b <= maxB && !mkX.some(m => m > a - 3 && m < b + 3); };
+    const [lx, ly, an] = cand.find(ok) || cand[0];
+    g += `<circle cx="${xa.toFixed(1)}" cy="${ya.toFixed(1)}" r="4" class="ago"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${an}" class="ax">${lab}</text>`;
+  }
   const zc = cls(m4[iz]) === "up" ? "--rise" : cls(m4[iz]) === "down" ? "--fall" : "--ink-3";
   g += `<circle cx="${X(iz).toFixed(1)}" cy="${Y(m4[iz]).toFixed(1)}" r="4.5" style="fill:var(--cc)"/><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 1).toFixed(1)}" class="lb" style="fill:var(${zc})">${pct(m4[iz])}</text><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 15).toFixed(1)}" class="ax">4주 평균</text>`;
   g += `<line class="hair" y1="${PT}" y2="${H - PB}" visibility="hidden"/>`;
@@ -1260,8 +1271,8 @@ function trendCard(city, el) {
   const c = CITY[city], sp = speedOf(c.code), n = 52, dates = sp.dates.slice(-n), m4 = sp.m4.slice(-n), N = DIST[city].length, unit = unitOf(city);
   const br = BR[city], bl = br[br.length - 1], b0 = br.length > 13 ? br[br.length - 14] : null, mo = momentum(m4[n - 1], m4[n - 14]);
   el.style.setProperty("--cc", `var(${c.col})`);
-  el.innerHTML = `<div class="tr-h"><b>${c.nm} · 주간 변동률</b><span>막대 = 주간 변동률 · 선 = 4주 평균 · 점선 = 기준금리 변경</span></div><div class="spd"></div>` +
-    `<div class="tr-h" style="margin-top:6px"><b style="font-size:13px">상승·보합·하락 ${unit} 수</b><span>${N}개 ${unit} · 빨강 상승 / 회색 보합 / 파랑 하락</span></div><div class="brd"></div>` +
+  el.innerHTML = `<div class="tr-h"><b>${c.nm} 주간 변동률</b><span>막대는 주간 변동률, 선은 4주 평균, 점선은 기준금리 변경</span></div><div class="spd"></div>` +
+    `<div class="tr-h" style="margin-top:6px"><b style="font-size:13px">상승·보합·하락 ${unit} 수</b><span>${N}개 ${unit}, 빨강 상승 / 회색 보합 / 파랑 하락</span></div><div class="brd"></div>` +
     `<div class="cap">${mo.long}${bl ? ` ${N}개 ${unit} 중 지금 상승 <b>${bl.u}곳</b>, 보합 ${bl.f}곳, 하락 <b>${bl.d}곳</b>${b0 ? `(3개월 전 상승 ${b0.u}곳, 하락 ${b0.d}곳)` : ""}입니다.` : ""}</div>`;
   drawSpeed(el.querySelector(".spd"), dates, sp.wk.slice(-n), m4);
   drawBreadth(el.querySelector(".brd"), br, dates);
@@ -1300,21 +1311,28 @@ function issueStats(g) {
   if (!ws.length) return null;
   const share = (w, k) => w.g[g].n ? (w.g[g].tp[k] || 0) / w.g[g].n * 100 : null;
   let ci = ws.length - 1; if (ci > 0 && ws[ci].g[g].n < ws[ci - 1].g[g].n * 0.35) ci--;   // 이번 주 기사가 아직 적으면 지난주를 기준으로
-  const cur = ws[ci], prev = ws.slice(Math.max(0, ci - 4), ci);
-  const rows = ISSUE.map(t => { const v = share(cur, t.key), b = avg(prev.map(w => share(w, t.key))); return { k: t.key, name: t.name, v, b, dv: has(v) && has(b) ? v - b : null }; }).sort((a, b) => b.v - a.v);
-  return { ws, ci, cur, rows, up: share(cur, "up"), dn: share(cur, "down"), n: cur.g[g].n, share, partial: ci === ws.length - 1 && cur.w === thisMon };
+  // 주제마다 그 주 비율(v)과 직전 4주 평균(b), 그 차이(dv). 검색어에 '전세'가 들어 있어 전세·월세가 늘 1위라,
+  // 그 주에 무엇이 새로 많이 나왔는지는 비율보다 4주 평균 대비 변화로 본다(2026-11-20).
+  const rowsAt = j => { const w = ws[j], prev = ws.slice(Math.max(0, j - 4), j);
+    return ISSUE.map(t => { const v = share(w, t.key), b = prev.length ? avg(prev.map(p => share(p, t.key))) : null; return { k: t.key, name: t.name, v, b, dv: has(v) && has(b) ? v - b : null }; }); };
+  const cur = ws[ci], rows = rowsAt(ci).sort((a, b) => b.v - a.v);
+  const rise = rows.filter(r => has(r.dv) && r.dv >= 5).sort((a, b) => b.dv - a.dv);
+  return { ws, ci, cur, rows, rise, rowsAt, up: share(cur, "up"), dn: share(cur, "down"), n: cur.g[g].n, share, partial: ci === ws.length - 1 && cur.w === thisMon };
 }
 const IS = {}; ["seoul", "busan", "nation"].forEach(g => { IS[g] = issueStats(g); });
 const GN = (NW && NW.groups) || { seoul: "서울", busan: "부산", nation: "전국·정책" };
 function issueLine(g) {
   const st = IS[g]; if (!st) return "";
-  const [a, b] = st.rows, rise = st.rows.filter(r => has(r.dv) && r.dv >= 5).sort((x, y) => y.dv - x.dv)[0];
-  let s = `${wkR(st.cur.w)}${st.partial ? "(진행 중)" : ""} 기사는 ${a.name}(${a.v.toFixed(0)}%), ${b.name}(${b.v.toFixed(0)}%) 순으로 많았고`;
-  s += rise ? `, ${rise.name} 비중이 4주 평균보다 ${rise.dv.toFixed(0)}%p 늘었습니다.` : `, 4주 평균보다 크게 늘어난 주제는 없습니다.`;
-  if (has(st.up) && has(st.dn)) s += ` 제목 논조는 ${st.up > st.dn + 3 ? "상승 쪽이 더 많습니다" : st.dn > st.up + 3 ? "하락 쪽이 더 많습니다" : "상승·하락이 비슷합니다"}(상승 관련 단어 ${st.up.toFixed(0)}%, 하락 관련 단어 ${st.dn.toFixed(0)}%).`;
+  const wk = `${wkR(st.cur.w)}${st.partial ? "(진행 중)" : ""}`, a = st.rows[0], r0 = st.rise[0];
+  let s = r0 ? `${wk} 기사에서는 ${r0.name} 비중이 4주 평균보다 ${r0.dv.toFixed(0)}%p 늘었습니다.` : `${wk} 기사에서 4주 평균보다 크게 늘어난 주제는 없습니다.`;
+  if (!r0 || r0.k !== a.k) s += ` 가장 많이 나온 주제는 ${a.name}(${a.v.toFixed(0)}%)입니다.`;
+  if (has(st.up) && has(st.dn)) { const u = st.up.toFixed(0), d = st.dn.toFixed(0);
+    s += st.up > st.dn + 3 ? ` 제목에 상승 쪽 단어가 든 기사가 ${u}%로, 하락 쪽(${d}%)보다 많습니다.`
+      : st.dn > st.up + 3 ? ` 제목에 하락 쪽 단어가 든 기사가 ${d}%로, 상승 쪽(${u}%)보다 많습니다.`
+      : ` 제목에 상승 쪽 단어가 든 기사(${u}%)와 하락 쪽 단어가 든 기사(${d}%)가 비슷합니다.`; }
   return s;
 }
-// 집값 흐름과 그 주의 이슈: 위 = 주간 변동률(그 주 월요일 조사), 가운데 = 가장 많이 나온 주제, 아래 = 제목 논조(상승 − 하락 단어 비율)
+// 집값 흐름과 그 주의 이슈: 위 = 주간 변동률(그 주 월요일 조사), 가운데 = 직전 4주 평균보다 가장 많이 늘어난 주제, 아래 = 제목 논조(상승 − 하락 단어 비율)
 function timeline(g, el) {
   if (!el) return;
   const st = IS[g]; if (!st) { el.innerHTML = `<div class="note">뉴스 자료가 아직 없습니다.</div>`; return; }
@@ -1336,13 +1354,15 @@ function timeline(g, el) {
   let path = "", pen = false; pv.forEach((p, i) => { if (!p || !has(p.m4)) { pen = false; return; } path += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(p.m4).toFixed(1)}`; pen = true; });
   s += `<path d="${path}" class="ma"/>` + vls;
   const T2 = T1 + H1 + 16, H2 = Wd < 480 ? 42 : 60;
-  s += `<text x="2" y="${T2 + 17}" class="rl">많이 나온</text><text x="2" y="${T2 + 32}" class="rl">주제</text>`;
-  ws.forEach((w, i) => { const tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v), a = tops[0], b2 = tops[1], thin = w.g[g].n < 30;
-    const al = 8 + Math.min(1, a.v / 45) * 26;
+  s += `<text x="2" y="${T2 + 17}" class="rl">늘어난</text><text x="2" y="${T2 + 32}" class="rl">주제</text>` + (H2 > 50 ? `<text x="2" y="${T2 + 47}" class="rs">4주 대비</text>` : "");
+  const j0 = st.ws.length - n;   // ws[i] 는 st.ws[j0 + i]
+  ws.forEach((w, i) => { const thin = w.g[g].n < 30, top = st.rowsAt(j0 + i).filter(r => has(r.dv)).sort((a, b) => b.dv - a.dv)[0];
+    const big = top && top.dv >= 5, al = top ? 6 + Math.min(1, Math.max(0, top.dv) / 20) * 28 : 6;
     s += `<rect x="${(X(i) - cw / 2 + 2).toFixed(1)}" y="${T2}" width="${(cw - 4).toFixed(1)}" height="${H2}" rx="7" style="fill:color-mix(in srgb, var(--accent) ${al.toFixed(0)}%, var(--surface));${thin ? "opacity:.45" : ""}"/>`;
-    const dim = thin ? ' style="fill:var(--ink-3)"' : "";   // 기사 30건 미만인 주는 글자도 흐리게
-    s += `<text x="${X(i).toFixed(1)}" y="${T2 + 18}" text-anchor="middle" class="tt"${dim}>${esc(TSHORT[a.t.key])}</text><text x="${X(i).toFixed(1)}" y="${T2 + 33}" text-anchor="middle" class="tv"${dim}>${a.v.toFixed(0)}%</text>`;
-    if (H2 > 50 && b2 && b2.v >= 10) s += `<text x="${X(i).toFixed(1)}" y="${T2 + 51}" text-anchor="middle" class="ts"${dim}>${esc(TSHORT[b2.t.key])} ${b2.v.toFixed(0)}%</text>`; });
+    const dim = thin || !big ? ' style="fill:var(--ink-3)"' : "";   // 기사 30건 미만인 주, 5%p 넘게 늘어난 주제가 없는 주는 흐리게
+    if (!top) { s += `<text x="${X(i).toFixed(1)}" y="${T2 + 25}" text-anchor="middle" class="ts">비교 전</text>`; return; }
+    s += `<text x="${X(i).toFixed(1)}" y="${T2 + 18}" text-anchor="middle" class="tt"${dim}>${esc(TSHORT[top.k])}</text><text x="${X(i).toFixed(1)}" y="${T2 + 33}" text-anchor="middle" class="tv"${dim}>${(top.dv >= 0.5 ? "+" : "") + top.dv.toFixed(0)}%p</text>`;
+    if (H2 > 50) s += `<text x="${X(i).toFixed(1)}" y="${T2 + 51}" text-anchor="middle" class="ts"${dim}>비중 ${top.v.toFixed(0)}%</text>`; });
   const T3 = T2 + H2 + 16, H3 = 34, mid = T3 + H3 / 2, md = ws.map(w => st.share(w, "up") - st.share(w, "down")), mm = Math.max(10, ...md.map(v => Math.abs(v || 0)));
   s += `<text x="2" y="${mid - 2}" class="rl">제목 논조</text><text x="2" y="${mid + 12}" class="rs">상승−하락</text>`;
   s += `<line x1="${PL}" x2="${Wd - PR}" y1="${mid}" y2="${mid}" class="sep"/>`;
@@ -1354,9 +1374,10 @@ function timeline(g, el) {
   const H = T4 + 6;
   s += `<line class="hair" y1="${T1}" y2="${T4 - 11}" visibility="hidden"/>`;
   el.innerHTML = `<svg viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="${esc(GN[g])} 주간 변동률과 주별 이슈">${s}</svg><div class="tip" hidden></div>`;
-  tipOn(el, Wd, n, X, PL, Wd - PR, i => { const w = ws[i], p = pv[i], r = w.g[g], tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v).slice(0, 3);
-    return `<div><b>${wkR(w.w)}</b>${w.w === thisMon ? "(진행 중)" : ""} · 기사 ${r.n}건</div>` + (p ? `<div>주간 변동률 <b>${pct(p.wk)}</b> · 4주 평균 ${pct(p.m4)}</div>` : `<div>주간 변동률 발표 전</div>`) +
-      `<div>${tops.map(o => `${esc(o.t.name)} ${o.v.toFixed(0)}%`).join(" · ")}</div>` + (r.top || []).slice(0, 3).map(a => `<div class="h">· ${esc(cleanT(a.t, a.s))}</div>`).join(""); });
+  tipOn(el, Wd, n, X, PL, Wd - PR, i => { const w = ws[i], p = pv[i], r = w.g[g], rs = st.rowsAt(j0 + i), tops = [...rs].sort((a, b) => b.v - a.v).slice(0, 3), up = rs.filter(o => has(o.dv) && o.dv >= 5).sort((a, b) => b.dv - a.dv);
+    return `<div><b>${wkR(w.w)}</b>${w.w === thisMon ? "(진행 중)" : ""}, 기사 ${r.n}건</div>` + (p ? `<div>주간 변동률 <b>${pct(p.wk)}</b>, 4주 평균 ${pct(p.m4)}</div>` : `<div>주간 변동률 발표 전</div>`) +
+      `<div>많이 나온 주제: ${tops.map(o => `${esc(o.name)} ${o.v.toFixed(0)}%`).join(", ")}</div>` + (up.length ? `<div>4주 평균보다 늘어난 주제: ${up.map(o => `${esc(o.name)} +${o.dv.toFixed(0)}%p`).join(", ")}</div>` : "") +
+      (r.top || []).slice(0, 3).map(a => `<div class="h">· ${esc(cleanT(a.t, a.s))}</div>`).join(""); });
 }
 // 주제별 흐름: 주제마다 최근 12주 비율을 작은 막대로(진한 막대 = 기준 주, 흐린 막대 = 기사 30건 미만인 주)
 function topicRows(g, el) {
@@ -1374,20 +1395,22 @@ function issues() {
   const g = IG, st = IS[g];
   $("isAsof").textContent = st ? `${wkR(st.ws[st.ws.length - 1].w)}까지` : "";
   if (!st) { ["isLine", "isTopics", "isEx", "isMood", "isWeeks", "newsBox"].forEach(id => { $(id).innerHTML = ""; }); $("isHead").textContent = "뉴스 자료가 아직 없습니다."; return; }
-  $("isHead").innerHTML = `<b>${esc(GN[g])}</b> · ${esc(issueLine(g))}`;
+  $("isHead").innerHTML = `<b>${esc(GN[g])}</b>: ${esc(issueLine(g))}`;
   timeline(g, $("isLine"));
-  $("isWk").textContent = `진한 막대 = ${wkR(st.cur.w)}${st.partial ? "(진행 중)" : ""} · 오른쪽 = 4주 평균 대비`;
+  $("isWk").textContent = `진한 막대는 ${wkR(st.cur.w)}${st.partial ? "(진행 중)" : ""}, 오른쪽 숫자는 4주 평균 대비`;
   topicRows(g, $("isTopics"));
   const items = ((D.news.items || {})[g] || []), used = new Set();
-  $("isEx").innerHTML = st.rows.slice(0, 3).map(r => { const ex = items.filter(it => (it.tp || []).includes(r.k) && !used.has(it.t)).slice(0, 2); ex.forEach(it => used.add(it.t));
-    return `<div class="ex"><b>${esc(r.name)} ${r.v.toFixed(0)}%</b>` + (ex.length ? ex.map(it => `<a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(cleanT(it.t, it.s))} <small>${esc(it.s || "")} · ${esc(it.d || "")}</small></a>`).join("") : `<div class="note">최근 7일 기사 중에는 해당 기사가 없습니다.</div>`) + `</div>`; }).join("");
-  $("isMood").innerHTML = has(st.up) ? `제목 논조: 상승 관련 단어가 들어간 기사 <b class="up">${st.up.toFixed(0)}%</b> · 하락 관련 단어 <b class="down">${st.dn.toFixed(0)}%</b>. 단어로 센 대략값이라 '상승폭 둔화'처럼 두 쪽이 섞인 제목도 포함됩니다.` : "";
-  $("isWeeks").innerHTML = st.ws.slice(-8).reverse().map(w => { const r = w.g[g], tops = ISSUE.map(t => ({ t, v: st.share(w, t.key) })).sort((a, b) => b.v - a.v).slice(0, 3);
-    return `<div class="wk"><em>${wkR(w.w)}${w.w === thisMon ? "<br><small style='font-size:12px;font-weight:600;color:var(--ink-3)'>진행 중</small>" : ""}</em><div><div class="chips">${tops.map(o => `<span class="chip${o.v >= 25 ? " hot" : ""}">${esc(o.t.name)} ${o.v.toFixed(0)}%</span>`).join("")}</div>` +
+  // 4주 평균보다 늘어난 주제를 먼저, 나머지는 많이 나온 순으로 3개
+  const pickT = [...st.rise, ...st.rows.filter(r => !st.rise.includes(r))].slice(0, 3);
+  $("isEx").innerHTML = pickT.map(r => { const ex = items.filter(it => (it.tp || []).includes(r.k) && !used.has(it.t)).slice(0, 2); ex.forEach(it => used.add(it.t));
+    return `<div class="ex"><b>${esc(r.name)} ${r.v.toFixed(0)}%${st.rise.includes(r) ? `<span class="more">(4주 평균보다 +${r.dv.toFixed(0)}%p)</span>` : ""}</b>` + (ex.length ? ex.map(it => `<a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(cleanT(it.t, it.s))} <small>${esc(it.s || "")} · ${esc(it.d || "")}</small></a>`).join("") : `<div class="note">최근 7일 기사 중에는 해당 기사가 없습니다.</div>`) + `</div>`; }).join("");
+  $("isMood").innerHTML = has(st.up) ? `제목 논조는 제목에 든 단어로 센 대략값입니다. '상승폭 둔화'처럼 두 쪽 단어가 섞인 제목은 양쪽에 모두 셉니다.` : "";
+  $("isWeeks").innerHTML = st.ws.slice(-8).reverse().map(w => { const r = w.g[g], j = st.ws.indexOf(w), rs = st.rowsAt(j), tops = [...rs].sort((a, b) => b.v - a.v).slice(0, 3);
+    return `<div class="wk"><em>${wkR(w.w)}${w.w === thisMon ? "<br><small style='font-size:12px;font-weight:600;color:var(--ink-3)'>진행 중</small>" : ""}</em><div><div class="chips">${tops.map(o => `<span class="chip${has(o.dv) && o.dv >= 5 ? " hot" : ""}" title="${has(o.dv) ? `4주 평균 대비 ${(o.dv >= 0 ? "+" : "−") + Math.abs(o.dv).toFixed(0)}%p` : ""}">${esc(o.name)} ${o.v.toFixed(0)}%</span>`).join("")}</div>` +
       (r.top || []).map(a => `<a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(cleanT(a.t, a.s))} <small>${esc(a.s || "")}${a.d ? " · " + esc(a.d) : ""}</small></a>`).join("") + `</div></div>`; }).join("");
   $("newsBox").innerHTML = items.length ? `<ul class="news">` + items.map(i => `<li><a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(cleanT(i.t, i.s))}</a><span class="src">${esc(i.s || "")} · ${esc(i.d || "")}</span>` +
     `<div class="chips">${(i.tp || []).filter(k => ISSUE.some(t => t.key === k)).map(k => `<span class="chip">${esc(TNAME[k])}</span>`).join("")}</div></li>`).join("") + `</ul>` : `<div class="note">최근 7일 기사가 없습니다.</div>`;
-  $("newsNote").textContent = `구글 뉴스 검색어: ${((D.news.queries || {})[g] || [GN[g]]).join(", ")} · 최근 7일(${D.generated.slice(5, 10).replace("-", "/")} 수집) · 사건·사고 기사는 제외`;
+  $("newsNote").textContent = `구글 뉴스 검색어는 ${((D.news.queries || {})[g] || [GN[g]]).join(", ")}입니다. 최근 7일 기사(${D.generated.slice(5, 10).replace("-", "/")} 수집)이고, 사건·사고 기사는 뺐습니다.`;
 }
 document.querySelectorAll("#isSeg button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("#isSeg button").forEach(x => x.classList.toggle("on", x === b)); IG = b.dataset.g; issues(); }));
@@ -1402,7 +1425,7 @@ function brief(city) {
   const s12 = chg(s, 12), s52 = chg(s, 52), up = streak(wk, true), dn = streak(wk, false), tw0 = trendWord(s12), mo = momOf(code);
   const br = BR[city], bl = br[br.length - 1], b0 = br.length > 13 ? br[br.length - 14] : null;
   const L = [];
-  L.push(["방향", `${up >= 2 ? `<b>${up}주 연속 상승</b>했고` : dn >= 2 ? `<b>${dn}주 연속 하락</b>했고` : `이번 주는 <b>${pct(chg(s, 1))}</b>이고`}, 최근 3개월 ${pct(s12)}, 1년 ${pct(s52, 1)}입니다.`]);
+  L.push(["방향", `${up >= 2 ? `<b>${up}주 연속 상승</b>했고` : dn >= 2 ? `<b>${dn}주 연속 하락</b>했고` : `이번 주는 <b>${pct(chg(s, 1))}</b>이고`}, 최근 3개월 ${pctL(s12)}, 1년 ${pctL(s52)}입니다.`]);
   if (mo.long) L.push(["속도", mo.long]);
   if (bl) L.push(["구별", `4주 평균으로 보면 ${N}개 ${unit} 중 상승 <b>${bl.u}곳</b>, 보합 ${bl.f}곳, 하락 <b>${bl.d}곳</b>입니다${b0 ? `(3개월 전 상승 ${b0.u}곳, 하락 ${b0.d}곳)` : ""}.`]);
   const lastOf = {};   // 구마다 최근 3개월 안의 마지막 전환만
@@ -1436,7 +1459,7 @@ brief("seoul"); brief("busan");
   const seenEv = new Set(), ev = (D.meta.events || []).filter(e => e.date >= now.toISOString().slice(0, 10) && !seenEv.has(e.name) && seenEv.add(e.name)).slice(0, 2).map(e => `${esc(e.name)}(${wkL(e.date)})`);
   L.push(["다음 일정", `주간 가격동향은 ${d.getUTCMonth() + 1}/${d.getUTCDate()}(목) 14시에 나옵니다.${ev.length ? ` 그다음 일정은 ${ev.join(", ")}입니다.` : ""}`]);
   SUMMARY.common = L;
-  $("brief-common").innerHTML = `<div class="b-city" style="color:var(--ink-2)">공통 · 전국과 금리</div><ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
+  $("brief-common").innerHTML = `<div class="b-city" style="color:var(--ink-2)">전국과 금리</div><ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
 })();
 { const grp = {}; TLIST.filter(r => r.date >= T13 && r.lv >= 1).forEach(r => { const k = `${r.date}|${r.sc}|${r.from}|${r.to}`; (grp[k] = grp[k] || { ...r, names: [] }).names.push(r.name); });
   SUMMARY.turns = Object.values(grp).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 12).map(r => ({ date: `${wkL(r.date)}주`, sc: r.sc, names: r.names.join("·"), from: STN[r.from], to: STN[r.to], fresh: r.fresh })); }
@@ -1466,7 +1489,7 @@ function ybars(id) {
     if (part) g += `<text x="${x.toFixed(1)}" y="${H - 5}" text-anchor="middle" class="yl">~${part}</text>`; });
   g += `<line x1="${PL}" x2="${Wd - PR}" y1="${Y(av).toFixed(1)}" y2="${Y(av).toFixed(1)}" class="avg"/>`;
   if (has(dem)) g += `<line x1="${PL}" x2="${Wd - PR}" y1="${Y(dem).toFixed(1)}" y2="${Y(dem).toFixed(1)}" class="dem"/>`;
-  $(`ybt-${city}`).textContent = `연평균 ${man(av)}${has(dem) ? ` · 적정수요 ${man(dem)}` : ""}`;
+  $(`ybt-${city}`).textContent = `연평균 ${man(av)}${has(dem) ? `, 적정수요 ${man(dem)}` : ""}`;
   el.innerHTML = `<svg class="ybar" viewBox="0 0 ${Wd} ${H}" height="${H}" role="img" aria-label="연도별 주택 허가">${g}</svg>`;
 }
 const YB = () => { ybars("yb-seoul"); ybars("yb-busan"); };
@@ -1487,11 +1510,11 @@ chart("outCh", { h: 190, monthly: true, end: false, padL: 36, yf: v => v + "%", 
 chart("youngCh", { h: 190, monthly: true, end: false, padL: 36, yf: v => v + "%", tf: pctF, series: two(ts(BUY.seoul.young), ts(BUY.busan.young)) });
 chart("rentCh", { h: 190, monthly: true, end: false, padL: 36, base: 100, tf: v => v.toFixed(1), series: two(ts(RENT.seoul), ts(RENT.busan)) });
 $("oAsof").textContent = mAsof(lastKey(BUY.seoul.out)); $("aAsof").textContent = mAsof(lastKey(BUY.seoul.young)); $("rAsof").textContent = mAsof(lastKey(RENT.seoul));
-{ const a = last(M("rentMed:seoul")), b = last(M("rentMed:busan")); $("rentCap").textContent = has(a) && has(b) ? `중위 월세 서울 ${num(a / 10)}만 원 · 부산 ${num(b / 10)}만 원(${ymL(lastKey(M("rentMed:seoul")))}).` : ""; }
+{ const a = last(M("rentMed:seoul")), b = last(M("rentMed:busan")); $("rentCap").textContent = has(a) && has(b) ? `중위 월세는 서울 ${num(a / 10)}만 원, 부산 ${num(b / 10)}만 원입니다(${ymL(lastKey(M("rentMed:seoul")))}).` : ""; }
 
 // ---- 10. 돈 사정 -----------------------------------------------------------------------------
 { const mt = E("mortgage"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null;
-  $("rateQ").textContent = mt.length ? `주담대(신규) ${last(mt).toFixed(2)}%${has(mch) ? ` · 1년 ${mch >= 0 ? "+" : "−"}${Math.abs(mch).toFixed(2)}%p` : ""}` : "";
+  $("rateQ").textContent = mt.length ? `주담대(신규) ${last(mt).toFixed(2)}%${has(mch) ? `, 1년 ${mch >= 0 ? "+" : "−"}${Math.abs(mch).toFixed(2)}%p` : ""}` : "";
   $("mtAsof").textContent = mAsof(lastKey(mt)); }
 chart("rateCh", { h: 190, monthly: true, end: false, padL: 38, yf: v => v + "%", tf: v => v.toFixed(2) + "%", series: [
   { name: "기준금리", pts: ts(E("baseRate").slice(-60)), color: "--c-nat", dash: true }, { name: "주담대", pts: ts(E("mortgage").slice(-60)), color: "--c-bronze", area: true }] });
@@ -1532,7 +1555,7 @@ $("terms").innerHTML = [
 (function status() {
   const NM = { "rone.weekly": "한국부동산원 주간", "rone.monthly": "한국부동산원 월간", ecos: "한국은행", news: "뉴스" };
   $("status").innerHTML = "자료 상태: " + Object.keys(D.status || {}).map(k => { const s = D.status[k];
-    return s.ok ? `${esc(NM[k] || k)} 정상` : `<b class="bad">${esc(NM[k] || k)}: ${esc(s.note || "실패")}</b>`; }).join(" · ");
+    return s.ok ? `${esc(NM[k] || k)} 정상` : `<b class="bad">${esc(NM[k] || k)}: ${esc(s.note || "실패")}</b>`; }).join(", ");
 })();
 $("foot").innerHTML = `자료: 한국부동산원 R-ONE(주간·월간 아파트 통계, 매입자 거주지·연령, 월세), 한국은행 ECOS(금리·미분양·인허가·주택가격전망 CSI·주택 수), 행정안전부 주민등록 인구, 구글 뉴스. 지도: ${esc(G.src || "")}. 모두 인증키 없는 공개 자료이고 매일 두 번 다시 만듭니다. 투자 판단의 근거가 아니라 흐름을 보는 참고 화면입니다.`;
 

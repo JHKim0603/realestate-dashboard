@@ -1,4 +1,4 @@
-"""부동산 시장 주간 요약 메일을 만든다: 본문(email-summary.html), 제목(email-subject.txt), 그림(mail-charts/*.png).
+"""부동산 시장 Dashboard 주간 메일을 만든다: 본문(email-summary.html), 제목(email-subject.txt), 그림(mail-charts/*.png).
 
     python3 tools/weekly-mail.py [dashboard.html] [출력 폴더]
 
@@ -91,6 +91,10 @@ def cls(x, d=2):
     return "up" if r > 0 else "down" if r < 0 else "flat"
 
 
+# 기간 변동률(3개월·1년): 10% 이상이면 정수, 그 밖은 소수 첫째 자리(화면의 pctL 과 같음). 주간 변동률은 pct(x) 로 둘째 자리.
+dg_l = lambda x: 0 if has(x) and abs(x) >= 9.95 else 1
+pct_l = lambda x: pct(x, dg_l(x))
+cls_l = lambda x: cls(x, dg_l(x))
 COLOR = {"up": RISE, "down": FALL, "flat": FLAT}
 num = lambda v, d=0: f"{v:,.{d}f}" if has(v) else "–"
 ym = lambda t: f"{t[:4]}.{int(t[5:7])}"
@@ -108,7 +112,7 @@ def mshift(t, k):
 def won(w):
     a = abs(w)
     if a >= 1e8:
-        return (f"{a / 1e8:.1f}" if a >= 1e9 else f"{a / 1e8:.2f}").rstrip("0").rstrip(".") + "억 원"
+        return f"{a / 1e8:.1f}".removesuffix(".0") + "억 원"
     if a >= 1e4:
         unit = 100 if a >= 1e7 else 10
         return f"{round(a / 1e4 / unit) * unit:,.0f}만 원"
@@ -214,11 +218,11 @@ def hero_svg(city):
     X = lambda i: PL + i / 52 * (Wd - PL - PR)
     Y = lambda v: PT + (hi - v) / (hi - lo) * (H - PT - PB)
     end = vs[-1]
-    col, s12 = COLOR[cls(end, 1)], chg(s, 12)
-    col3, i3 = COLOR[cls(s12)], 40
+    col, s12 = COLOR[cls_l(end)], chg(s, 12)
+    col3, i3 = COLOR[cls_l(s12)], 40
     path = lambda a: "M" + " L".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in a)
     y0 = Y(0)
-    down = cls(end, 1) == "down"
+    down = cls_l(end) == "down"
     g = (f'<defs><linearGradient id="g" x1="0" y1="{1 if down else 0}" x2="0" y2="{0 if down else 1}">'
          f'<stop offset="0" stop-color="{col}" stop-opacity=".26"/><stop offset="1" stop-color="{col}" stop-opacity=".03"/></linearGradient></defs>')
     g += f'<rect width="{Wd}" height="{H}" fill="{SURF}"/>'
@@ -231,10 +235,10 @@ def hero_svg(city):
     g += f'<path d="{path(pts[:i3 + 1])}" fill="none" stroke="{col}" stroke-width="2.2" stroke-opacity=".55" stroke-linejoin="round"/>'
     g += f'<path d="{path(pts[i3:])}" fill="none" stroke="{col3}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
     ly = max(PT + 2, min(Y(v) for _, v in pts[i3:]) - 9)
-    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct(s12)}", 12, col3, 750, "middle")
+    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct_l(s12)}", 12, col3, 750, "middle")
     g += f'<circle cx="{X(52):.1f}" cy="{Y(end):.1f}" r="5.5" fill="{col3}" stroke="{SURF}" stroke-width="2.5"/>'
     g += (f'<text x="{X(52) + 9:.1f}" y="{Y(end) + 6:.1f}" font-size="17" font-weight="800" fill="{col}">'
-          f'<tspan font-size="12" font-weight="600" fill="{INK3}">1년 </tspan>{esc(pct(end, 1))}</text>')
+          f'<tspan font-size="12" font-weight="600" fill="{INK3}">1년 </tspan>{esc(pct_l(end))}</text>')
     return {"file": f"hero-{city}.png", "w": Wd, "h": H, "svg": g}
 
 
@@ -404,8 +408,24 @@ def img(file, w, alt):
 
 
 P = f"font-family:{MFONT};"
+# 공통 규칙 7: 상자는 흰 바탕, 1px #e1e0d9 테두리, 둥근 모서리 8px, 안쪽 여백 13px 15px. 상태는 왼쪽 4px 띠의 색으로만.
+BOX = "background:#ffffff;border:1px solid #e1e0d9;border-radius:8px"
 span = lambda s, c, w=700: f'<span style="color:{c};font-weight:{w}">{s}</span>'
 colored = lambda x, d=2: span(esc(pct(x, d)), COLOR[cls(x, d)] if cls(x, d) != "flat" else INK3)
+colored_l = lambda x: colored(x, dg_l(x))
+DIR_BAR = {"up": RISE, "down": FALL, "flat": "#e1e0d9"}
+WARN = "#c07812"
+
+
+def sec(title):
+    """구역 제목: 상자 밖에 12px 굵게, 회색, 글자 간격 0.6px, 위 여백 22px(공통 규칙 7)."""
+    return f'<tr><td style="padding:22px 2px 7px;font-size:12px;font-weight:700;color:#6e6c66;letter-spacing:0.6px;{P}">{esc(title)}</td></tr>'
+
+
+def card(inner, bar=None):
+    left = f";border-left:4px solid {bar}" if bar else ""
+    return (f'<tr><td style="padding:0 0 10px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+            f'style="{BOX}{left}"><tr><td style="padding:13px 15px;{P}">{inner}</td></tr></table></td></tr>')
 
 
 def city_block(c):
@@ -424,12 +444,12 @@ def city_block(c):
     if has(med) and has(s52):
         P_ = med * 1000
         delta = P_ * (s52 / 100) / (1 + s52 / 100)
-        dd = cls(s52, 1)
+        dd = cls_l(s52)
         money = (f"중위 가격 아파트({int(medm[5:7])}월 약 {won(P_)})로 환산하면 "
                  + ("<b>1년 동안 가격 변화가 거의 없습니다</b>." if dd == "flat" else f"<b>1년 동안 약 {won(delta)} {'오른' if dd == 'up' else '내린'} 셈</b>입니다."))
     sg = signals(c)
     n_up, n_dn = sum(1 for x in sg["list"] if x[1] > 0), sum(1 for x in sg["list"] if x[1] < 0)
-    sig = " · ".join(span(f"{'▲' if x[2] > 0 else '▼' if x[2] < 0 else '–'} {esc(x[0])}", RISE if x[1] > 0 else FALL if x[1] < 0 else INK3, 650) for x in sg["list"])
+    sig = ", ".join(span(f"{'▲' if x[2] > 0 else '▼' if x[2] < 0 else '–'} {esc(x[0])}", RISE if x[1] > 0 else FALL if x[1] < 0 else INK3, 650) for x in sg["list"])
     hn = heat_now(c)
     rows = [(n, chg(W(f"sale:{cd}"), 4)) for n, cd, _ in DIST[c]]
     rows = sorted([r for r in rows if has(r[1])], key=lambda r: -r[1])
@@ -437,26 +457,23 @@ def city_block(c):
     bot3 = ", ".join(f"{esc(n)} {colored(v, 1)}" for n, v in rows[::-1][:3] if round(v, 1) < 0) or "없음"
     n_r, n_d = sum(1 for _, v in rows if round(v, 1) > 0), sum(1 for _, v in rows if round(v, 1) < 0)
     unit = "구·군" if c == "busan" else "구"
-    cell = lambda k, v: (f'<td style="padding:8px 10px;background:{RAISED};border:1px solid #e3e0d8;border-radius:10px;{P}">'
-                         f'<div style="font-size:12px;color:{INK3}">{k}</div><div style="font-size:19px;font-weight:800">{colored(v, 1 if k == "1년" else 2)}</div></td>')
-    return f"""
-<tr><td style="padding:0 0 14px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{SURF};border:1px solid #e3e0d8;border-top:4px solid {CITY_COL[c]};border-radius:14px">
-<tr><td style="padding:16px 18px 6px;{P}">
-  <div style="font-size:14px;font-weight:800;color:{CITY_COL[c]}">{nm} 아파트 · 최근 3개월{f' <span style="color:{INK3};font-weight:600">· 시장 온도 {hn} {heat_label(hn)}</span>' if has(hn) else ''}</div>
-  <div style="font-size:28px;font-weight:800;color:{col};letter-spacing:-0.5px;margin-top:4px">{arrow} {esc(word)}{f' <span style="font-size:15px;color:{INK2};font-weight:700">{esc(sub)}</span>' if sub else ''}</div>
-  <div style="font-size:13.5px;color:{INK2};margin-top:2px"><b style="color:{INK}">{run}</b>{f' · {speed}' if speed else ''}</div>
+    cell = lambda k, v, dg: (f'<td style="padding:8px 10px;background:{RAISED};border:1px solid #e1e0d9;border-radius:8px;{P}">'
+                             f'<div style="font-size:12px;color:{INK3}">{k}</div><div style="font-size:19px;font-weight:800">{colored(v, dg)}</div></td>')
+    heat = f' <span style="color:{INK3};font-weight:600">(시장 온도 {hn}, {heat_label(hn)})</span>' if has(hn) else ""
+    inner = f"""
+  <div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{nm} 아파트, 최근 3개월{heat}</div>
+  <div style="font-size:26px;font-weight:800;color:{col};letter-spacing:-0.5px;margin-top:4px">{arrow} {esc(word)}{f' <span style="font-size:15px;color:{INK2};font-weight:700">{esc(sub)}</span>' if sub else ''}</div>
+  <div style="font-size:13.5px;color:{INK2};margin-top:2px"><b style="color:{INK}">{run}</b>{f', {speed}' if speed else ''}</div>
   {img(f"hero-{c}.png", 600, f"{nm} 집값 1년 흐름")}
-</td></tr>
-<tr><td style="padding:2px 18px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="6"><tr>{cell("이번 주", s1)}{cell("3개월", s12)}{cell("1년", s52)}</tr></table></td></tr>
-<tr><td style="padding:4px 18px 4px;font-size:14px;color:{INK2};line-height:1.6;{P}">{money}</td></tr>
-<tr><td style="padding:2px 18px 8px;font-size:13px;line-height:1.7;{P}">{sig}<br><span style="color:{INK3};font-size:12px">색: 빨강 = 집값 상승 요인, 파랑 = 하락 요인(▲▼는 지표의 방향) · 상승 요인 {n_up}개, 하락 요인 {n_dn}개</span></td></tr>
-<tr><td style="padding:8px 18px 4px;border-top:1px dashed {GRID};font-size:13.5px;color:{INK2};line-height:1.65;{P}">
-  <b style="color:{INK}">최근 4주 {unit}별</b> · 상승 {n_r} · 보합 {len(rows) - n_r - n_d} · 하락 {n_d}<br>많이 오른 {unit}: {top3}<br>많이 내린 {unit}: {bot3}
-  {img(f"map-{c}.png", 600, f"{nm} 구별 최근 4주 변동 지도")}
-</td></tr>
-<tr><td style="padding:0 18px 14px;font-size:12px;color:{INK3};{P}">지도 색: 진할수록 변동이 큼(빨강 = 상승, 파랑 = 하락, 4주 변동률 ±0.2%·±0.4%·±0.8% 구간)</td></tr>
-</table></td></tr>"""
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="6" style="margin-top:2px"><tr>{cell("이번 주", s1, 2)}{cell("3개월", s12, dg_l(s12))}{cell("1년", s52, dg_l(s52))}</tr></table>
+  <div style="font-size:14px;color:{INK2};line-height:1.6;margin-top:4px">{money}</div>
+  <div style="font-size:13px;line-height:1.7;margin-top:6px">{sig}<br><span style="color:{INK3};font-size:12px">빨강은 집값을 올리는 요인, 파랑은 내리는 요인입니다(▲▼는 지표의 방향). 상승 요인 {n_up}개, 하락 요인 {n_dn}개입니다.</span></div>
+  <div style="border-top:1px dashed {GRID};margin-top:10px;padding-top:8px;font-size:13.5px;color:{INK2};line-height:1.65">
+    <b style="color:{INK}">최근 4주 변동률로 보면</b> 상승 {n_r}곳, 보합 {len(rows) - n_r - n_d}곳, 하락 {n_d}곳입니다.<br>많이 오른 {unit}: {top3}<br>많이 내린 {unit}: {bot3}
+    {img(f"map-{c}.png", 600, f"{nm} 구별 최근 4주 변동 지도")}
+    <div style="font-size:12px;color:{INK3};margin-top:2px">지도 색은 진할수록 변동이 큽니다(빨강은 상승, 파랑은 하락, 4주 변동률 ±0.2%, ±0.4%, ±0.8% 구간).</div>
+  </div>"""
+    return card(inner, DIR_BAR[d])
 
 
 def korea_block():
@@ -469,21 +486,13 @@ def korea_block():
     pos = lambda code: next((i + 1 for i, r in enumerate(rows) if r[1] == code), "–")
     sv = next((r[2] for r in rows if r[1] == CITY["seoul"]["code"]), None)
     bv = next((r[2] for r in rows if r[1] == CITY["busan"]["code"]), None)
-    rank = " · ".join(f"{i + 1} {esc(n)} {colored(v, 1)}" for i, (n, _, v) in enumerate(rows))
-    return f"""
-<tr><td style="padding:0 0 14px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{SURF};border:1px solid #e3e0d8;border-radius:14px">
-<tr><td style="padding:16px 18px;font-size:14px;color:{INK2};line-height:1.65;{P}">
-  <div style="font-size:16px;font-weight:800;color:{INK}">전국에서 보면(최근 4주)</div>
-  17개 시·도 중 <b style="color:{INK}">{up}곳이 오르고 {dn}곳이 내렸습니다</b>{f"(보합 {fl}곳)" if fl else ""}.
-  {span("서울", CITY_COL["seoul"], 800)} {colored(sv, 1)}({pos(CITY["seoul"]["code"])}위) · {span("부산", CITY_COL["busan"], 800)} {colored(bv, 1)}({pos(CITY["busan"]["code"])}위) · 전국 {colored(chg(W(f"sale:{NAT}"), 4), 1)}
-  {img("map-korea.png", 520, "전국 시·도 최근 4주 변동 지도")}
-  <div style="font-size:12.5px;line-height:1.8;margin-top:6px">{rank}</div>
-</td></tr></table></td></tr>"""
-
-
-def card(inner, pad="16px 18px"):
-    return (f'<tr><td style="padding:0 0 14px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-            f'style="background:{SURF};border:1px solid #e3e0d8;border-radius:14px"><tr><td style="padding:{pad};{P}">{inner}</td></tr></table></td></tr>')
+    rank = ", ".join(f"{i + 1} {esc(n)} {colored(v, 1)}" for i, (n, _, v) in enumerate(rows))
+    inner = (f'<div style="font-size:14px;color:{INK2};line-height:1.65">17개 시·도 중 <b style="color:{INK}">{up}곳이 오르고 {dn}곳이 내렸습니다</b>{f"(보합 {fl}곳)" if fl else ""}. '
+             f'{span("서울", CITY_COL["seoul"], 800)} {colored(sv, 1)}({pos(CITY["seoul"]["code"])}위), {span("부산", CITY_COL["busan"], 800)} {colored(bv, 1)}({pos(CITY["busan"]["code"])}위), '
+             f'전국 {colored(chg(W(f"sale:{NAT}"), 4), 1)}입니다.</div>'
+             f'{img("map-korea.png", 520, "전국 시·도 최근 4주 변동 지도")}'
+             f'<div style="font-size:12.5px;color:{INK2};line-height:1.8;margin-top:6px">순위: {rank}</div>')
+    return sec("전국에서 보면(최근 4주)") + card(inner)
 
 
 def bullets(L):
@@ -497,17 +506,18 @@ def brief_block():
     """대시보드 '요즘 시장, 흐름 정리'와 같은 문장(화면이 계산해 페이지에 남긴 요약)."""
     if not SUM.get("cities"):
         return ""
-    out = ""
+    out = sec("흐름 정리")
     for c in ("seoul", "busan"):
         x = SUM["cities"].get(c)
         if not x:
             continue
-        col = COLOR.get(x.get("dir"), INK) if x.get("dir") != "flat" else INK
-        out += card(f'<div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{esc(x["name"])} 아파트 · 흐름 정리</div>'
+        d = x.get("dir")
+        col = COLOR.get(d, INK) if d != "flat" else INK
+        out += card(f'<div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{esc(x["name"])} 아파트</div>'
                     f'<div style="font-size:22px;font-weight:800;color:{col};letter-spacing:-0.4px;margin-top:2px">{esc(x["word"])}</div>'
-                    f'<div style="font-size:14px;font-weight:700;color:{INK2};margin:2px 0 6px">{esc(x.get("sub", ""))}</div>{bullets(x["bullets"])}')
+                    f'<div style="font-size:14px;font-weight:700;color:{INK2};margin:2px 0 6px">{esc(x.get("sub", ""))}</div>{bullets(x["bullets"])}', DIR_BAR.get(d))
     if SUM.get("common"):
-        out += card(f'<div style="font-size:13px;font-weight:800;color:{INK2};margin-bottom:4px">공통 · 전국과 금리</div>{bullets(SUM["common"])}')
+        out += sec("전국과 금리") + card(bullets(SUM["common"]))
     return out
 
 
@@ -516,16 +526,21 @@ def trend_block():
     if "trend.png" not in made and not turns:
         return ""
     stc = {"상승": RISE, "하락": FALL, "보합": INK3}
-    rows = "".join(f'<tr><td style="padding:3px 8px 3px 0;font-size:12px;color:{INK3};white-space:nowrap;{P}">{esc(t["date"])} 주</td>'
+    fresh = f' <span style="color:{WARN}">확인 중</span>'
+    # 날짜는 화면 요약에 이미 '11/2주' 꼴로 들어 있다(예전에는 여기서 ' 주'를 또 붙여 '11/2주 주'가 됐음).
+    rows = "".join(f'<tr><td style="padding:3px 8px 3px 0;font-size:12px;color:{INK3};white-space:nowrap;{P}">{esc(t["date"])}</td>'
                    f'<td style="padding:3px 8px 3px 0;font-size:12px;font-weight:800;color:{CITY_COL.get(t["sc"], INK2)};white-space:nowrap;{P}">{ {"seoul": "서울", "busan": "부산"}.get(t["sc"], "시·도") }</td>'
                    f'<td style="padding:3px 8px 3px 0;font-size:13px;color:{INK};{P}">{esc(t["names"])}</td>'
                    f'<td style="padding:3px 0;font-size:12.5px;font-weight:750;white-space:nowrap;{P}"><span style="color:{stc.get(t["from"], INK3)}">{esc(t["from"])}</span> → '
-                   f'<span style="color:{stc.get(t["to"], INK3)}">{esc(t["to"])}</span>{" <span style=\"color:#c07812\">확인 중</span>" if t.get("fresh") else ""}</td></tr>' for t in turns)
-    return card(f'<div style="font-size:16px;font-weight:800;color:{INK}">방향과 속도</div>'
-                f'<div style="font-size:12.5px;color:{INK3};margin-top:2px">막대 = 주간 변동률, 선 = 4주 평균, 점선 = 기준금리 변경 · 아래 띠 = 상승(빨강)·보합(회색)·하락(파랑) 구 수</div>'
-                f'{img("trend.png", 600, "서울·부산 주간 변동률과 상승·하락 구 수")}'
-                + (f'<div style="font-size:14px;font-weight:800;color:{INK};margin:10px 0 4px">최근 3개월 추세 전환</div><table role="presentation" cellpadding="0" cellspacing="0">{rows}</table>'
-                   f'<div style="font-size:12px;color:{INK3};margin-top:4px">4주 평균 주간 변동률로 본 상승·보합(±0.01% 이내)·하락 상태가 바뀌어 3주 이상 이어진 곳(확인 중 = 아직 2주째).</div>' if turns else ""))
+                   f'<span style="color:{stc.get(t["to"], INK3)}">{esc(t["to"])}</span>{fresh if t.get("fresh") else ""}</td></tr>' for t in turns)
+    # 그림 안에 범례(막대·선·점선, 띠 색)가 있어 따로 설명하지 않는다. 그림을 못 만든 날만 글로 적는다.
+    inner = img("trend.png", 600, "서울·부산 주간 변동률과 상승·하락 구 수") or "".join(
+        f'<div style="font-size:13.5px;color:{INK2};line-height:1.6;margin-bottom:4px">{esc(re.sub("<[^>]+>", "", dict(x["bullets"]).get("속도", "")))}</div>'
+        for x in (SUM.get("cities") or {}).values())
+    if turns:
+        inner += (f'<div style="font-size:14px;font-weight:800;color:{INK};margin:10px 0 4px">최근 3개월 추세 전환</div><table role="presentation" cellpadding="0" cellspacing="0">{rows}</table>'
+                  f'<div style="font-size:12px;color:{INK3};margin-top:4px">4주 평균 주간 변동률로 본 상승·보합·하락 상태가 바뀌어 3주 이상 이어진 곳입니다. 보합은 ±0.01% 이내이고, 확인 중은 아직 2주째인 곳입니다.</div>')
+    return sec("방향과 속도") + card(inner)
 
 
 def issue_news_block():
@@ -533,16 +548,13 @@ def issue_news_block():
     items = ((D.get("news") or {}).get("items")) or {}
     if not iss and not items:
         return ""
-    body = f'<div style="font-size:16px;font-weight:800;color:{INK}">요즘 이슈</div><div style="font-size:12.5px;color:{INK3};margin-top:2px">뉴스 제목을 주제별로 분류해 센 비율(한 주 = 월~일) · 괄호는 4주 평균 대비</div>'
-    for g, title in (("seoul", "서울"), ("busan", "부산"), ("nation", "전국·정책")):
+    body = ""
+    for i_g, (g, title) in enumerate((("seoul", "서울"), ("busan", "부산"), ("nation", "전국·정책"))):
         x = iss.get(g)
         col = CITY_COL.get(g, INK)
-        body += f'<div style="font-size:14px;font-weight:800;color:{col};margin:14px 0 2px">{title}</div>'
+        body += f'<div style="font-size:14px;font-weight:800;color:{col};margin:{0 if i_g == 0 else 14}px 0 2px">{title}</div>'
         if x:
             body += f'<div style="font-size:13.5px;color:{INK2};line-height:1.6">{esc(x["line"])}</div>'
-            body += '<div style="font-size:12.5px;color:' + INK2 + ';line-height:1.8;margin-top:2px">' + " · ".join(
-                f'{esc(t["name"])} <b style="color:{INK}">{t["v"]}%</b>' + (f'<span style="color:{"#c07812" if t["dv"] >= 5 else INK3}">({"+" if t["dv"] >= 0 else "−"}{abs(t["dv"])}%p)</span>' if t.get("dv") is not None else "")
-                for t in x["top"]) + "</div>"
         if g in ("seoul", "busan"):
             body += img(f"timeline-{g}.png", 600, f"{title} 주간 변동률과 주별 이슈")
         for i in (items.get(g) or [])[:3]:
@@ -551,8 +563,10 @@ def issue_news_block():
                 t_ = t_[: -len(i["s"]) - 3].strip()
             body += (f'<div style="font-size:13.5px;line-height:1.5;margin:4px 0"><a href="{esc(i["u"])}" style="color:{INK};text-decoration:none">{esc(t_)}</a> '
                      f'<span style="color:{INK3};font-size:12px">{esc(i.get("s", ""))} · {esc(i.get("d", ""))}</span></div>')
-    body += f'<div style="font-size:12px;color:{INK3};margin-top:8px">구글 뉴스 검색(서울·부산·전국 정책), 사건·사고 기사는 제외. 주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸 = 주간 변동률, 가운데 = 가장 많이 나온 주제, 아래 = 제목 논조(상승−하락 단어 비율).</div>'
-    return card(body)
+    body += (f'<div style="font-size:12px;color:{INK3};margin-top:8px;line-height:1.6">구글 뉴스에서 서울, 부산, 전국 정책 기사를 검색했고 사건·사고 기사는 뺐습니다. '
+             f'주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸은 주간 변동률, 가운데는 직전 4주 평균보다 가장 많이 늘어난 주제, '
+             f'아래는 제목 논조(상승 단어 비율에서 하락 단어 비율을 뺀 값)입니다. 검색어에 \'전세\'가 들어 있어 전세·월세 기사는 어느 주에나 많이 잡힙니다.</div>')
+    return sec("요즘 이슈") + card(body)
 
 
 def schedule_block():
@@ -560,39 +574,57 @@ def schedule_block():
     dn = "월화수목금토일"
     d = now.date() + dt.timedelta(days=(3 - now.weekday()) % 7 or 7)
     items = [("주간 가격동향 발표(한국부동산원)", f"{d.month}/{d.day}({dn[d.weekday()]}) 14시")]
-    ahead = [e for e in sorted(D["meta"].get("events") or [], key=lambda e: e["date"]) if e["date"] >= now.date().isoformat()]
+    ahead, seen = [], set()
+    for e in sorted(D["meta"].get("events") or [], key=lambda e: e["date"]):
+        if e["date"] >= now.date().isoformat() and e["name"] not in seen:   # 화면 흐름 정리와 같이 같은 이름은 한 번만
+            seen.add(e["name"]); ahead.append(e)
     for e in ahead[:2]:   # 화면과 같이 다가오는 2개만
         ed = dt.date.fromisoformat(e["date"])
         items.append((e["name"], f"{ed.month}/{ed.day}({dn[ed.weekday()]})"))
-    return " · ".join(f"{esc(n)} <b>{w}</b>" for n, w in items)
+    return "<br>".join(f"{esc(n)} <b>{w}</b>" for n, w in items)
 
 
+def status_block():
+    """수집에 실패한 자료가 있으면 메일 맨 위에 적는다(공통 규칙 5: 실패를 말없이 빼지 않음)."""
+    NM = {"rone.weekly": "한국부동산원 주간", "rone.monthly": "한국부동산원 월간", "ecos": "한국은행", "news": "뉴스"}
+    bad = [(k, s) for k, s in (D.get("status") or {}).items() if isinstance(s, dict) and not s.get("ok")]
+    if not bad:
+        return ""
+    lines = "<br>".join(f"{esc(NM.get(k, k))}: {esc(s.get('note') or '이번 실행에서 받지 못했습니다')}" for k, s in bad)
+    return card(f'<div style="font-size:13.5px;color:{INK2};line-height:1.6"><b style="color:{INK}">자료 상태</b><br>{lines}</div>', WARN)
+
+
+NAME = CFG.get("title") or "부동산 시장 Dashboard"
 s, b = W(f"sale:{CITY['seoul']['code']}"), W(f"sale:{CITY['busan']['code']}")
 ws, wb = trend_word(chg(s, 12))[0], trend_word(chg(b, 12))[0]
 sub_of = lambda c: (SUM.get("cities", {}).get(c) or {}).get("tag", "")
-subject = (f"[부동산 주간] {wk_lab} · 서울 {ws}" + (f"({sub_of('seoul')})" if sub_of("seoul") else f"(이번 주 {pct(chg(s, 1))})")
-           + f" · 부산 {wb}" + (f"({sub_of('busan')})" if sub_of("busan") else f"(이번 주 {pct(chg(b, 1))})"))
+# 공통 규칙 7: 화면 제목, 메일 제목, 메일 머리, 보내는 사람에 같은 이름을 쓴다.
+subject = (f"{NAME} - {wk_lab}, 서울 {ws}" + (f"({sub_of('seoul')})" if sub_of("seoul") else f"(이번 주 {pct(chg(s, 1))})")
+           + f", 부산 {wb}" + (f"({sub_of('busan')})" if sub_of("busan") else f"(이번 주 {pct(chg(b, 1))})"))
+link = (f'<a href="{esc(URL)}" style="display:inline-block;margin-top:12px;background:#2b4a7a;color:#ffffff;font-size:13px;font-weight:700;'
+        f'text-decoration:none;padding:9px 16px;border-radius:6px">대시보드 열기</a>') if URL else ""
 # 메일 앱의 어두운 모드가 색을 멋대로 뒤집지 않게 밝은 화면 전용이라고 알린다(애플 메일 등은 따름. Gmail 앱은 무시할 수 있음).
 body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><style>:root{{color-scheme:light only;}}</style><title>{esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:{BG}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{BG}"><tr><td align="center" style="padding:20px 10px">
 <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;color:{INK};{P}">
-<tr><td style="padding:0 4px 14px;{P}">
-  <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:{INK3}">서울 · 부산 아파트 시장</div>
-  <div style="font-size:24px;font-weight:800;letter-spacing:-0.5px">부동산 시장 주간 요약</div>
-  <div style="font-size:13px;color:{INK2};margin-top:2px">{wk_lab} 기준 · 한국부동산원 주간 통계(매주 목요일 발표)<br>목차: 흐름 정리 · 방향과 속도 · 요즘 이슈 · 도시별 상세 · 전국
-  {f'· <a href="{esc(URL)}" style="color:#2b4a7a">대시보드 열기</a>' if URL else ''}</div>
+<tr><td style="padding:0 2px 4px;{P}">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-0.4px">{esc(NAME)}</div>
+  <div style="font-size:12px;color:{INK3};margin-top:3px">{wk_lab} 기준(한국부동산원 주간 통계, 매주 목요일 발표), 서울·부산 아파트 시장</div>
+  {link}
 </td></tr>
+{status_block()}
 {brief_block()}
 {trend_block()}
 {issue_news_block()}
-<tr><td style="padding:6px 4px 10px;font-size:15px;font-weight:800;color:{INK};{P}">도시별 상세</td></tr>
+{sec("도시별 상세")}
 {city_block("seoul")}
 {city_block("busan")}
 {korea_block()}
-<tr><td style="padding:2px 4px 6px;font-size:13px;color:{INK2};line-height:1.7;{P}">다가오는 일정: {schedule_block()}</td></tr>
-<tr><td style="padding:6px 4px 0;font-size:12px;color:{INK3};line-height:1.6;{P}">자료: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스. 지도: {esc((G or {}).get("src", ""))}.
+{sec("다가오는 일정")}
+{card(f'<div style="font-size:13.5px;color:{INK2};line-height:1.8">{schedule_block()}</div>')}
+<tr><td style="padding:10px 2px 0;font-size:12px;color:{INK3};line-height:1.6;{P}">자료: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스. 지도: {esc((G or {}).get("src", ""))}.
 '1년 동안 약 얼마'는 중위 매매가격에 1년 지수 변동률을 적용한 어림값입니다. 매주 목요일 발표가 반영되면 한 번 보내는 메일입니다.</td></tr>
 </table></td></tr></table></body></html>"""
 OUTDIR.mkdir(parents=True, exist_ok=True)
