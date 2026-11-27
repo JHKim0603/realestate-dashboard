@@ -788,7 +788,7 @@ function draw(c) {
   const lastMk = {};
   (opt.marks || []).forEach(m => { const x = X(m.t); if (x < PL + 4 || x > Wd - PR) return; const row = m.row || 0;
     g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${PT}" y2="${H - PB}" class="mk ${m.cls || ""}"/>`;
-    const hw = tw(m.label, 12) / 2 + 3; if (x - hw >= (row in lastMk ? lastMk[row] : -1e9)) { g += `<text x="${x.toFixed(1)}" y="${10 + row * 12}" text-anchor="middle" class="mk-lb ${m.cls || ""}">${esc(m.label)}</text>`; lastMk[row] = x + hw; } });
+    const hw = tw(m.label, 12) / 2 + 3; if (m.label && x - hw >= (row in lastMk ? lastMk[row] : -1e9)) { g += `<text x="${x.toFixed(1)}" y="${10 + row * 12}" text-anchor="middle" class="mk-lb ${m.cls || ""}">${esc(m.label)}</text>`; lastMk[row] = x + hw; } });
   for (let v = lo; v <= hi + step / 1e6; v += step) {
     const vv = Math.abs(v) < step / 1e6 ? 0 : v, y = Y(vv).toFixed(1);
     g += `<line x1="${PL}" x2="${Wd - PR}" y1="${y}" y2="${y}" class="gl"/><text x="${PL - 6}" y="${(+y + 4).toFixed(1)}" text-anchor="end" class="ax">${esc(yf(vv))}</text>`;
@@ -1262,7 +1262,13 @@ function flowOpt(mode, n) {
   const S = mode === "wk"
     ? [{ name: "전국", pts: sw(NAT), color: "--c-nat", thin: true }, { name: "서울", pts: sw(CITY.seoul.code), color: "--c-seoul" }, { name: "부산", pts: sw(CITY.busan.code), color: "--c-busan" }]
     : [{ name: "전국", pts: cum(W(`sale:${NAT}`), n), color: "--c-nat", thin: true }, { name: "서울", pts: cum(W(`sale:${CITY.seoul.code}`), n), color: "--c-seoul" }, { name: "부산", pts: cum(W(`sale:${CITY.busan.code}`), n), color: "--c-busan" }];
-  const t0 = S[1].pts[0][0], marks = MARKS.filter(m => m.t >= t0);
+  // 같은 방향으로 넉 달 안에 이어진 기준금리 변경은 이름표 하나로 묶는다(▲2.75→3.00). 따로 두면 이름표가 겹쳐 뒤의 것이 빠졌다(2026-11-27).
+  const t0 = S[1].pts[0][0], marks = [];
+  MARKS.filter(m => m.t >= t0).sort((a, b) => a.t - b.t).forEach(m => {
+    const head = m.cls === "rate" ? [...marks].reverse().find(q => q.cls === "rate" && q.label) : null;
+    if (head && m.t - head.tEnd < 122 * 864e5 && head.label[0] === m.label[0]) { head.label += "→" + m.label.slice(1); head.tEnd = m.t; marks.push({ ...m, label: "" }); }
+    else marks.push({ ...m, tEnd: m.t });
+  });
   return mode === "wk"
     ? { h: 320, hN: 260, padT: 40, base: 0, yf: sgnP, tf: v => pct(v), ef: v => pct(v), marks, series: S, label: "주간 변동률 4주 평균" }
     : { h: 320, hN: 260, padT: 40, base: 0, yf: sgnP, tf: v => pctL(v), ef: v => pctL(v), marks, series: S, label: "누적 변동률" };
