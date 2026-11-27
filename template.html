@@ -1451,6 +1451,13 @@ function issueLine(g) {
       : ` 제목에 상승 쪽 단어가 든 기사(${u}%)와 하락 쪽 단어가 든 기사(${d}%)가 비슷합니다.`; }
   return s;
 }
+// 판단 근거의 뉴스 줄: '요즘 이슈'의 문장(기간, 많이 나온 주제, 논조)을 되풀이하지 않고 가장 늘어난 주제 하나만 적는다.
+// 같은 틀의 긴 문장이 서울·부산·전국과 요즘 이슈에서 네 번 나왔다(2026-11-27, 공통 규칙 3·5).
+function issueBrief(g) {
+  const st = IS[g]; if (!st) return "";
+  const r0 = st.rise[0];
+  return r0 ? `${r0.name} 기사 비중이 직전 4주 평균보다 ${r0.dv.toFixed(0)}%p 늘었습니다.` : "직전 4주 평균보다 크게 늘어난 주제는 없습니다.";
+}
 // 집값 흐름과 그 주의 이슈: 위 = 주간 변동률(그 주 월요일 조사), 가운데 = 직전 4주 평균보다 가장 많이 늘어난 주제, 아래 = 제목 논조(상승 − 하락 단어 비율)
 function timeline(g, el) {
   if (!el) return;
@@ -1555,7 +1562,7 @@ function brief(city) {
   L.push(["전환", Object.keys(byTo).length ? [1, 0, -1].filter(k => byTo[k]).map(k => `<b>${STN[k]} 전환</b> ${esc(cap(byTo[k]))}`).join(" / ") : "최근 3개월 동안 흐름이 바뀐 곳은 없습니다."]);
   const b = W(`buy:${code}`), r = W(`rent:${code}`), ago = (a, k) => a.length > k ? a[a.length - 1 - k][1] : null, trch = SIG[city].trch;
   L.push(["심리·거래", `매수우위지수는 <b>${num(last(b))}</b>(3개월 전 ${num(ago(b, 12))}), 전세수급지수는 ${num(last(r))}(3개월 전 ${num(ago(r, 12))})입니다.${has(trch) ? ` 거래량은 1년 전보다 ${Math.abs(trch).toFixed(0)}% ${trch >= 0 ? "늘었습니다" : "줄었습니다"}.` : ""} <span class="dim">두 지수는 100을 넘으면 사려는 사람(전세는 구하려는 사람)이 더 많다는 뜻입니다.</span>`]);
-  const il = issueLine(city); if (il) L.push(["뉴스", esc(il)]);
+  const il = issueBrief(city); if (il) L.push(["뉴스", esc(il)]);
   const run = up >= 2 ? `${up}주 연속 상승했습니다.` : dn >= 2 ? `${dn}주 연속 하락했습니다.` : `이번 주는 ${pct(chg(s, 1))}입니다.`;
   // 메일은 이 요약을 그대로 쓴다(큰 글자 = 국면, 제목의 숫자 = 4주 평균 주간 변동률).
   SUMMARY.cities[city] = { name: c.nm, word: ph ? ph.word : "", dir: ph ? ph.dir : "flat", phase: ph ? ph.key : "", pace: ph ? pct(ph.now) : "",
@@ -1572,7 +1579,7 @@ brief("seoul"); brief("busan");
   const mt = E("mortgage"), base = E("baseRate"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null;
   let lastMove = ""; for (let i = base.length - 1; i > 0; i--) if (base[i][1] !== base[i - 1][1]) { lastMove = `${+base[i][0].slice(0, 4)}년 ${+base[i][0].slice(5, 7)}월 ${base[i][1] > base[i - 1][1] ? "인상" : "인하"}`; break; }
   if (mt.length) L.push(["금리", `주택담보대출 금리(신규)는 <b>${last(mt).toFixed(2)}%</b>${has(mch) ? `로 1년 전보다 ${Math.abs(mch).toFixed(2)}%p ${mch >= 0 ? "올랐고" : "내렸고"}` : "이고"}, 기준금리는 ${last(base).toFixed(2)}%입니다${lastMove ? `(${lastMove})` : ""}.`]);
-  const il = issueLine("nation"); if (il) L.push(["전국 뉴스", esc(il)]);
+  const il = issueBrief("nation"); if (il) L.push(["전국 뉴스", esc(il)]);
   const lastP = {}; TLIST.filter(e => e.sc === "nation" && e.lv === 1 && e.date >= T13).forEach(e => { if (!lastP[e.name] || lastP[e.name].date < e.date) lastP[e.name] = e; });
   const tn = Object.values(lastP).sort((a, b) => a.date < b.date ? 1 : -1);
   if (tn.length) L.push(["시·도 전환", tn.slice(0, 5).map(r => `${esc(r.name)} ${STN[r.from]}→<b>${STN[r.to]}</b>(${wkL(r.date)}주)`).join(", ")]);
