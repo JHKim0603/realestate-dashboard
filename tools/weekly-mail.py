@@ -3,7 +3,8 @@
     python3 tools/weekly-mail.py [dashboard.html] [출력 폴더]
 
 - 자료는 Update-RealEstateDashboard.ps1 이 만든 dashboard.html 안의 JSON 두 개(id="data", id="geo")를 그대로 읽는다.
-  계산 방식은 template.html 의 화면과 같다(3개월 변동으로 정하는 큰 글자, 연속 주, 시장 온도, 신호 5개 등).
+  계산 방식은 template.html 의 화면과 같다(연속 주, 시장 온도, 신호 5개 등). 큰 글자(국면)와 근거 문장, 제목의 판정은
+  화면이 계산해 페이지에 남긴 요약(<script id="summary">)을 그대로 쓴다.
 - 메일 프로그램은 화면의 그래프(SVG, 자바스크립트)를 보여 주지 않는다. 그래서 같은 자료로 SVG 를 그리고 크롬으로 2배 해상도
   PNG 를 찍는다(work-dashboard·stockdashboard 의 mail_charts.py 와 같은 방식). 발송 도구(dawidd6/action-send-mail)는
   첨부 파일 이름을 cid 로 붙이므로 본문에서 <img src="cid:파일이름"> 으로 부른다. 그림을 못 만들면 그 자리는 글만 나간다.
@@ -21,6 +22,9 @@ import subprocess
 import sys
 import tempfile
 
+# 윈도 콘솔(CP949)은 제목의 '−' 같은 글자를 못 찍어 미리보기가 끝에서 멈췄다. 화면 출력만 대체 문자로 바꾼다(파일은 UTF-8 그대로).
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(errors="replace")
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "dashboard.html"
 OUTDIR = (pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT).resolve()
@@ -204,6 +208,29 @@ def text(x, y, s, size=12, color=INK2, weight=500, anchor="start", extra=""):
     return f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{color}" font-weight="{weight}" text-anchor="{anchor}"{extra}>{esc(s)}</text>'
 
 
+def hero_range():
+    """두 도시 1년 흐름 그림의 같은 눈금(화면 heroChart 와 같음)."""
+    lo = hi = 0.0
+    for c in CITY:
+        s = W(f"sale:{CITY[c]['code']}")
+        if len(s) >= 53:
+            base = s[-53][1]
+            for _, v in s[-53:]:
+                x = (v / base - 1) * 100
+                lo, hi = min(lo, x), max(hi, x)
+    return lo, hi
+
+
+def nice_step(raw, n):
+    pw = 10 ** math.floor(math.log10(raw / n))
+    x = raw / n / pw
+    return (1 if x <= 1 else 2 if x <= 2 else 2.5 if x <= 2.5 else 5 if x <= 5 else 10) * pw
+
+
+def sgn_p(v):
+    return "0%" if v == 0 else ("+" if v > 0 else "−") + f"{abs(round(v, 2)):g}%"
+
+
 def hero_svg(city):
     s = W(f"sale:{CITY[city]['code']}")
     if len(s) < 53:
@@ -211,33 +238,37 @@ def hero_svg(city):
     base = s[-53][1]
     pts = [(i, (v / base - 1) * 100) for i, (_, v) in enumerate(s[-53:])]
     vs = [v for _, v in pts]
-    Wd, H, PL, PR, PT, PB = 600, 176, 6, 92, 22, 24
-    lo, hi = min(0, *vs), max(0, *vs)
-    pad = max((hi - lo) * 0.14, 0.4)
-    lo, hi = lo - pad, hi + pad
+    Wd, H, PL, PR, PT, PB = 600, 176, 46, 92, 16, 24
+    rlo, rhi = hero_range()
+    step = nice_step((rhi - rlo) or 1, 3)
+    lo, hi = math.floor(rlo / step + 1e-9) * step, math.ceil(rhi / step - 1e-9) * step
+    if hi == lo:
+        hi = lo + step
     X = lambda i: PL + i / 52 * (Wd - PL - PR)
     Y = lambda v: PT + (hi - v) / (hi - lo) * (H - PT - PB)
-    end = vs[-1]
-    col, s12 = COLOR[cls_l(end)], chg(s, 12)
-    col3, i3 = COLOR[cls_l(s12)], 40
+    end, s12, i3, col = vs[-1], chg(s, 12), 40, CITY_COL[city]
     path = lambda a: "M" + " L".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in a)
     y0 = Y(0)
-    down = cls_l(end) == "down"
-    g = (f'<defs><linearGradient id="g" x1="0" y1="{1 if down else 0}" x2="0" y2="{0 if down else 1}">'
-         f'<stop offset="0" stop-color="{col}" stop-opacity=".26"/><stop offset="1" stop-color="{col}" stop-opacity=".03"/></linearGradient></defs>')
+    g = (f'<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
+         f'<stop offset="0" stop-color="{col}" stop-opacity=".18"/><stop offset="1" stop-color="{col}" stop-opacity=".02"/></linearGradient></defs>')
     g += f'<rect width="{Wd}" height="{H}" fill="{SURF}"/>'
+    v = lo
+    while v <= hi + step / 1e6:
+        vv = 0 if abs(v) < step / 1e6 else v
+        g += (f'<line x1="{PL}" x2="{Wd - PR}" y1="{Y(vv):.1f}" y2="{Y(vv):.1f}" stroke="{INK3 if vv == 0 else GRID}"'
+              + (' stroke-dasharray="4 4"' if vv == 0 else "") + "/>")
+        g += text(PL - 6, Y(vv) + 4, sgn_p(vv), 12, INK3, 500, "end")
+        v += step
     g += f'<line x1="{X(i3):.1f}" x2="{X(i3):.1f}" y1="{PT - 6}" y2="{H - PB}" stroke="{GRID}"/>'
     g += text(X(i3), H - 7, "3개월 전", 12, INK3, 500, "middle") + text(PL, H - 7, "1년 전", 12, INK3) + text(X(52), H - 7, "지금", 12, INK3, 500, "end")
     g += f'<path d="{path(pts)} L{X(52):.1f},{y0:.1f} L{X(0):.1f},{y0:.1f} Z" fill="url(#g)"/>'
-    g += f'<line x1="{PL}" x2="{Wd - PR}" y1="{y0:.1f}" y2="{y0:.1f}" stroke="{INK3}" stroke-dasharray="4 4"/>'
-    if abs(Y(end) - y0) > 18:
-        g += text(Wd - PR + 8, y0 + 4, "1년 전 수준", 12, INK3)
     g += f'<path d="{path(pts[:i3 + 1])}" fill="none" stroke="{col}" stroke-width="2.2" stroke-opacity=".55" stroke-linejoin="round"/>'
-    g += f'<path d="{path(pts[i3:])}" fill="none" stroke="{col3}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
+    g += f'<path d="{path(pts[i3:])}" fill="none" stroke="{col}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
     ly = max(PT + 2, min(Y(v) for _, v in pts[i3:]) - 9)
-    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct_l(s12)}", 12, col3, 750, "middle")
-    g += f'<circle cx="{X(52):.1f}" cy="{Y(end):.1f}" r="5.5" fill="{col3}" stroke="{SURF}" stroke-width="2.5"/>'
-    g += (f'<text x="{X(52) + 9:.1f}" y="{Y(end) + 6:.1f}" font-size="17" font-weight="800" fill="{col}">'
+    g += text((X(i3) + X(52)) / 2, ly, f"최근 3개월 {pct_l(s12)}", 12, INK2, 750, "middle",
+              f' paint-order="stroke" stroke="{SURF}" stroke-width="3"')
+    g += f'<circle cx="{X(52):.1f}" cy="{Y(end):.1f}" r="5.5" fill="{col}" stroke="{SURF}" stroke-width="2.5"/>'
+    g += (f'<text x="{X(52) + 9:.1f}" y="{Y(end) + 6:.1f}" font-size="17" font-weight="800" fill="{INK}">'
           f'<tspan font-size="12" font-weight="600" fill="{INK3}">1년 </tspan>{esc(pct_l(end))}</text>')
     return {"file": f"hero-{city}.png", "w": Wd, "h": H, "svg": g}
 
@@ -392,7 +423,7 @@ if chrome:
         SUM = json.loads(m.group(1)) if m else {}
     except Exception as e:
         print("요약 읽기 실패", e)
-    for name in ("trend", "timeline-seoul", "timeline-busan"):
+    for name in ("cycle", "timeline-seoul", "timeline-busan"):
         try:
             if page_shot(name):
                 made.add(f"{name}.png")
@@ -433,12 +464,8 @@ def city_block(c):
     s = W(f"sale:{code}")
     wk = wk_chg(s)
     s1, s12, s52 = chg(s, 1), chg(s, 12), chg(s, 52)
-    word, sub, d = trend_word(s12)
-    up, dn = streak(wk, True), streak(wk, False)
-    run = f"{up}주 연속 상승" if up >= 2 else f"{dn}주 연속 하락" if dn >= 2 else f"이번 주 {pct(s1)}"
-    speed = ((SUM.get("cities") or {}).get(c) or {}).get("sub", "")
-    arrow = "▲" if d == "up" else "▼" if d == "down" else "■"
-    col = COLOR[d] if d != "flat" else INK
+    # 국면(큰 글자)과 문장은 '흐름 정리'에 있어 여기서는 되풀이하지 않는다. 상자 왼쪽 띠 색만 국면의 방향을 따른다.
+    d = ((SUM.get("cities") or {}).get(c) or {}).get("dir") or trend_word(s12)[2]
     med, medm = last(M(f"median:{c}")), last_key(M(f"median:{c}"))
     money = ""
     if has(med) and has(s52):
@@ -461,9 +488,7 @@ def city_block(c):
                              f'<div style="font-size:12px;color:{INK3}">{k}</div><div style="font-size:19px;font-weight:800">{colored(v, dg)}</div></td>')
     heat = f' <span style="color:{INK3};font-weight:600">(시장 온도 {hn}, {heat_label(hn)})</span>' if has(hn) else ""
     inner = f"""
-  <div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{nm} 아파트, 최근 3개월{heat}</div>
-  <div style="font-size:26px;font-weight:800;color:{col};letter-spacing:-0.5px;margin-top:4px">{arrow} {esc(word)}{f' <span style="font-size:15px;color:{INK2};font-weight:700">{esc(sub)}</span>' if sub else ''}</div>
-  <div style="font-size:13.5px;color:{INK2};margin-top:2px"><b style="color:{INK}">{run}</b>{f', {speed}' if speed else ''}</div>
+  <div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{nm} 아파트{heat}</div>
   {img(f"hero-{c}.png", 600, f"{nm} 집값 1년 흐름")}
   <table role="presentation" width="100%" cellpadding="0" cellspacing="6" style="margin-top:2px"><tr>{cell("이번 주", s1, 2)}{cell("3개월", s12, dg_l(s12))}{cell("1년", s52, dg_l(s52))}</tr></table>
   <div style="font-size:14px;color:{INK2};line-height:1.6;margin-top:4px">{money}</div>
@@ -503,7 +528,7 @@ def bullets(L):
 
 
 def brief_block():
-    """대시보드 '요즘 시장, 흐름 정리'와 같은 문장(화면이 계산해 페이지에 남긴 요약)."""
+    """대시보드 맨 위 카드의 국면·문장과 '판단 근거'의 문장(화면이 계산해 페이지에 남긴 요약)."""
     if not SUM.get("cities"):
         return ""
     out = sec("흐름 정리")
@@ -515,7 +540,7 @@ def brief_block():
         col = COLOR.get(d, INK) if d != "flat" else INK
         out += card(f'<div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{esc(x["name"])} 아파트</div>'
                     f'<div style="font-size:22px;font-weight:800;color:{col};letter-spacing:-0.4px;margin-top:2px">{esc(x["word"])}</div>'
-                    f'<div style="font-size:14px;font-weight:700;color:{INK2};margin:2px 0 6px">{esc(x.get("sub", ""))}</div>{bullets(x["bullets"])}', DIR_BAR.get(d))
+                    f'<div style="font-size:13.5px;color:{INK2};line-height:1.6;margin:2px 0 6px">{esc(x.get("run", ""))} {x.get("long", "")}</div>{bullets(x["bullets"])}', DIR_BAR.get(d))
     if SUM.get("common"):
         out += sec("전국과 금리") + card(bullets(SUM["common"]))
     return out
@@ -523,7 +548,7 @@ def brief_block():
 
 def trend_block():
     turns = SUM.get("turns") or []
-    if "trend.png" not in made and not turns:
+    if "cycle.png" not in made and not turns:
         return ""
     stc = {"상승": RISE, "하락": FALL, "보합": INK3}
     fresh = f' <span style="color:{WARN}">확인 중</span>'
@@ -533,14 +558,16 @@ def trend_block():
                    f'<td style="padding:3px 8px 3px 0;font-size:13px;color:{INK};{P}">{esc(t["names"])}</td>'
                    f'<td style="padding:3px 0;font-size:12.5px;font-weight:750;white-space:nowrap;{P}"><span style="color:{stc.get(t["from"], INK3)}">{esc(t["from"])}</span> → '
                    f'<span style="color:{stc.get(t["to"], INK3)}">{esc(t["to"])}</span>{fresh if t.get("fresh") else ""}</td></tr>' for t in turns)
-    # 그림 안에 범례(막대·선·점선, 띠 색)가 있어 따로 설명하지 않는다. 그림을 못 만든 날만 글로 적는다.
-    inner = img("trend.png", 600, "서울·부산 주간 변동률과 상승·하락 구 수") or "".join(
-        f'<div style="font-size:13.5px;color:{INK2};line-height:1.6;margin-bottom:4px">{esc(re.sub("<[^>]+>", "", dict(x["bullets"]).get("속도", "")))}</div>'
+    # 시계 읽는 법은 그림 아래에 짧게 적는다. 그림을 못 만든 날은 도시별 국면 문장을 글로 적는다.
+    cap = (f'<div style="font-size:12px;color:{INK3};line-height:1.6;margin-top:2px">시계는 위가 상승, 아래가 하락입니다. 왼쪽은 그 폭이 커지는 중, '
+           f'오른쪽은 줄어드는 중입니다. 큰 점이 지금 위치이고, 흐린 점은 4주 간격으로 6개월 전까지의 위치입니다. 아래 그래프는 최근 1년 주간 변동률의 4주 평균입니다.</div>')
+    inner = (img("cycle.png", 600, "서울·부산 시장 시계와 주간 변동률 4주 평균") + cap) if "cycle.png" in made else "".join(
+        f'<div style="font-size:13.5px;color:{INK2};line-height:1.6;margin-bottom:4px">{esc(x["name"])} {esc(x.get("word", ""))}: {esc(re.sub("<[^>]+>", "", x.get("long", "")))}</div>'
         for x in (SUM.get("cities") or {}).values())
     if turns:
         inner += (f'<div style="font-size:14px;font-weight:800;color:{INK};margin:10px 0 4px">최근 3개월 추세 전환</div><table role="presentation" cellpadding="0" cellspacing="0">{rows}</table>'
                   f'<div style="font-size:12px;color:{INK3};margin-top:4px">4주 평균 주간 변동률로 본 상승·보합·하락 상태가 바뀌어 3주 이상 이어진 곳입니다. 보합은 ±0.01% 이내이고, 확인 중은 아직 2주째인 곳입니다.</div>')
-    return sec("방향과 속도") + card(inner)
+    return sec("국면과 흐름") + card(inner)
 
 
 def issue_news_block():
@@ -564,8 +591,8 @@ def issue_news_block():
             body += (f'<div style="font-size:13.5px;line-height:1.5;margin:4px 0"><a href="{esc(i["u"])}" style="color:{INK};text-decoration:none">{esc(t_)}</a> '
                      f'<span style="color:{INK3};font-size:12px">{esc(i.get("s", ""))} · {esc(i.get("d", ""))}</span></div>')
     body += (f'<div style="font-size:12px;color:{INK3};margin-top:8px;line-height:1.6">구글 뉴스에서 서울, 부산, 전국 정책 기사를 검색했고 사건·사고 기사는 뺐습니다. '
-             f'주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸은 주간 변동률, 가운데는 직전 4주 평균보다 가장 많이 늘어난 주제, '
-             f'아래는 제목 논조(상승 단어 비율에서 하락 단어 비율을 뺀 값)입니다. 검색어에 \'전세\'가 들어 있어 전세·월세 기사는 어느 주에나 많이 잡힙니다.</div>')
+             f'주제와 논조는 제목의 단어로 센 대략값입니다. 그림의 위 칸은 주간 변동률이고, 아래 칸은 그 주에 직전 4주 평균보다 가장 많이 늘어난 주제입니다. '
+             f'검색어에 \'전세\'가 들어 있어 전세·월세 기사는 어느 주에나 많이 잡힙니다.</div>')
     return sec("요즘 이슈") + card(body)
 
 
@@ -596,11 +623,18 @@ def status_block():
 
 NAME = CFG.get("title") or "부동산 시장 Dashboard"
 s, b = W(f"sale:{CITY['seoul']['code']}"), W(f"sale:{CITY['busan']['code']}")
-ws, wb = trend_word(chg(s, 12))[0], trend_word(chg(b, 12))[0]
-sub_of = lambda c: (SUM.get("cities", {}).get(c) or {}).get("tag", "")
+
+
+def head_of(c, ser):
+    """제목의 도시 판정: 화면 요약의 국면과 4주 평균 주간 변동률. 요약을 못 읽은 날만 3개월 변동으로 대신한다."""
+    x = (SUM.get("cities") or {}).get(c) or {}
+    if x.get("word"):
+        return x["word"] + (f"(4주 평균 {x['pace']})" if x.get("pace") else "")
+    return f"{trend_word(chg(ser, 12))[0]}(이번 주 {pct(chg(ser, 1))})"
+
+
 # 공통 규칙 7: 화면 제목, 메일 제목, 메일 머리, 보내는 사람에 같은 이름을 쓴다.
-subject = (f"{NAME} - {wk_lab}, 서울 {ws}" + (f"({sub_of('seoul')})" if sub_of("seoul") else f"(이번 주 {pct(chg(s, 1))})")
-           + f", 부산 {wb}" + (f"({sub_of('busan')})" if sub_of("busan") else f"(이번 주 {pct(chg(b, 1))})"))
+subject = f"{NAME} - {wk_lab}, 서울 {head_of('seoul', s)}, 부산 {head_of('busan', b)}"
 link = (f'<a href="{esc(URL)}" style="display:inline-block;margin-top:12px;background:#2b4a7a;color:#ffffff;font-size:13px;font-weight:700;'
         f'text-decoration:none;padding:9px 16px;border-radius:6px">대시보드 열기</a>') if URL else ""
 # 메일 앱의 어두운 모드가 색을 멋대로 뒤집지 않게 밝은 화면 전용이라고 알린다(애플 메일 등은 따름. Gmail 앱은 무시할 수 있음).
