@@ -1307,6 +1307,7 @@ const MH_KEY = "re-myhome-v1";
 let MH = null;
 try { const v = JSON.parse(localStorage.getItem(MH_KEY) || "null"); if (v && DIST[v.city] && DIST[v.city].some(d => d.c === +v.code)) MH = { ...v, code: +v.code }; } catch (e) { MH = null; }
 const ymOk = v => /^\d{4}-(0[1-9]|1[0-2])$/.test(String(v || ""));
+const pfL = v => clsL(v) === "flat" ? "보합" : pctL(v);   // 소수 첫째 자리로 0.0%면 보합(공통 규칙 4). '부산 전체는 0.0%'가 나왔다.
 const ymNorm = v => { const m = String(v || "").trim().match(/^(\d{4})\s*[-./년]?\s*(\d{1,2})/); return m && +m[2] >= 1 && +m[2] <= 12 ? `${m[1]}-${String(+m[2]).padStart(2, "0")}` : ""; };
 function myHomeHtml(h) {
   const city = h.city, c = CITY[city], d = DIST[city].find(x => x.c === h.code), code = h.code, unit = city === "busan" ? "구·군" : "구";
@@ -1317,14 +1318,14 @@ function myHomeHtml(h) {
     due = m > 0 ? `입주까지 ${m >= 12 ? `${Math.floor(m / 12)}년${m % 12 ? " " : ""}` : ""}${m % 12 ? `${m % 12}개월` : ""}(${ymL(h.movein)} 예정)` : m === 0 ? `이번 달 입주 예정` : `입주 예정 월(${ymL(h.movein)})이 지났습니다`; }
   // 1) 지금 흐름: 맨 위 큰 글자와 같은 기준(4주 평균 주간 변동률)과 같은 도시 안 3개월 순위
   const rk = DIST[city].map(t => ({ c: t.c, v: chg(W(`sale:${t.c}`), 12) })).filter(r => has(r.v)).sort((a, b) => b.v - a.v), pos = rk.findIndex(r => r.c === code) + 1, v3 = chg(s, 12);
-  if (ph) L.push(["지금 흐름", `${esc(d.n)}${jo(d.n, "은", "는")} <b>${ph.word}</b>입니다(4주 평균 주간 변동률 ${pct(ph.now)}, 3개월 전 ${pct(ph.ago)}).${pos ? ` ${c.nm} ${rk.length}개 ${unit} 중 3개월 변동률 ${pos}위(${pctL(v3)})입니다.` : ""}`]);
+  if (ph) L.push(["지금 흐름", `${esc(d.n)}${jo(d.n, "은", "는")} <b>${ph.word}</b>입니다(4주 평균 주간 변동률 ${pct(ph.now)}, 3개월 전 ${pct(ph.ago)}).${pos ? ` ${c.nm} ${rk.length}개 ${unit} 중 3개월 변동률 ${pos}위(${pfL(v3)})입니다.` : ""}`]);
   // 2) 계약 뒤: 계약 월 첫 조사부터 지금까지. 자료가 계약 월보다 늦게 시작하면 그렇게 적는다.
   if (ymOk(h.contract) && s.length > 1) {
     const t0 = `${h.contract}-01`, i0 = s.findIndex(p => p[0] >= t0);
     if (i0 >= 0 && i0 < s.length - 1) {
       const base = s[i0], late = i0 === 0 && base[0].slice(0, 7) > h.contract, me = (last(s) / base[1] - 1) * 100;
       const cs = W(`sale:${c.code}`), cb = cs.find(p => p[0] >= base[0]), cv = cb ? (last(cs) / cb[1] - 1) * 100 : null;
-      let t = `${late ? `자료가 있는 ${ymL(base[0].slice(0, 7))}부터` : `계약한 ${ymL(h.contract)} 뒤로`} ${esc(d.n)} 아파트값은 <b class="${clsL(me)}">${pctL(me)}</b>${has(cv) ? `, ${c.nm} 전체는 ${pctL(cv)}` : ""}입니다.`;
+      let t = `${late ? `자료가 있는 ${ymL(base[0].slice(0, 7))}부터` : `계약한 ${ymL(h.contract)} 뒤로`} ${esc(d.n)} 아파트값은 <b class="${clsL(me)}">${pfL(me)}</b>${has(cv) ? `, ${c.nm} 전체는 ${pfL(cv)}` : ""}입니다.`;
       const P = +h.price;
       if (P > 0) { const dc = cls(me, 1); t += ` 분양가 ${won(P * 1e8)}으로 환산하면 ${dc === "flat" ? "거의 그대로인 셈입니다" : `약 ${won(P * 1e8 * me / 100)} ${dc === "up" ? "오른" : "내린"} 셈입니다`}.`; }
       L.push(["계약 뒤", t + ` <span class="dim">새 아파트는 주변 기존 아파트와 따로 움직일 수 있어 참고용입니다.</span>`]);
@@ -1332,7 +1333,7 @@ function myHomeHtml(h) {
   }
   // 3) 입주 때 전세: 잔금을 전세로 맞출 때 볼 숫자
   const j52 = chg(j, 52), j12 = chg(j, 12), rentI = last(W(`rent:${c.code}`)), jr = M(`jeonseRatio:${city}`);
-  if (has(j52) || has(j12)) L.push(["입주 때 전세", `${esc(d.n)} 전세는 1년 ${pctL(j52)}, 3개월 ${pctL(j12)}입니다.${has(rentI) ? ` ${c.nm} 전세수급지수는 ${num(rentI)}입니다(100을 넘으면 전세 물건 부족).` : ""}${has(last(jr)) ? ` ${c.nm} 전세가율은 ${last(jr).toFixed(1)}%입니다(${ymL(lastKey(jr))}).` : ""} <span class="dim">주변 입주 물량은 아직 연결하지 않았습니다(인증키 필요).</span>`]);
+  if (has(j52) || has(j12)) L.push(["입주 때 전세", `${esc(d.n)} 전세는 1년 ${pfL(j52)}, 3개월 ${pfL(j12)}입니다.${has(rentI) ? ` ${c.nm} 전세수급지수는 ${num(rentI)}입니다(100을 넘으면 전세 물건 부족).` : ""}${has(last(jr)) ? ` ${c.nm} 전세가율은 ${last(jr).toFixed(1)}%입니다(${ymL(lastKey(jr))}).` : ""} <span class="dim">주변 입주 물량은 아직 연결하지 않았습니다(인증키 필요).</span>`]);
   // 4) 잔금 대출: 주담대 금리(신규)와 다음 기준금리 결정
   const mt = E("mortgage"), mch = mt.length > 12 ? mt[mt.length - 1][1] - mt[mt.length - 13][1] : null;
   const today = nowK.toISOString().slice(0, 10), nx = (D.meta.events || []).filter(e => e.kind === "금리" && e.date >= today).sort((a, b) => a.date < b.date ? -1 : 1)[0];
