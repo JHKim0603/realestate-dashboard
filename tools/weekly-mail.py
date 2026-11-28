@@ -522,9 +522,15 @@ def korea_block():
 
 def bullets(L):
     return '<table role="presentation" cellpadding="0" cellspacing="0" width="100%">' + "".join(
-        f'<tr><td style="padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:66px;{P}"><span style="display:inline-block;font-size:12px;font-weight:800;'
-        f'color:{INK3};background:#efede8;border-radius:5px;padding:1px 6px">{esc(k)}</span></td>'
+        f'<tr><td style="padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:66px;{P}">' + (f'<span style="display:inline-block;font-size:12px;font-weight:800;'
+        f'color:{INK3};background:#efede8;border-radius:5px;padding:1px 6px">{esc(k)}</span>' if k else "") + '</td>'
         f'<td style="padding:5px 0;font-size:13.5px;color:{INK2};line-height:1.6;{P}">{v}</td></tr>' for k, v in L) + "</table>"
+
+
+def mail_b(L):
+    """화면 글의 <b class="up|down">을 메일 앱이 읽는 인라인 색으로 바꾼다(메일에는 화면의 CSS 가 없다)."""
+    cmap = {"up": RISE, "down": FALL}
+    return [(k, re.sub(r'<b class="(\w*)">', lambda m: f'<b style="color:{cmap[m.group(1)]}">' if m.group(1) in cmap else "<b>", v)) for k, v in L]
 
 
 def brief_block():
@@ -538,9 +544,16 @@ def brief_block():
             continue
         d = x.get("dir")
         col = COLOR.get(d, INK) if d != "flat" else INK
+        # 화면 맨 위 카드와 같은 순서: 국면 → 결론 문장 → 근거 한 줄 → 지난주와 비교 → 눈여겨볼 점 → 판단 근거(2026-11-28).
+        # 결론 문장이 없는 예전 요약이면 예전처럼 run·long 문장을 쓴다.
+        con = x.get("con") or ""
+        ev = x.get("ev") or f'{esc(x.get("run", ""))} {x.get("long", "")}'
+        # 같은 묶음의 둘째 줄부터는 꼬리표를 비운다(줄마다 '지난주'가 되풀이되면 기계적으로 읽힘).
+        notes = [("지난주" if i == 0 else "", v) for i, v in enumerate(x.get("wow") or [])] + [("눈여겨볼" if i == 0 else "", v) for i, v in enumerate(x.get("watch") or [])]
         out += card(f'<div style="font-size:13px;font-weight:800;color:{CITY_COL[c]}">{esc(x["name"])} 아파트</div>'
                     f'<div style="font-size:22px;font-weight:800;color:{col};letter-spacing:-0.4px;margin-top:2px">{esc(x["word"])}</div>'
-                    f'<div style="font-size:13.5px;color:{INK2};line-height:1.6;margin:2px 0 6px">{esc(x.get("run", ""))} {x.get("long", "")}</div>{bullets(x["bullets"])}', DIR_BAR.get(d))
+                    + (f'<div style="font-size:14.5px;font-weight:700;color:{INK};line-height:1.55;margin-top:4px">{con}</div>' if con else "")
+                    + f'<div style="font-size:13px;color:{INK3 if con else INK2};line-height:1.6;margin:2px 0 6px">{ev}</div>{bullets(mail_b(notes + x["bullets"]))}', DIR_BAR.get(d))
     if SUM.get("common"):
         out += sec("전국과 금리") + card(bullets(SUM["common"]))
     return out

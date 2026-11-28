@@ -107,13 +107,15 @@
   .h-city { font-size: 15px; font-weight: 800; color: var(--cc); letter-spacing: -0.01em; }
   .h-main { display: flex; align-items: center; gap: 14px; }
   .h-arrow { width: 64px; height: 64px; flex: none; }
+  @media (max-width: 520px) { .h-arrow { width: 44px; height: 44px; } .h-main { gap: 10px; align-items: flex-start; } }   /* 결론 문장 칸을 넓힌다(휴대폰) */
   .h-arrow circle { fill: color-mix(in srgb, var(--tint) 14%, var(--surface)); }
   .h-arrow path { fill: none; stroke: var(--tint); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
   .h-word { font-size: 34px; font-weight: 850; letter-spacing: -0.035em; line-height: 1.1; color: var(--tint); text-wrap: balance; }
   .hero.flat .h-word { color: var(--ink); }
   .h-word small { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-2); margin-left: 6px; }
-  .h-sub { font-size: 13.5px; color: var(--ink-2); margin-top: 4px; }
-  .h-sub b { color: var(--ink); }
+  .h-con { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 6px; line-height: 1.5; text-wrap: pretty; }
+  .h-sub { font-size: 13px; color: var(--ink-3); margin-top: 3px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  .h-sub b { color: var(--ink-2); }
   .h-chart { position: relative; min-height: 140px; }
   .h-chart svg { display: block; width: 100%; overflow: visible; }
   .h-chart .h-line { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
@@ -137,6 +139,22 @@
   .sig.n i { background: var(--fall); color: var(--surface); }
   .sig-sum { font-size: 12.5px; color: var(--ink-3); width: 100%; margin-top: 2px; }
   .sig-sum b.up { color: var(--rise); } .sig-sum b.down { color: var(--fall); }
+  /* 지난주와 비교, 눈여겨볼 점(2026-11-28) */
+  .h-notes { display: grid; gap: 10px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .hn-t { font-size: 12.5px; font-weight: 800; color: var(--ink-2); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .hn-t span { font-weight: 600; color: var(--ink-3); }
+  .hn ul { margin: 5px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .hn li { font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+  .hn li::marker { color: var(--ink-3); }
+  /* 카드 바탕이 빨강·파랑으로 옅게 물들어 있어 본래 색은 대비 4.44:1 → 글자색 쪽으로 조금 섞어 4.5:1을 넘긴다(어두운 화면에서는 더 밝아짐) */
+  .hn b { color: var(--ink); } .hn b.up { color: color-mix(in srgb, var(--rise) 84%, var(--ink)); } .hn b.down { color: color-mix(in srgb, var(--fall) 84%, var(--ink)); }
+  /* 그래프 눈금 단추(두 도시 같게 / 도시별로) */
+  .now-bar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin: 0 2px 10px; flex-wrap: wrap; }
+  .now-bar > span, .sec-tools > span { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
+  .sec-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  /* 더 볼 자료(탭) */
+  .xq { margin: -2px 2px 10px; font-size: 13px; color: var(--ink-3); }
+  .xq b { color: var(--ink-2); font-weight: 800; }
   .heat-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 750; border-radius: 999px; padding: 3px 11px; border: 1px solid var(--border); background: var(--surface); }
   .heat-chip b { font-size: 16px; font-weight: 850; font-variant-numeric: tabular-nums; }
   .heat-chip.h-r1, .heat-chip.h-r2, .heat-chip.h-r3 { color: var(--rise); border-color: color-mix(in srgb, var(--rise) 35%, var(--border)); }
@@ -519,10 +537,11 @@
   </header>
   <nav class="jump" aria-label="바로 가기">
     <a href="#now">지금 집값</a><a href="#cycle">국면과 흐름</a><a href="#issues">요즘 이슈</a><a href="#score">숫자 비교</a><a href="#korea">전국 지도</a><a href="#maps">서울·부산 지도</a><a href="#trend">구별 흐름</a>
-    <a href="#phase">거래와 심리</a><a href="#supply">공급·미분양</a><a href="#buyers">누가 사나</a><a href="#money">금리·자금</a><a href="#more">용어·일정</a>
+    <a href="#phase">거래와 심리</a><a href="#extra" data-x="supply">공급·미분양</a><a href="#extra" data-x="buyers">누가 사나·월세</a><a href="#extra" data-x="money">금리·자금</a><a href="#more">용어·일정</a>
   </nav>
 
   <section id="now">
+    <div class="now-bar"><span>그래프 눈금</span><div class="seg sc-seg" role="group" aria-label="그래프 눈금"><button type="button" data-s="same" class="on">두 도시 같게</button><button type="button" data-s="own">도시별로</button></div></div>
     <div class="heroes"><article class="hero" id="hero-seoul"></article><article class="hero" id="hero-busan"></article></div>
     <div class="fresh" id="fresh"></div>
   </section>
@@ -563,7 +582,7 @@
   </section>
 
   <section id="score">
-    <div class="sec-h"><h2>서울과 부산, 숫자로 나란히</h2><p>작은 그래프는 최근 1~2년 흐름, 같은 줄의 두 도시는 같은 눈금</p></div>
+    <div class="sec-h"><h2>서울과 부산, 숫자로 나란히</h2><p id="scScaleT">작은 그래프는 최근 1~2년 흐름, 같은 줄의 두 도시는 같은 눈금</p></div>
     <div class="card score" id="scoreCard"></div>
   </section>
 
@@ -598,7 +617,7 @@
   </section>
 
   <section id="trend">
-    <div class="sec-h"><h2>구별 흐름</h2><p>주간 변동률과 상승·보합·하락 구 수, 두 도시 같은 눈금</p></div>
+    <div class="sec-h"><h2>구별 흐름</h2><div class="sec-tools"><p id="trScaleT">주간 변동률과 상승·보합·하락 구 수, 두 도시 같은 눈금</p><div class="seg sc-seg" role="group" aria-label="그래프 눈금"><button type="button" data-s="same" class="on">두 도시 같게</button><button type="button" data-s="own">도시별로</button></div></div></div>
     <div class="row2">
       <div class="card" id="trend-seoul"></div>
       <div class="card" id="trend-busan"></div>
@@ -623,8 +642,10 @@
       <div class="ch" id="tempCh"></div><div class="cap" id="tempCap"></div></div>
   </section>
 
-  <section id="supply">
-    <div class="sec-h"><h2>앞으로 나올 집, 안 팔린 집</h2><p>인허가는 2~4년 뒤 입주 물량의 선행 지표</p></div>
+  <section id="extra">
+    <div class="sec-h"><h2>더 볼 자료</h2><div class="seg" role="group" aria-label="더 볼 자료" id="xSeg"><button type="button" data-x="supply" class="on">공급·미분양</button><button type="button" data-x="buyers">누가 사나·월세</button><button type="button" data-x="money">금리·자금</button></div></div>
+    <div class="xp" id="supply" data-x="supply">
+    <p class="xq"><b>앞으로 나올 집, 안 팔린 집</b> · 인허가는 2~4년 뒤 입주 물량의 선행 지표</p>
     <div class="row2">
       <div class="card"><div class="card-h"><div><h3>연도별 주택 건설 인허가</h3><div class="q">회색 점선 = 연평균, 주황 점선 = 적정수요(인구 × 0.5%)</div></div><div class="tools"><span class="asof" id="yAsof"></span></div></div>
         <div class="pair"><div class="seoul"><div class="pair-t">서울<span id="ybt-seoul"></span></div><div class="ch" id="yb-seoul" data-c="seoul"></div></div><div class="busan"><div class="pair-t">부산<span id="ybt-busan"></span></div><div class="ch" id="yb-busan" data-c="busan"></div></div></div>
@@ -633,23 +654,22 @@
         <div class="pair"><div class="seoul"><div class="pair-t">서울<span id="ur-seoul"></span></div><div class="ch" id="unsold-seoul"></div></div><div class="busan"><div class="pair-t">부산<span id="ur-busan"></span></div><div class="ch" id="unsold-busan"></div></div></div>
         <div class="cap" id="unsoldCap"></div></div>
     </div>
-  </section>
-
-  <section id="buyers">
-    <div class="sec-h"><h2>누가 사고, 월세는 어떤가</h2><p>매입자 거주지·연령(한국부동산원 월간)</p></div>
+    </div>
+    <div class="xp" id="buyers" data-x="buyers" hidden>
+    <p class="xq"><b>누가 사고, 월세는 어떤가</b> · 매입자 거주지·연령(한국부동산원 월간)</p>
     <div class="row3">
       <div class="card"><div class="card-h"><div><h3>외지인 매입 비중</h3><div class="q">다른 시·도 거주자가 산 비율</div></div><div class="tools"><span class="asof" id="oAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="outCh"></div><div class="cap">오르면 다른 지역의 투자 수요가 들어온다는 신호로 봅니다.</div></div>
       <div class="card"><div class="card-h"><div><h3>2030 매입 비중</h3><div class="q">20대 이하 + 30대가 산 비율</div></div><div class="tools"><span class="asof" id="aAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="youngCh"></div><div class="cap">높아지면 첫 집 수요(이른바 '영끌')가 늘었다는 뜻입니다.</div></div>
       <div class="card"><div class="card-h"><div><h3>월세 지수</h3><div class="q">아파트 월세통합지수(2026.6 = 100)</div></div><div class="tools"><span class="asof" id="rAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="rentCh"></div><div class="cap" id="rentCap"></div></div>
     </div>
-  </section>
-
-  <section id="money">
-    <div class="sec-h"><h2>금리와 자금 부담</h2><p>대출 금리, 월 상환액, 전세가율</p></div>
+    </div>
+    <div class="xp" id="money" data-x="money" hidden>
+    <p class="xq"><b>금리와 자금 부담</b> · 대출 금리, 월 상환액, 전세가율</p>
     <div class="row3">
       <div class="card"><div class="card-h"><div><h3>대출 금리</h3><div class="q" id="rateQ"></div></div><div class="tools"><span class="asof" id="mtAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-bronze)"></i>주담대(신규)</span><span><i class="dash" style="border-color:var(--c-nat)"></i>기준금리</span></div><div class="ch" id="rateCh"></div></div>
       <div class="card"><div class="card-h"><div><h3>월 상환액</h3><div class="q">중위 가격 아파트, 집값의 절반을 30년 대출</div></div><div class="tools"><span class="asof" id="pyAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span></div><div class="ch" id="payCh"></div><div class="cap">집값과 금리가 함께 오르면 빠르게 늘어납니다(대출 규제는 반영하지 않은 비교용 수치).</div></div>
       <div class="card"><div class="card-h"><div><h3>집값 대비 전세(전세가율)</h3><div class="q">높을수록 전세를 끼고 사기 쉬워 집값을 떠받칩니다</div></div><div class="tools"><span class="asof" id="jAsof"></span></div></div><div class="legend"><span><i style="border-color:var(--c-seoul)"></i>서울</span><span><i style="border-color:var(--c-busan)"></i>부산</span><span><i style="border-color:var(--c-nat)"></i>전국</span></div><div class="ch" id="jrCh"></div></div>
+    </div>
     </div>
   </section>
 
@@ -843,6 +863,10 @@ function hover(el, S, X, xl, xr, Wd, opt) {
 }
 
 // ---- 1. 지금 집값은? ------------------------------------------------------------------------
+// 그래프 눈금: 기본은 두 도시 같은 눈금(크기 비교, CLAUDE.md). [도시별로]를 누르면 도시마다 자기 값으로 눈금을 잡아
+// 부산처럼 작은 움직임의 모양이 보이게 한다(2026-11-28 사용자 요청). 고른 값은 이 브라우저에만 기억한다. 메일 그림은 늘 같은 눈금.
+let SCALE = "same";
+try { if (!/^#mailshot-/.test(location.hash) && localStorage.getItem("re-scale-v1") === "own") SCALE = "own"; } catch (e) { /* 저장소를 못 쓰면 기본값 */ }
 // 신호 칩: 화살표(▲▼)는 지표 자체가 움직인 방향, 색은 집값에 주는 영향(빨강 = 상승 요인, 파랑 = 하락 요인)
 function signalsOf(city) {
   const code = CITY[city].code, s12 = chg(W(`sale:${code}`), 12), j12 = chg(W(`jeonse:${code}`), 12);
@@ -893,14 +917,118 @@ function clockAt(code, i) {
   return { now: m[i], ago: m[i - 13], x: dz(-(m[i] - m[i - 13]), DZ), y: dz(m[i], ST) };
 }
 const PHW = { upFast: "상승 확대", upHold: "상승 지속", upSlow: "상승 둔화", dnFast: "하락 확대", dnHold: "하락 지속", dnSlow: "하락 둔화", upTurn: "상승 전환", dnTurn: "하락 전환", flat: "보합" };
-function phaseOf(code) {
-  const m = speedOf(code).m4, p = clockAt(code, m.length - 1); if (!p) return null;
+function phaseOf(code, back = 0) {
+  const m = speedOf(code).m4, p = clockAt(code, m.length - 1 - back); if (!p) return null;
   const a = stOf(p.now), b = stOf(p.ago);
   const key = a === 0 ? "flat" : a !== b ? (a > 0 ? "upTurn" : "dnTurn") : p.x === 0 ? (a > 0 ? "upHold" : "dnHold") : a > 0 ? (p.x < 0 ? "upFast" : "upSlow") : (p.x > 0 ? "dnFast" : "dnSlow");
   return { ...p, key, word: PHW[key], dir: a > 0 ? "up" : a < 0 ? "down" : "flat" };
 }
+// ---- 맨 위 카드의 결론(2026-11-28) -----------------------------------------------------------------
+// 사용자: "부동산은 간단명료한 결론이 나오는 구조가 중요". 카드는 큰 글자(국면) → 결론 문장 → 근거 한 줄 → 그래프·숫자
+// → 지난주와 비교 → 눈여겨볼 점 순서로 읽힌다. 결론 문장과 권역은 큰 글자와 같은 4주 평균 주간 변동률로 판단한다.
+const jo = (w, a, b) => { const s = String(w), c = s.charCodeAt(s.length - 1) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 ? a : b; };   // 받침 있으면 a(은·이)
+const joRo = w => { const s = String(w), c = s.charCodeAt(s.length - 1) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 && c % 28 !== 8 ? "으로" : "로"; };
+const m4At = (code, back = 0) => { const m = speedOf(code).m4; return m[m.length - 1 - back]; };
+const listNm = (a, n = 4) => a.length > n ? `${a.slice(0, n).join("·")} 외 ${a.length - n}곳` : a.join("·");
+const grpNm = g => { const d = g.d.map(([n]) => short(n)); return `${g.name}(${d.length <= 4 ? d.join("·") : `${d.slice(0, 2).join("·")} 등`})`; };
+const bigMove = p => p.ago && (Math.abs(p.now) < Math.abs(p.ago) ? p.now / p.ago < 0.5 : p.now / p.ago > 1.5);
+const CON = {
+  upSlow: p => `상승은 이어지지만 상승폭이 ${bigMove(p) ? "크게 " : ""}줄었습니다.`,
+  upFast: p => `상승폭이 ${bigMove(p) ? "크게 " : ""}커지고 있습니다.`,
+  upHold: p => `${Math.abs(p.now) < 0.03 ? "작은" : "비슷한"} 폭의 상승이 이어지고 있습니다.`,
+  dnSlow: p => `하락은 이어지지만 하락폭이 ${bigMove(p) ? "크게 " : ""}줄었습니다.`,
+  dnFast: p => `하락폭이 ${bigMove(p) ? "크게 " : ""}커지고 있습니다.`,
+  dnHold: p => `${Math.abs(p.now) < 0.03 ? "작은" : "비슷한"} 폭의 하락이 이어지고 있습니다.`,
+  upTurn: p => `${stOf(p.ago) < 0 ? "하락" : "보합"}에서 상승으로 돌아섰습니다.`,
+  dnTurn: p => `${stOf(p.ago) > 0 ? "상승" : "보합"}에서 하락으로 돌아섰습니다.`,
+  flat: () => "뚜렷한 방향 없이 보합입니다."
+};
+// 권역: 도시와 반대로 움직이는 권역이 있으면 그것을, 없으면 같은 방향으로 가장 크게 움직이는 권역(도시 평균의 1.5배 이상)을 적는다.
+function groupLine(city, ph) {
+  const gs = GROUPS[city].map(g => ({ g, v: m4At(grpCls(city, g.name)) })).filter(o => has(o.v));
+  if (!gs.length || !ph) return "";
+  const dn = gs.filter(o => stOf(o.v) < 0).sort((a, b) => a.v - b.v), up = gs.filter(o => stOf(o.v) > 0).sort((a, b) => b.v - a.v);
+  const nm = a => a.slice(0, 2).map(o => grpNm(o.g)).join(", "), tail = a => a.slice(0, 2).pop().g.name;
+  if (ph.dir === "up") {
+    if (dn.length) return `다만 ${nm(dn)}${jo(tail(dn), "은", "는")} 하락하고 있습니다.`;
+    if (up.length && up[0].v >= Math.max(0.03, ph.now * 1.5)) return `상승폭은 ${grpNm(up[0].g)}${jo(up[0].g.name, "이", "가")} 가장 큽니다.`;
+  } else if (ph.dir === "down") {
+    if (up.length) return `다만 ${nm(up)}${jo(tail(up), "은", "는")} 상승하고 있습니다.`;
+    if (dn.length && dn[0].v <= Math.min(-0.03, ph.now * 1.5)) return `하락폭은 ${grpNm(dn[0].g)}${jo(dn[0].g.name, "이", "가")} 가장 큽니다.`;
+  } else {
+    const p = [];
+    if (up.length) p.push(`${nm(up)}${jo(tail(up), "은", "는")} 상승`);
+    if (dn.length) p.push(`${nm(dn)}${jo(tail(dn), "은", "는")} 하락`);
+    if (p.length) return `권역별로는 ${p.join("하고, ")}하고 있습니다.`;
+  }
+  return "";
+}
+const CONC = {};
+function notesOf(city) {
+  const c = CITY[city], code = c.code, ph = phaseOf(code), pp = phaseOf(code, 1), s = W(`sale:${code}`), wk = wkChg(s);
+  const up = streak(wk, true), dn = streak(wk, false), unit = city === "busan" ? "구·군" : "구", N = DIST[city].length;
+  const con = ph ? [CON[ph.key](ph), groupLine(city, ph)].filter(Boolean).join(" ") : "";
+  const ev = ph ? `${up >= 2 ? `${up}주 연속 상승` : dn >= 2 ? `${dn}주 연속 하락` : `이번 주 ${pct(chg(s, 1))}`} · 4주 평균 주간 변동률 <b>${pct(ph.now)}</b>(3개월 전 ${pct(ph.ago)})` : "";
+  const wow = [], watch = [];
+  // 지난주와 비교 1) 국면이 바뀌었으면 그것부터
+  const turned = ph && pp && ph.key !== pp.key;
+  if (turned) wow.push(`국면이 ${pp.word}에서 <b>${ph.word}</b>${joRo(ph.word)} 바뀌었습니다.`);
+  // 2) 4주 평균 주간 변동률(큰 글자의 기준)
+  const a = m4At(code), b = m4At(code, 1);
+  if (has(a) && has(b)) {
+    const sa = stOf(a), sb = stOf(b), d = a - b;
+    // 화면에 찍히는 두 값이 같으면 '같습니다', 0.005%p 안쪽이면 '조금'(−0.01% → −0.02%를 '비슷합니다'로 적어 숫자와 말이 어긋났다).
+    const lit = Math.abs(d) < 0.005 ? "조금 " : "";
+    const v = turned ? "" : sa !== sb ? `${STN[sb]}에서 ${STN[sa]}${joRo(STN[sa])} 바뀌었습니다` : pct(a) === pct(b) ? "지난주와 같습니다"
+      : sa > 0 ? `상승폭이 ${lit}${d < 0 ? "줄었습니다" : "커졌습니다"}` : sa < 0 ? `하락폭이 ${lit}${d < 0 ? "커졌습니다" : "줄었습니다"}` : "보합권입니다";
+    wow.push(`4주 평균 주간 변동률 ${pct(b)} → <b>${pct(a)}</b>${v ? `, ${v}` : ""}.`);
+  }
+  // 3) 상태(상승·보합·하락)가 바뀐 구
+  const now = { 1: 0, 0: 0, "-1": 0 }, was = { 1: 0, 0: 0, "-1": 0 }, moved = { 1: [], 0: [], "-1": [] };
+  DIST[city].forEach(d => { const x = stOf(m4At(d.c)), y = stOf(m4At(d.c, 1)); if (x === null || y === null) return; now[x]++; was[y]++; if (x !== y) moved[x].push(short(d.n)); });
+  const mk = [1, 0, -1].filter(k => moved[k].length);
+  if (mk.length) {
+    const cp = [1, 0, -1].filter(k => now[k] !== was[k]).map(k => `${STN[k]} ${was[k]}곳 → <b>${now[k]}곳</b>`).join(", ");
+    wow.push(`${cp ? `${cp}(${N}개 ${unit}, 4주 평균 기준). ` : ""}${mk.map(k => `${listNm(moved[k])}${jo(moved[k].length > 4 ? "곳" : moved[k][moved[k].length - 1], "이", "가")} ${STN[k]}으로`).join(", ")} 바뀌었습니다.`);
+  }
+  // 4) 매수우위·전세수급: 100을 넘나들었거나 2 이상 움직였을 때만
+  const dem = (key, nm, who, more, less) => { const q = W(`${key}:${code}`); if (q.length < 2) return;
+    const x = q[q.length - 1][1], y = q[q.length - 2][1], cross = (x > 100) !== (y > 100); if (!cross && Math.abs(x - y) < 2) return;
+    wow.push(`${nm} ${num(y)} → <b>${num(x)}</b>, ${cross ? (x > 100 ? more : less) : `${who} ${x > y ? "늘었습니다" : "줄었습니다"}`}.`); };
+  dem("buy", "매수우위지수", "사려는 사람이", "사려는 사람이 더 많아졌습니다", "팔려는 사람이 더 많아졌습니다");
+  dem("rent", "전세수급지수", "전세를 구하려는 사람이", "전세 물건이 부족한 쪽으로 바뀌었습니다", "전세 물건이 남는 쪽으로 바뀌었습니다");
+  // 눈여겨볼 점 1) 구별로 얼마나 엇갈리는지(3개월, 차이 1%p 이상일 때)
+  const ds = DIST[city].map(d => ({ n: short(d.n), v: chg(W(`sale:${d.c}`), 12) })).filter(o => has(o.v)).map(o => ({ ...o, r: +o.v.toFixed(1) }));
+  if (ds.length) {
+    const hi = Math.max(...ds.map(o => o.r)), lo = Math.min(...ds.map(o => o.r)), top = listNm(ds.filter(o => o.r === hi).map(o => o.n), 2), bot = listNm(ds.filter(o => o.r === lo).map(o => o.n), 2);
+    const tg = v => `<b class="${v > 0 ? "up" : v < 0 ? "down" : ""}">${pctL(v)}</b>`;
+    if (hi - lo >= 1) watch.push(hi > 0 && lo < 0 ? `${unit}별로 엇갈립니다(3개월). ${top} ${tg(hi)}가 가장 많이 올랐고, ${bot} ${tg(lo)}가 가장 많이 내렸습니다.`
+      : lo > 0 ? `모든 ${unit}${jo(unit, "이", "가")} 올랐지만 차이가 큽니다(3개월). ${top} ${tg(hi)}, ${bot} ${tg(lo)}입니다.`
+      : hi < 0 ? `모든 ${unit}${jo(unit, "이", "가")} 내렸지만 차이가 큽니다(3개월). ${bot} ${tg(lo)}, ${top} ${tg(hi)}입니다.`
+      : `${unit}별 차이가 큽니다(3개월). 가장 높은 곳은 ${top} ${tg(hi)}, 가장 낮은 곳은 ${bot} ${tg(lo)}입니다.`);
+  }
+  // 2) 전세와 매매가 1년 동안 3%p 넘게 벌어졌을 때
+  const s52 = chg(s, 52), j52 = chg(W(`jeonse:${code}`), 52), jr = M(`jeonseRatio:${city}`), jn = last(jr), ja = atAgo(jr);
+  if (has(s52) && has(j52) && Math.abs(j52 - s52) >= 3) {
+    const same = has(jn) && has(ja) && Math.abs(jn - ja) >= 0.5 && (jn > ja) === (j52 > s52);
+    const jt = same ? ` 집값 대비 전세(전세가율)는 1년 전 ${ja.toFixed(1)}%에서 <b>${jn.toFixed(1)}%</b>${jn > ja ? "로 높아졌습니다" : "로 낮아졌습니다"}(${ymL(lastKey(jr))}).` : "";
+    watch.push(j52 > s52 ? `전세가 1년 ${pctL(j52)}로 매매(${pctL(s52)})보다 많이 올랐습니다.${jt}` : `매매가 1년 ${pctL(s52)}로 전세(${pctL(j52)})보다 많이 올랐습니다.${jt}`);
+  }
+  // 3) 미분양 비율이 다른 도시의 3배 이상이고 주택의 0.2% 이상일 때
+  const ur = k => { const u = last(E(`unsold.${k}`)); return has(u) && has(HOUSES[k]) && HOUSES[k] ? u / HOUSES[k] * 100 : null; };
+  const oc = city === "seoul" ? "busan" : "seoul", r = ur(city), ro = ur(oc), us = E(`unsold.${city}`), uch = SIG[city].uch;
+  if (has(r) && has(ro) && ro > 0 && r >= 0.2 && r / ro >= 3)
+    watch.push(`미분양이 ${num(last(us))}호로 주택의 <b>${r.toFixed(2)}%</b>입니다. ${CITY[oc].nm}(${ro.toFixed(2)}%)의 약 ${(r / ro).toFixed(0)}배입니다(${has(uch) && Math.abs(uch) >= 1 ? `1년 전보다 ${Math.abs(uch).toFixed(0)}% ${uch < 0 ? "감소" : "증가"}, ` : ""}${ymL(lastKey(us))}).`);
+  return (CONC[city] = { con, ev, wow, watch });
+}
+function notesHtml(city) {
+  const n = CONC[city] || notesOf(city), dts = speedOf(CITY[city].code).dates, dl = d => `${+d.slice(5, 7)}/${+d.slice(8, 10)}`;
+  const box = (t, sub, L) => L.length ? `<div class="hn"><div class="hn-t">${t}${sub ? `<span>${sub}</span>` : ""}</div><ul>${L.map(x => `<li>${x}</li>`).join("")}</ul></div>` : "";
+  const h = box("지난주와 비교", dts.length > 1 ? `${dl(dts[dts.length - 2])} → ${dl(dts[dts.length - 1])} 조사` : "", n.wow) + box("눈여겨볼 점", "", n.watch);
+  return h ? `<div class="h-notes">${h}</div>` : "";
+}
 function hero(city) {
-  const c = CITY[city], s = W(`sale:${c.code}`), wk = wkChg(s), el = $(`hero-${city}`);
+  const c = CITY[city], s = W(`sale:${c.code}`), wk = wkChg(s), el = $(`hero-${city}`), nt = notesOf(city);
   const s1 = chg(s, 1), s12 = chg(s, 12), s52 = chg(s, 52), up = streak(wk, true), dn = streak(wk, false), mo = momOf(c.code), ph = phaseOf(c.code);
   const dir = ph ? ph.dir : "flat";
   const run = up >= 2 ? `<b>${up}주 연속 상승</b>했습니다.` : dn >= 2 ? `<b>${dn}주 연속 하락</b>했습니다.` : `이번 주는 <b>${pct(s1)}</b>입니다.`;
@@ -918,10 +1046,11 @@ function hero(city) {
   el.className = `hero ${dir}`; el.style.setProperty("--cc", `var(${c.col})`);
   el.innerHTML = `<div class="h-top"><span class="h-city">${c.nm} 아파트</span>${has(H.now) ? `<span class="heat-chip ${heatCls(H.now)}" title="시장 온도: 아래 '거래와 심리'의 시장 온도 추이 설명 참고">시장 온도 <b>${H.now}</b>${heatLabel(H.now)}</span>` : ""}</div>
     <div class="h-main"><svg class="h-arrow" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31"/><g transform="rotate(${(-ang).toFixed(1)} 32 32)"><path d="M15 32 H47 M36 20 L48 32 L36 44"/></g></svg>
-      <div><div class="h-word">${esc(ph ? ph.word : "자료 부족")}</div><div class="h-sub">${run} ${mo.long}</div></div></div>
+      <div><div class="h-word">${esc(ph ? ph.word : "자료 부족")}</div>${nt.con ? `<div class="h-con">${nt.con}</div>` : ""}<div class="h-sub">${nt.ev || `${run} ${mo.long}`}</div></div></div>
     <div class="h-chart" id="hc-${city}"></div>
     <div class="h-nums"><div><span>1년</span><b class="${clsL(s52)}">${pctL(s52)}</b></div><div><span>3개월</span><b class="${clsL(s12)}">${pctL(s12)}</b></div><div><span>이번 주</span><b class="${cls(s1)}">${pct(s1)}</b></div></div>
     ${money ? `<p class="h-money">${money}</p>` : ""}
+    ${notesHtml(city)}
     <div class="h-sig">${sigH}<div class="sig-sum">빨강은 집값을 올리는 요인, 파랑은 내리는 요인입니다(▲▼는 지표의 방향). <b class="up">상승 요인 ${nUp}개</b>, <b class="down">하락 요인 ${nDn}개</b>입니다.</div></div>`;
   heroChart(city);
 }
@@ -934,8 +1063,9 @@ function heroChart(city) {
   const c = CITY[city], s = W(`sale:${c.code}`); if (s.length < 53) { el.innerHTML = ""; return; }
   const pts = cum(s, 52), vs = pts.map(p => p[1]);
   const Wd = Math.max(260, Math.round(el.clientWidth)), H = Wd < 420 ? 140 : 168, PL = 42, PR = 70, PT = 14, PB = 22;
-  const step = niceStep((HRNG[1] - HRNG[0]) || 1, 3);
-  let lo = Math.floor(HRNG[0] / step + 1e-9) * step, hi = Math.ceil(HRNG[1] / step - 1e-9) * step; if (hi === lo) hi = lo + step;
+  const RG = SCALE === "own" ? [Math.min(0, ...vs), Math.max(0, ...vs)] : HRNG;   // 도시별로: 이 도시 값만으로 눈금
+  const step = niceStep((RG[1] - RG[0]) || 1, 3);
+  let lo = Math.floor(RG[0] / step + 1e-9) * step, hi = Math.ceil(RG[1] / step - 1e-9) * step; if (hi === lo) hi = lo + step;
   const t0 = pts[0][0], t1 = pts[pts.length - 1][0];
   const X = t => PL + (t - t0) / (t1 - t0) * (Wd - PL - PR), Y = v => PT + (hi - v) / (hi - lo) * (H - PT - PB);
   const endV = vs[vs.length - 1], s12 = chg(s, 12), i3 = pts.length - 13;
@@ -963,7 +1093,9 @@ function heroChart(city) {
 VIS.push(() => { heroChart("seoul"); heroChart("busan"); });
 const lastTrade = lastKey(M("trade:seoul"));
 $("asof").textContent = `${wkAsof} 반영, ${D.generated} 갱신`;
-$("fresh").innerHTML = `집값·전세·매수심리는 <b>${wkAsof}</b> 기준입니다(한국부동산원 주간 통계, 매주 목요일 발표). 거래·미분양·월세·매입자·금리는 <b>${mAsof(lastTrade)}</b>의 월간 통계입니다(신고와 집계에 1~2개월 걸림). 큰 글자는 최근 4주 평균 주간 변동률의 방향과, 그 폭이 3개월 전보다 커졌는지 줄었는지로 정합니다. 화살표 기울기는 지금 속도이고, 두 도시 그래프는 같은 눈금입니다.`;
+const freshNote = () => { $("fresh").innerHTML = `집값·전세·매수심리는 <b>${wkAsof}</b> 기준입니다(한국부동산원 주간 통계, 매주 목요일 발표). 거래·미분양·월세·매입자·금리는 <b>${mAsof(lastTrade)}</b>의 월간 통계입니다(신고와 집계에 1~2개월 걸림). 큰 글자는 최근 4주 평균 주간 변동률의 방향과, 그 폭이 3개월 전보다 커졌는지 줄었는지로 정합니다. 화살표 기울기는 지금 속도입니다. ` +
+  (SCALE === "own" ? "지금은 도시마다 눈금이 달라, 두 그래프의 높이로 크기를 견줄 수 없습니다." : "두 도시 그래프는 같은 눈금입니다."); };
+freshNote();
 
 // ---- 국면과 흐름: 시장 시계 ------------------------------------------------------------------------
 // 4주 간격으로 최근 6개월(7점). 거리는 제곱근 눈금이라 부산처럼 작은 움직임도 가운데에 묻히지 않는다. 방향(각도)은 그대로다.
@@ -1020,7 +1152,7 @@ function spark(v, rng) {
   return `<svg viewBox="0 0 96 34" preserveAspectRatio="none" aria-hidden="true"><path class="sa" d="${d} L94,34 L2,34 Z"/><path d="${d}" vector-effect="non-scaling-stroke"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="2.2"/></svg>`;
 }
 const sparkPair = (a, b, rebase) => { const f = x => { x = x.filter(has); return rebase && x.length && x[0] ? x.map(v => (v / x[0] - 1) * 100) : x; };
-  const A = f(a), B = f(b), all = A.concat(B), rng = all.length ? [Math.min(...all), Math.max(...all)] : null; return { seoul: spark(A, rng), busan: spark(B, rng) }; };
+  const A = f(a), B = f(b), all = A.concat(B), rng = SCALE !== "own" && all.length ? [Math.min(...all), Math.max(...all)] : null; return { seoul: spark(A, rng), busan: spark(B, rng) }; };
 function scoreCard() {
   const cell = (city, v, vc, d, sp) => `<div class="sc-c ${city}"><span class="v ${vc || ""}">${v}</span><span class="d">${d}</span>${sp}</div>`;
   const R = [], both = f => [f("seoul"), f("busan")];
@@ -1364,7 +1496,8 @@ function drawSpeed(el, dates, wk, m4, rng) {
     const ok = ([x, y, an]) => { const a = an === "middle" ? x - w / 2 : an === "start" ? x : x - w, b = a + w, maxB = Math.abs(y - yz) > 18 ? Wd - 4 : Wd - PR + 8;
       return a >= PL && b <= maxB && !mkX.some(m => m > a - 3 && m < b + 3); };
     const [lx, ly, an] = cand.find(ok) || cand[0];
-    g += `<circle cx="${xa.toFixed(1)}" cy="${ya.toFixed(1)}" r="4" class="ago"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${an}" class="ax">${lab}</text>`;
+    // 바탕색 테두리: 도시별 눈금에서는 막대가 커져 이름표가 막대 위에 놓일 수 있다(2026-11-28).
+    g += `<circle cx="${xa.toFixed(1)}" cy="${ya.toFixed(1)}" r="4" class="ago"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${an}" class="ax" style="paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round">${lab}</text>`;
   }
   const zc = cls(m4[iz]) === "up" ? "--rise" : cls(m4[iz]) === "down" ? "--fall" : "--ink-3";
   g += `<circle cx="${X(iz).toFixed(1)}" cy="${Y(m4[iz]).toFixed(1)}" r="4.5" style="fill:var(--cc)"/><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 1).toFixed(1)}" class="lb" style="fill:var(${zc})">${pct(m4[iz])}</text><text x="${Wd - PR + 10}" y="${(Y(m4[iz]) + 15).toFixed(1)}" class="ax">4주 평균</text>`;
@@ -1393,11 +1526,26 @@ function trendCard(city, el) {
   el.innerHTML = `<div class="tr-h"><b>${c.nm} 주간 변동률</b><span>막대는 주간 변동률, 선은 4주 평균, 점선은 기준금리 변경</span></div><div class="spd"></div>` +
     `<div class="tr-h" style="margin-top:6px"><b style="font-size:13px">상승·보합·하락 ${unit} 수</b><span>${N}개 ${unit}, 빨강 상승 / 회색 보합 / 파랑 하락</span></div><div class="brd"></div>` +
     `<div class="cap">${N}개 ${unit}${city === "busan" ? "을" : "를"} 4주 평균 주간 변동률로 나눠 센 수입니다.${b0 ? ` 3개월 전에는 상승 ${b0.u}곳, 보합 ${b0.f}곳, 하락 ${b0.d}곳이었습니다.` : ""}</div>`;
-  drawSpeed(el.querySelector(".spd"), dates, sp.wk.slice(-n), m4, TRNG);
+  drawSpeed(el.querySelector(".spd"), dates, sp.wk.slice(-n), m4, SCALE === "own" ? null : TRNG);
   drawBreadth(el.querySelector(".brd"), br, dates);
 }
 const TRC = () => { trendCard("seoul"); trendCard("busan"); };
 TRC(); VIS.push(TRC);
+// 눈금 단추(맨 위와 구별 흐름 두 곳, 같은 상태를 쓴다)
+function scaleNotes() {
+  const own = SCALE === "own";
+  document.querySelectorAll(".sc-seg button").forEach(b => b.classList.toggle("on", b.dataset.s === SCALE));
+  $("scScaleT").textContent = `작은 그래프는 최근 1~2년 흐름, ${own ? "도시마다 눈금이 다름" : "같은 줄의 두 도시는 같은 눈금"}`;
+  $("trScaleT").textContent = `주간 변동률과 상승·보합·하락 구 수, ${own ? "도시마다 눈금이 다름" : "두 도시 같은 눈금"}`;
+  freshNote();
+}
+function setScale(v) {
+  if (v === SCALE) return; SCALE = v;
+  try { localStorage.setItem("re-scale-v1", v); } catch (e) { /* 기억하지 못해도 화면은 바뀐다 */ }
+  heroChart("seoul"); heroChart("busan"); scoreCard(); TRC(); scaleNotes();
+}
+document.querySelectorAll(".sc-seg button").forEach(b => b.addEventListener("click", () => setScale(b.dataset.s)));
+scaleNotes();
 let TK = "all";
 const SCN = { seoul: "서울", busan: "부산", nation: "시·도" };
 function stateStrip(code) {
@@ -1566,7 +1714,8 @@ function brief(city) {
   const run = up >= 2 ? `${up}주 연속 상승했습니다.` : dn >= 2 ? `${dn}주 연속 하락했습니다.` : `이번 주는 ${pct(chg(s, 1))}입니다.`;
   // 메일은 이 요약을 그대로 쓴다(큰 글자 = 국면, 제목의 숫자 = 4주 평균 주간 변동률).
   SUMMARY.cities[city] = { name: c.nm, word: ph ? ph.word : "", dir: ph ? ph.dir : "flat", phase: ph ? ph.key : "", pace: ph ? pct(ph.now) : "",
-    sub: mo.short, tag: mo.tag, run, long: mo.long, bullets: L.map(([k, v]) => [k, plain(v)]) };
+    sub: mo.short, tag: mo.tag, run, long: mo.long, bullets: L.map(([k, v]) => [k, plain(v)]),
+    con: (CONC[city] || {}).con || "", ev: (CONC[city] || {}).ev || "", wow: ((CONC[city] || {}).wow || []).map(plain), watch: ((CONC[city] || {}).watch || []).map(plain) };
   const el = $(`brief-${city}`); el.style.setProperty("--cc", `var(${c.col})`);
   el.innerHTML = `<div class="b-city">${c.nm} 아파트</div><ul>${L.map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("")}</ul>`;
 }
@@ -1650,6 +1799,19 @@ chart("payCh", { h: 190, monthly: true, end: false, zero: true, padL: 44, yf: v 
 chart("jrCh", { h: 190, monthly: true, end: false, padL: 38, yf: v => v + "%", tf: pctF, series: [
   { name: "전국", pts: ts(M("jeonseRatio:national").slice(-60)), color: "--c-nat", thin: true }, ...two(ts(M("jeonseRatio:seoul").slice(-60)), ts(M("jeonseRatio:busan").slice(-60)))] });
 $("pyAsof").textContent = mAsof(lastKey(AFF.seoul)); $("jAsof").textContent = mAsof(lastKey(M("jeonseRatio:seoul")));
+// 더 볼 자료: 공급·미분양 / 누가 사나·월세 / 금리·자금을 탭 하나로 묶었다(휴대폰에서 화면 약 19장 분량이라, 2026-11-28).
+// 숨어 있던 탭의 그림은 폭을 몰라 기본 폭으로 그려 두었으므로 탭을 열 때 다시 그린다.
+function showX(k, go) {
+  let p = null;
+  document.querySelectorAll("#xSeg button").forEach(b => b.classList.toggle("on", b.dataset.x === k));
+  document.querySelectorAll(".xp").forEach(x => { x.hidden = x.dataset.x !== k; if (!x.hidden) p = x; });
+  if (!p) return;
+  CH.forEach(c => { if (p.contains(c.el)) draw(c); }); if (k === "supply") YB();
+  if (go) $("extra").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+document.querySelectorAll("#xSeg button").forEach(b => b.addEventListener("click", () => showX(b.dataset.x)));
+document.querySelectorAll(".jump a[data-x]").forEach(a => a.addEventListener("click", ev => { ev.preventDefault(); showX(a.dataset.x, true); }));
+{ const h = location.hash.slice(1); if (["supply", "buyers", "money"].includes(h)) showX(h, true); }
 
 // ---- 11. 용어·일정·자료 상태 -------------------------------------------------------------------
 $("terms").innerHTML = [
