@@ -4,7 +4,7 @@
 페이지를 다시 만들고 GitHub Pages 로 배포합니다: https://jhkim0603.github.io/realestate-dashboard/
 
 work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스크립트가 `template.html` 의 자리표시자를 자료로 채우고,
-받은 값을 `data-history.json` 에 쌓습니다). 일주일에 한 번 주간 요약 메일을 보냅니다(아래 '주간 메일').
+받은 값을 `data-history.json` 에 쌓습니다). 매일 아침 8시에 요약 메일을 보냅니다(아래 '아침 메일', 2026-11-28 까지는 주 1회).
 
 ## 화면
 
@@ -66,9 +66,10 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
 색: 빨강은 상승(또는 집값 상승 요인), 파랑은 하락(하락 요인). 지도 칸 색은 기간마다 고정된 구간으로 3단계씩 진해집니다.
 선 색은 서울 보라, 부산 청록, 전국 회색입니다. 밝은·어두운 화면을 모두 지원하고, 글꼴은 Pretendard(jsDelivr, 없으면 시스템 글꼴)입니다.
 
-## 주간 메일
+## 아침 메일
 
-목요일에 한국부동산원 주간 통계가 나오면, 그것이 반영된 첫 실행(보통 목요일 오후~금요일 오전)에서 jhyupkim@unid.co.kr 로 한 번 보냅니다.
+매일 08:00(KST)에 jhyupkim@unid.co.kr 로 보냅니다(2026-11-28 부터, 그 전에는 목요일 발표 뒤 주 1회). 집값·전세 통계는 매주 목요일 14시에
+새로 나오므로 금요일 메일부터 새 조사가 들어가고, 뉴스는 날마다 바뀝니다. 08:00 에 맞추는 방법은 세 대시보드가 같습니다(아래 '보내는 때').
 
 - 내용(순서대로): 흐름 정리(도시별 국면, 결론 문장, 근거 한 줄, 지난주와 비교, 눈여겨볼 점, 판단 근거, 공통 칸. 화면 맨 위 카드와 같은 순서) → 국면과 흐름 그림(시장 시계와 최근 1년 주간 변동률
   4주 평균)과 최근 3개월 추세 전환 → 요즘 이슈(서울·부산·전국 주제 비율과 4주 평균 대비, 서울·부산 "집값 흐름과 그 주에 늘어난 주제" 그림,
@@ -81,12 +82,15 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
   (`<script id="summary">`)을 크롬으로 열어(`--dump-dom`) 그대로 가져오므로 화면과 메일의 문장이 같습니다. 시장 시계·이슈 타임라인
   그림은 대시보드를 `#mailshot-cycle`, `#mailshot-timeline-seoul` 처럼 열면 그 그림만 폭 600 으로 그려지는 것을 크롬으로 찍습니다.
   도시별 그림(1년 흐름, 구별 지도)은 SVG 를 그려 찍습니다. 첨부한 PNG 는 본문에서 `cid:` 로 부릅니다.
-- 한 주에 한 번: 실제로 보낸 주(ISO 주, KST)를 `.last-weekly-mail` 에 적어 커밋합니다. 보내기에 실패하면 적지 않아 다음 실행이
-  다시 보냅니다. 발표가 없던 주(명절 등)는 일요일에 지난 자료로 보냅니다. main 이 아닌 브랜치에서는 보내지 않습니다.
+- 보내는 때: GitHub 예약 실행은 4~10시간 늦게 시작합니다(11/18~28 실측). 그래서 전날 저녁·밤에도 예약을 걸어 두고,
+  KST 03:00~07:30 에 시작한 실행이 07:30 까지 기다렸다가 자료를 받고 08:00:00 에 보냅니다. 07:30 전에 시작한 실행은 보내지 않습니다.
+  아침 예약은 예비로, 새벽에 시작한 실행이 하나도 없던 날은 그날 처음 07:30 이후에 시작한 실행이 늦게라도 보냅니다.
+- 하루에 한 번: 실제로 보낸 날(KST)을 `.last-digest` 에 적어 커밋합니다. 보내기에 실패하면 적지 않아 다음 실행이
+  다시 보냅니다. main 이 아닌 브랜치에서는 보내지 않습니다.
 - 필요한 비밀값: 저장소 Settings → Secrets 의 `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`(work·stock 과 같은 Gmail 앱 비밀번호).
   없으면 메일 단계만 건너뜁니다.
 - 수동 실행: `gh workflow run update-dashboard.yml -f send_email=false`(메일 없이 화면만),
-  `-f force_email=true`(지금 한 통 시험 발송, 보냄 표시를 남기지 않아 그 주 정기 메일은 그대로 나감),
+  `-f force_email=true`(지금 한 통 시험 발송, 보냄 표시를 남기지 않아 그날 정기 메일은 그대로 나감),
   `-f send_email=false -f mail_preview=true`(보내지 않고 본문·그림을 실행 결과로 받기).
 
 ## 자료 (모두 인증키 없이)
@@ -127,14 +131,14 @@ work-dashboard·stockdashboard 와 같은 구조입니다(PowerShell 생성 스�
 - `config.json`: 통계표 ID, 지역 코드, ECOS 항목 코드, 시·도 코드, 인구, 정책 발표일(`policies`), 일정(`events`, 기준금리 결정일은 2027년까지 넣어 둠), 뉴스 검색어와 거르는 단어.
 - `data-history.json`: 받은 값(봇이 커밋).
 - `tools/weekly-mail.py`: 주간 메일 본문(`email-summary.html`)·제목(`email-subject.txt`)·그림(`mail-charts/*.png`)을 만듭니다. 만든 파일은 커밋하지 않습니다.
-- `.last-weekly-mail`: 마지막으로 주간 메일을 보낸 주(봇이 커밋).
+- `.last-digest`: 마지막으로 아침 메일을 보낸 날(KST, 봇이 커밋). 2026-11-28 전에는 `.last-weekly-mail`(보낸 주)이었습니다.
 - `news-history.json`: 주(월요일 날짜)마다 묶음별 기사 수·주제별 수·대표 기사 3개, 최근 기사 목록(봇이 커밋). 이번 주·지난주만 제목 지문(ids)을 두어 같은 기사를 두 번 세지 않습니다.
 - `tools/preview.py`: `template.html` 을 고친 뒤 배포 전에 미리 볼 파일(`preview.html`, 커밋하지 않음)을 만듭니다. 자료는 배포된
   페이지에 든 최신 자료를 그대로 쓰고(`--data` 로 바꿀 수 있음), `--news` 를 주면 뉴스 부분을 `news-history.json` 과 설정으로 다시 만듭니다.
 - `tools/contrast-audit.py`, `tools/contrast-audit.js`: 밝은·어두운 화면 글자·그림 대비 점검(화면을 크게 고친 뒤 돌려 봄).
 - `tools/news-backfill.py`: 뉴스 지난 주들을 채우는 스크립트(내 PC 에서 한 번). 구글이 GitHub 실행 환경의 지난 주 검색(after:/before:)을 503 으로 막아서입니다.
-- `.github/workflows/update-dashboard.yml`: 하루 두 번(KST 14:17, 06:43 예약, 실제로는 몇 시간 늦게 시작)과 목요일 16:37·19:37·22:37,
-  금요일 09:07 에 실행하고, 주간 메일과 Pages 배포를 합니다.
+- `.github/workflows/update-dashboard.yml`: 전날 저녁·밤(KST 16:23, 18:41, 20:23, 22:17, 00:23, 02:13)과 KST 14:17, 06:43 예약(실제로는 몇 시간
+  늦게 시작), 목요일 16:37·19:37·22:37, 금요일 09:07 에 실행하고, 아침 메일(08:00)과 Pages 배포를 합니다.
 
 ## 기록
 

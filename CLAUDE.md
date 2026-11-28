@@ -13,7 +13,7 @@
   - `Update-RealEstateDashboard.ps1`: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스를 받아 `data-history.json` 에 쌓고 `dashboard.html` 을 만듭니다. pwsh 7 전용입니다.
   - `template.html`: 화면. 변동률, 시장 온도, 지도 색 같은 계산은 이 안의 스크립트가 합니다. 자리표시자는 `__DATA_JSON__`, `__GEO_JSON__` 입니다.
   - `config.json`: 통계표 ID, 지역 코드, 정책 발표일, 일정, 뉴스 검색어.
-  - `tools/weekly-mail.py`: 주간 메일(목요일 발표가 반영된 첫 실행에서 한 주에 한 번).
+  - `tools/weekly-mail.py`: 아침 메일(2026-11-28 부터 매일 08:00, 하루 한 번. 전에는 목요일 발표 뒤 주 1회). 파일 이름은 예전 그대로입니다.
   - `certs/`: R-ONE 서버가 보내지 않는 중간 인증서. 인증서 검증은 끄지 않습니다.
 
 ## 실행과 확인
@@ -23,7 +23,7 @@
 - 밝은·어두운 화면 대비 점검: `python tools/contrast-audit.py preview.html <결과 폴더> [화면 폭]`
 - 시험 실행: `gh workflow run update-dashboard.yml -R JHKim0603/realestate-dashboard -f send_email=false`
   (보내지 않고 메일만 받아 보려면 `-f send_email=false -f mail_preview=true`)
-- 봇이 관리하는 파일: `data-history.json`, `news-history.json`, `.last-weekly-mail`
+- 봇이 관리하는 파일: `data-history.json`, `news-history.json`, `.last-digest`(마지막으로 메일을 보낸 KST 날짜)
 - 이 PC(회사 PC)에서는 크롬 자동 실행이 임시 폴더(TEMP) 아래의 파일·프로필을 쓰면 화면을 그리지 못하고 멈춥니다.
   미리보기 파일은 D 드라이브에 만들고, 메일 미리보기는 `TEMP`·`TMP` 를 D 드라이브 폴더로 바꿔 실행합니다(2026-11-20 확인).
 - 수집 스크립트는 pwsh 7 전용이라 이 PC에서는 돌지 않습니다. 수집을 고치면 메일 없는 시험 실행으로 확인합니다.
@@ -52,5 +52,5 @@
 
 ## 남은 일(사용자 조치 필요)
 
-- 주간 메일 Gmail 비밀값(`GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`)이 없으면 메일 단계만 건너뜁니다. 사용자가 `gh secret set` 으로 넣습니다.
+- 메일 Gmail 비밀값(`GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`)이 없으면 메일 단계만 건너뜁니다. 사용자가 `gh secret set` 으로 넣습니다.
 - 착공, 입주 예정, 구별 실거래가는 인증키(data.go.kr 활용신청)가 있어야 합니다. 매물 수는 공개 API 가 없습니다.

@@ -5,9 +5,16 @@ on:
     # 한국부동산원 주간 아파트 가격동향은 매주 목요일 14시(KST)에 나오고, 월간 통계와 한국은행 자료는 달 중순에 나온다.
     # 하루 두 번만 둔다. GitHub 예약 실행은 몇 시간씩 늦게 시작하므로(work-dashboard 실측 3~8시간) 늦어도 그날 안에
     # 목요일 발표가 반영되도록 오후 슬롯을 이른 시각에 둔다. 정시·30분은 GitHub 큐가 가장 붐비는 때라 피했다.
-    # 주간 요약 메일은 목요일 발표가 반영된 첫 실행(보통 목요일 오후~금요일 오전)에서 한 번만 나간다(아래 mailgate).
     # 2026-11-19 에는 예약이 9시간 늦게(23:28) 시작했다. 목요일 발표를 일찍 잡도록 목요일 오후~금요일 아침에 네 번 더 둔다.
-    # 실행이 늘어도 메일은 그 주에 한 번만 나간다(.last-weekly-mail). 한 번 실행은 2분 안팎이다.
+    # 2026-11-28 부터 메일은 주 1회가 아니라 매일 08:00 에 나간다(사용자 요청). 예약이 4~10시간 늦게 시작하므로
+    # 전날 저녁·밤 예약을 더해 KST 03:00~07:30 에 시작한 실행이 07:30 까지 기다렸다 08:00 에 보낸다(아래 설명).
+    # 메일은 하루에 한 번만 나간다(.last-digest). 한 번 실행은 2분 안팎이다.
+    - cron: '23 7 * * *'     # KST 16:23
+    - cron: '41 9 * * *'     # KST 18:41
+    - cron: '23 11 * * *'    # KST 20:23
+    - cron: '17 13 * * *'    # KST 22:17
+    - cron: '23 15 * * *'    # KST 00:23
+    - cron: '13 17 * * *'    # KST 02:13
     - cron: '17 5 * * *'    # KST 14:17
     - cron: '43 21 * * *'   # KST 06:43
     - cron: '37 7,10,13 * * 4'   # KST 목 16:37, 19:37, 22:37
@@ -15,11 +22,11 @@ on:
   workflow_dispatch:
     inputs:
       send_email:
-        description: "주간 메일 보내기(끄면 시험 실행: 메일 없이 화면만)"
+        description: "메일 보내기(끄면 시험 실행: 메일 없이 화면만)"
         type: boolean
         default: true
       force_email:
-        description: "지금 한 통 보내기(시험 발송: 이번 주 보냄 표시를 남기지 않아 정기 메일은 그대로 나감)"
+        description: "지금 한 통 보내기(시험 발송: 오늘 보냄 표시를 남기지 않아 정기 메일은 그대로 나감)"
         type: boolean
         default: false
       mail_preview:
@@ -39,13 +46,34 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    # 평소에는 1~2분, 처음 채우는 실행도 몇 분이면 끝난다. 서버가 답을 주지 않아 길어지면 여기서 끊는다.
-    timeout-minutes: 20
+    # 08시 메일을 위해 새벽에 시작한 실행은 07:30·08:00 까지 기다리므로 실행 전체는 길게 둔다(최대 6시간).
+    # 서버가 답을 주지 않아 수집이 길어지는 것은 수집 단계의 timeout-minutes(20분)에서 끊는다.
+    timeout-minutes: 360
     env:
       # 메일 비밀값이 저장소에 있는지(값은 보지 않는다). 없으면 메일 단계를 조용히 건너뛴다.
       HAS_MAIL: ${{ secrets.GMAIL_USERNAME != '' && secrets.GMAIL_APP_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v7
+
+      # 08시 메일(2026-11-28, 사용자 요청: "3개 대시보드는 매일 내가 설정한 이메일로 08시에 도착하게").
+      # GitHub 예약 실행은 4~10시간 늦게 시작한다(11/18~28 실측: 06:14 예약 → 11~14시, 13:43 예약 → 다음날 0시대).
+      # 그래서 전날 저녁·밤에도 예약을 걸어 두고, KST 03:00~07:30 사이에 시작한 실행은 07:30 까지 기다렸다가 자료를 받는다
+      # (03:00 보다 일찍부터 기다리면 수집·08:00 대기까지 합쳐 실행 제한 6시간에 걸린다).
+      # 메일은 07:30 이후에만 만들고, 08:00 전이면 08:00:00 까지 기다렸다 보낸다(아래 'Wait until 08:00 KST').
+      # 07:30 전에 시작한 실행은 메일을 보내지 않는다(자정 발송 방지). 오늘 이미 보냈으면 기다리지 않는다.
+      - name: Hold early runs for the 08:00 mail
+        if: github.event_name == 'schedule'
+        run: |
+          now=$(date +%s); d=$(TZ=Asia/Seoul date +%F)
+          t0=$(TZ=Asia/Seoul date -d "$d 03:00" +%s); t1=$(TZ=Asia/Seoul date -d "$d 07:30" +%s)
+          last=$(cat .last-digest 2>/dev/null | tr -d '[:space:]')
+          if [[ "$last" != "$d" && $now -ge $t0 && $now -lt $t1 ]]; then
+            echo "KST $(TZ=Asia/Seoul date +%H:%M) 시작: 07:30 까지 $(( (t1 - now) / 60 ))분 기다린 뒤 자료를 받습니다"
+            sleep $(( t1 - now ))
+          else
+            echo "기다리지 않음(KST $(TZ=Asia/Seoul date +%H:%M), 마지막 발송 ${last:-없음})"
+          fi
+
 
       # DASHBOARD-RULES.md 는 stockdashboard, work-dashboard 와 똑같이 쓰는 공통 규칙이다. 한쪽만 고치면 어긋나므로
       # 실행 때마다 stockdashboard 의 같은 파일과 비교해 다르면 경고만 남긴다(배포는 막지 않는다).
@@ -68,37 +96,35 @@ jobs:
 
       - name: Generate dashboard.html
         shell: pwsh
+        timeout-minutes: 20
         run: ./Update-RealEstateDashboard.ps1
 
-      # 주간 메일은 한 주(KST, ISO 주)에 한 번. .last-weekly-mail 에 실제로 보낸 주를 적어 두고(커밋), 같은 주에는 다시 보내지 않는다.
-      # 보낼 때: 그 주 월요일 조사분(목요일 발표)이 들어온 첫 실행. 발표가 없던 주(명절 등)는 일요일에 지난 자료로 보낸다.
-      # 보내기에 실패하면 표시를 남기지 않아 다음 실행이 다시 보낸다. 시험 브랜치에서는 보내지 않는다.
-      - name: Decide whether this week's mail goes out
+      # 메일은 하루(KST)에 한 번, 08:00 에(2026-11-28 주간 → 매일). .last-digest 에 실제로 보낸 날을 적어 두고(커밋) 같은 날에는
+      # 다시 보내지 않는다. 07:30 전 실행은 보내지 않는다. 보내기에 실패하면 표시를 남기지 않아 다음 실행이 다시 보낸다.
+      # 시험 브랜치에서는 보내지 않는다. 집값 통계는 목요일에 새로 나오므로 금요일 메일부터 새 조사가 들어간다.
+      - name: Decide whether today's mail goes out
         id: mailgate
         run: |
-          today=$(TZ=Asia/Seoul date +%F); dow=$(TZ=Asia/Seoul date +%u); week=$(TZ=Asia/Seoul date +%G-W%V)
-          monday=$(date -d "$today -$((dow - 1)) days" +%F)
-          latest=$(jq -r '[.weekDates[]] | max' data-history.json)
-          last=$(cat .last-weekly-mail 2>/dev/null | tr -d '[:space:]')
-          echo "week=$week" >> "$GITHUB_OUTPUT"
+          today=$(TZ=Asia/Seoul date +%F); hm=$(TZ=Asia/Seoul date +%H%M)
+          last=$(cat .last-digest 2>/dev/null | tr -d '[:space:]')
+          echo "today=$today" >> "$GITHUB_OUTPUT"
           send=false; why=""
           if [[ "${GITHUB_REF_NAME}" != "main" ]]; then why="시험 브랜치(${GITHUB_REF_NAME})"
           elif [[ "${{ inputs.send_email }}" == "false" ]]; then why="send_email=false(시험 실행)"
           elif [[ "$HAS_MAIL" != "true" ]]; then why="저장소에 GMAIL_USERNAME·GMAIL_APP_PASSWORD 비밀값이 없음"
           elif [[ "${{ inputs.force_email }}" == "true" ]]; then send=true; why="force_email"
-          elif [[ "$last" == "$week" ]]; then why="이번 주($week) 메일은 이미 보냄"
-          elif [[ "$latest" > "$monday" || "$latest" == "$monday" ]]; then send=true; why="이번 주 조사분($latest)이 들어옴"
-          elif [[ "$dow" == "7" ]]; then send=true; why="이번 주 발표가 없어 일요일에 지난 자료($latest)로"
-          else why="이번 주 조사분이 아직 없음(최신 $latest, 이번 주 월요일 $monday)"; fi
+          elif [[ "$last" == "$today" ]]; then why="오늘($today) 메일은 이미 보냄"
+          elif (( 10#$hm < 730 )); then why="KST $hm: 07:30 전 실행은 보내지 않음(아침 메일은 08:00)"
+          else send=true; why="오늘 아침 메일"; fi
           echo "send=$send" >> "$GITHUB_OUTPUT"
           build=$send
           if [[ "${{ inputs.mail_preview }}" == "true" ]]; then build=true; fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
-          echo "주간 메일: send=$send build=$build - $why"
+          echo "메일: send=$send build=$build - $why"
 
       # 메일 본문·그림: 화면과 같은 자료(dashboard.html 안의 JSON)로 그리고 크롬으로 PNG 를 찍는다(tools/weekly-mail.py).
       # 우분투 실행 환경에는 한글 글꼴이 없어 나눔고딕을 설치한다. 그림이 실패해도 메일은 글로 나간다.
-      - name: Draw weekly mail
+      - name: Draw mail
         id: draw
         if: steps.mailgate.outputs.build == 'true'
         continue-on-error: true
@@ -117,8 +143,15 @@ jobs:
             email-subject.txt
             mail-charts/
 
+      # 08:00 전에 메일이 준비되면 08:00:00 까지 기다렸다 보낸다. 지금 한 통 보내기(force_email)는 기다리지 않는다.
+      - name: Wait until 08:00 KST
+        if: steps.mailgate.outputs.send == 'true' && inputs.force_email != true
+        run: |
+          now=$(date +%s); t=$(TZ=Asia/Seoul date -d "$(TZ=Asia/Seoul date +%F) 08:00" +%s)
+          if (( now < t )); then echo "08:00 까지 $(( t - now ))초 기다립니다"; sleep $(( t - now )); else echo "08:00 이 지나 바로 보냅니다"; fi
+
       # 메일이 실패해도(비밀값 만료, SMTP 장애) 화면 배포는 계속한다.
-      - name: Send weekly mail
+      - name: Send daily mail
         id: mail
         if: steps.mailgate.outputs.send == 'true' && steps.draw.outcome == 'success'
         continue-on-error: true
@@ -135,19 +168,19 @@ jobs:
           # 첨부 그림은 파일 이름이 cid 가 되어 본문의 <img src="cid:파일이름"> 자리에 보인다.
           attachments: mail-charts/*.png
 
-      - name: Mark this week as mailed
+      - name: Mark today as mailed
         if: steps.mail.outcome == 'success' && inputs.force_email != true
-        run: echo "${{ steps.mailgate.outputs.week }}" > .last-weekly-mail
+        run: echo "${{ steps.mailgate.outputs.today }}" > .last-digest
 
       - name: Commit history and mail marker
         continue-on-error: true
         run: |
-          if [[ -n "$(git status --porcelain data-history.json news-history.json .last-weekly-mail)" ]]; then
+          if [[ -n "$(git status --porcelain data-history.json news-history.json .last-digest)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data-history.json
             [[ -f news-history.json ]] && git add news-history.json
-            [[ -f .last-weekly-mail ]] && git add .last-weekly-mail
+            [[ -f .last-digest ]] && git add .last-digest
             git commit -m "chore: accumulate history $(TZ=Asia/Seoul date +%Y-%m-%d)"
             git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
             git push
