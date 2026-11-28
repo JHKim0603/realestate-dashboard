@@ -106,7 +106,7 @@
     "perGroup": 12
   },
 
-  "//regions": "도시·권역·구(군)와 주간 표의 지역 코드. 순서가 화면의 표 순서입니다. level 은 city(도시), group(권역), district(구·군).",
+  "//regions": "도시·권역·구(군)와 주간 표의 지역 코드. 순서가 화면의 표 순서입니다. level 은 city(도시), group(권역), district(구·군). districtWeeks 를 주면 그 도시의 권역·구는 rone.weeksShort 대신 그 주 수만큼 받습니다(부산 160주: 내 분양권 칸에서 계약 뒤 변화를 보려고, 2026-11-28).",
   "regions": [
     { "key": "national", "name": "전국", "level": "city", "cls": 50001, "long": true, "demand": true },
     { "key": "seoul", "name": "서울", "level": "city", "cls": 50008, "long": true, "demand": true,
@@ -119,7 +119,7 @@
         { "name": "서남권", "cls": 50014, "districts": [ ["양천구", 50060], ["강서구", 50061], ["구로구", 50062], ["금천구", 50063], ["영등포구", 50064], ["동작구", 50065], ["관악구", 50066] ] },
         { "name": "동남권", "cls": 50015, "districts": [ ["서초구", 50067], ["강남구", 50068], ["송파구", 50069], ["강동구", 50070] ] }
       ] },
-    { "key": "busan", "name": "부산", "level": "city", "cls": 50025, "long": true, "demand": true,
+    { "key": "busan", "name": "부산", "level": "city", "cls": 50025, "long": true, "demand": true, "districtWeeks": 160,
       "groups": [
         { "name": "중부산권", "cls": 50026, "districts": [ ["중구", 50132], ["서구", 50133], ["동구", 50134], ["영도구", 50135], ["남구", 50136], ["부산진구", 50137], ["연제구", 50138], ["수영구", 50139] ] },
         { "name": "동부산권", "cls": 50140, "districts": [ ["동래구", 50141], ["해운대구", 50142], ["금정구", 50143], ["기장군", 50144] ] },

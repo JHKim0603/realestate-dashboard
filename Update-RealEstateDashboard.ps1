@@ -191,12 +191,14 @@ $weeklyJobs = [System.Collections.Generic.List[object]]::new()
 foreach ($r in $config.regions) {
     foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$r.cls; weeks = [int]$config.rone.weeksLong }) }
     if ($r.demand) { foreach ($t in "buy", "rent") { $weeklyJobs.Add(@{ t = $t; cls = [int]$r.cls; weeks = [int]$config.rone.weeksLong }) } }
+    # 권역·구는 보통 weeksShort(1년)만 받는다. districtWeeks 가 있는 도시(부산)는 더 길게(내 분양권 칸의 계약 뒤 변화, 2026-11-28).
+    $dw = if ($r.districtWeeks) { [int]$r.districtWeeks } else { [int]$config.rone.weeksShort }
     foreach ($g in @($r.groups)) {
         if (-not $g) { continue }
-        foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$g.cls; weeks = [int]$config.rone.weeksShort }) }
+        foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$g.cls; weeks = $dw }) }
         foreach ($d in @($g.districts)) {
             if (-not $d) { continue }
-            foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$d[1]; weeks = [int]$config.rone.weeksShort }) }
+            foreach ($t in "sale", "jeonse") { $weeklyJobs.Add(@{ t = $t; cls = [int]$d[1]; weeks = $dw }) }
         }
     }
 }
