@@ -382,6 +382,19 @@ foreach ($g in $groupNames) {
             $r.top = @($r.top) + [ordered]@{ t = $x.t; s = $x.s; u = $x.u; d = $x.when.ToString("M'/'d") }
         }
     }
+    # 이번 주·지난주의 주제별 예시 기사 한 건(ex, 2026-11-28). 화면의 '많이 늘어난 주제' 카드가 최근 기사 목록(12건 남짓)에 그 주제가 없을 때 쓴다.
+    # 그 주에 그 주제로 분류된 기사 중 가장 최근 것. 날짜(dt)를 같이 두어 더 최근 기사가 오면 바꾼다.
+    foreach ($x in $list) {
+        $d = $x.when.DateTime.Date; $w = $d.AddDays(-(([int]$d.DayOfWeek + 6) % 7)).ToString("yyyy-MM-dd")
+        if ($w -ne $curW -and $w -ne $prevW) { continue }
+        $r = $nh.weeks[$w][$g]; if (-not $r) { continue }
+        if ($null -eq $r.ex) { $r.ex = @{} }
+        $dt = $x.when.ToString("yyyy-MM-ddTHH:mm")
+        foreach ($k in @($x.tp | Where-Object { $issueKeys -contains $_ })) {
+            $old = $r.ex[$k]
+            if (-not $old -or [string]$old.dt -lt $dt) { $r.ex[$k] = [ordered]@{ t = $x.t; s = $x.s; u = $x.u; d = $x.when.ToString("M'/'d"); dt = $dt } }
+        }
+    }
     # 화면 목록(최근 7일). 이번 실행에서 못 받았으면 지난번 목록을 그대로 둔다.
     if ($list.Count) {
         $cut = $nowKst.AddDays(-7)
@@ -397,14 +410,15 @@ $lines = foreach ($k in $wkKeys) {
         $r = $nh.weeks[$k][$g]; if (-not $r) { continue }
         $tp = [ordered]@{}; foreach ($t in $topicRx.Keys) { $tp[$t] = if ($r.tp -and $null -ne $r.tp[$t]) { [int]$r.tp[$t] } else { 0 } }
         $o[$g] = [ordered]@{ n = [int]$r.n; tp = $tp; top = @($r.top | ForEach-Object { [ordered]@{ t = $_.t; s = $_.s; u = $_.u; d = $_.d } }) }
-        if ($k -eq $curW -or $k -eq $prevW) { $o[$g].ids = @($r.ids) }
+        if ($k -eq $curW -or $k -eq $prevW) { $o[$g].ids = @($r.ids); if ($r.ex) { $o[$g].ex = $r.ex } }
     }
     "    " + (ConvertTo-Json $k) + ": " + (ConvertTo-Json $o -Depth 6 -Compress)
 }
 $itemLines = foreach ($g in $groupNames) { "    " + (ConvertTo-Json $g) + ": " + (ConvertTo-Json @($nh.items[$g]) -Depth 6 -Compress) }
 [IO.File]::WriteAllText($newsPath, "{`n  `"items`": {`n" + ($itemLines -join ",`n") + "`n  },`n  `"weeks`": {`n" + ($lines -join ",`n") + "`n  }`n}`n", [Text.UTF8Encoding]::new($false))
 $weekOut = @(foreach ($k in ($wkKeys | Select-Object -Last ([int]$nc.weeks))) {
-    $o = [ordered]@{}; foreach ($g in $groupNames) { $r = $nh.weeks[$k][$g]; if ($r) { $o[$g] = [ordered]@{ n = [int]$r.n; tp = $r.tp; top = @($r.top) } } }
+    $o = [ordered]@{}; foreach ($g in $groupNames) { $r = $nh.weeks[$k][$g]; if ($r) { $o[$g] = [ordered]@{ n = [int]$r.n; tp = $r.tp; top = @($r.top) }
+        if (($k -eq $curW -or $k -eq $prevW) -and $r.ex) { $o[$g].ex = $r.ex } } }
     [ordered]@{ w = $k; g = $o }
 })
 $items = [ordered]@{}; foreach ($g in $groupNames) { $items[$g] = @($nh.items[$g]) }

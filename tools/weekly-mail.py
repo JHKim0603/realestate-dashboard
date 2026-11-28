@@ -1,4 +1,4 @@
-"""부동산 시장 Dashboard 주간 메일을 만든다: 본문(email-summary.html), 제목(email-subject.txt), 그림(mail-charts/*.png).
+"""부동산 시장 Dashboard 아침 메일(2026-11-28 부터 매일 08:00, 전에는 주 1회)을 만든다: 본문(email-summary.html), 제목(email-subject.txt), 그림(mail-charts/*.png).
 
     python3 tools/weekly-mail.py [dashboard.html] [출력 폴더]
 
@@ -442,7 +442,8 @@ P = f"font-family:{MFONT};"
 # 공통 규칙 7: 상자는 흰 바탕, 1px #e1e0d9 테두리, 둥근 모서리 8px, 안쪽 여백 13px 15px. 상태는 왼쪽 4px 띠의 색으로만.
 BOX = "background:#ffffff;border:1px solid #e1e0d9;border-radius:8px"
 span = lambda s, c, w=700: f'<span style="color:{c};font-weight:{w}">{s}</span>'
-colored = lambda x, d=2: span(esc(pct(x, d)), COLOR[cls(x, d)] if cls(x, d) != "flat" else INK3)
+# 소수 d 자리로 0이 되는 변동은 '보합'(공통 규칙 4, 2026-11-28: 순위의 '인천 0.0%')
+colored = lambda x, d=2: span(esc("보합" if has(x) and cls(x, d) == "flat" else pct(x, d)), COLOR[cls(x, d)] if cls(x, d) != "flat" else INK3)
 colored_l = lambda x: colored(x, dg_l(x))
 DIR_BAR = {"up": RISE, "down": FALL, "flat": "#e1e0d9"}
 WARN = "#c07812"
@@ -492,7 +493,7 @@ def city_block(c):
   {img(f"hero-{c}.png", 600, f"{nm} 집값 1년 흐름")}
   <table role="presentation" width="100%" cellpadding="0" cellspacing="6" style="margin-top:2px"><tr>{cell("이번 주", s1, 2)}{cell("3개월", s12, dg_l(s12))}{cell("1년", s52, dg_l(s52))}</tr></table>
   <div style="font-size:14px;color:{INK2};line-height:1.6;margin-top:4px">{money}</div>
-  <div style="font-size:13px;line-height:1.7;margin-top:6px">{sig}<br><span style="color:{INK3};font-size:12px">빨강은 집값을 올리는 요인, 파랑은 내리는 요인입니다(▲▼는 지표의 방향). 상승 요인 {n_up}개, 하락 요인 {n_dn}개입니다.</span></div>
+  <div style="font-size:13px;line-height:1.7;margin-top:6px">{sig}<br><span style="color:{INK3};font-size:12px">{"빨강은 집값을 올리는 요인, 파랑은 내리는 요인입니다(▲▼는 지표의 방향). " if c == "seoul" else ""}상승 요인 {n_up}개, 하락 요인 {n_dn}개입니다.</span></div>
   <div style="border-top:1px dashed {GRID};margin-top:10px;padding-top:8px;font-size:13.5px;color:{INK2};line-height:1.65">
     <b style="color:{INK}">최근 4주 변동률로 보면</b> 상승 {n_r}곳, 보합 {len(rows) - n_r - n_d}곳, 하락 {n_d}곳입니다.<br>많이 오른 {unit}: {top3}<br>많이 내린 {unit}: {bot3}
     {img(f"map-{c}.png", 600, f"{nm} 구별 최근 4주 변동 지도")}
@@ -672,7 +673,7 @@ body = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name
 {sec("다가오는 일정")}
 {card(f'<div style="font-size:13.5px;color:{INK2};line-height:1.8">{schedule_block()}</div>')}
 <tr><td style="padding:10px 2px 0;font-size:12px;color:{INK3};line-height:1.6;{P}">자료: 한국부동산원 R-ONE, 한국은행 ECOS, 구글 뉴스. 지도: {esc((G or {}).get("src", ""))}.
-'1년 동안 약 얼마'는 중위 매매가격에 1년 지수 변동률을 적용한 어림값입니다. 매주 목요일 발표가 반영되면 한 번 보내는 메일입니다.</td></tr>
+'1년 동안 약 얼마'는 중위 매매가격에 1년 지수 변동률을 적용한 어림값입니다. 매일 아침 8시에 보내는 메일입니다. 집값·전세 통계는 매주 목요일에 새로 나와 금요일 메일부터 들어갑니다.</td></tr>
 </table></td></tr></table></body></html>"""
 OUTDIR.mkdir(parents=True, exist_ok=True)
 (OUTDIR / "email-summary.html").write_text(body, encoding="utf-8")
